@@ -35,7 +35,21 @@
 		C9AEF6CE10B048A700C7D86D /* BFormat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C9AEF6B410B048A700C7D86D /* BFormat.cpp */; };
 		C9AEF6CF10B048A700C7D86D /* BFormat.h in Headers */ = {isa = PBXBuildFile; fileRef = C9AEF6B510B048A700C7D86D /* BFormat.h */; };
 		C9AEF6D110B048C200C7D86D /* mit_hrtf_lib.h in Headers */ = {isa = PBXBuildFile; fileRef = C9AEF6D010B048C200C7D86D /* mit_hrtf_lib.h */; };
+		C9F05EF81A4C48A100EEF233 /* libamblib.a in CopyFiles */ = {isa = PBXBuildFile; fileRef = D2AAC046055464E500DB518D /* libamblib.a */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C9F05EF71A4C489600EEF233 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = ../../../../../../library;
+			dstSubfolderSpec = 16;
+			files = (
+				C9F05EF81A4C48A100EEF233 /* libamblib.a in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		C9AEF69A10B0489900C7D86D /* Ambisonics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Ambisonics.h; path = ../include/Ambisonics.h; sourceTree = SOURCE_ROOT; };
@@ -175,6 +189,7 @@
 				D2AAC043055464E500DB518D /* Headers */,
 				D2AAC044055464E500DB518D /* Sources */,
 				D289987405E68DCB004EDB86 /* Frameworks */,
+				C9F05EF71A4C489600EEF233 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -267,6 +282,7 @@
 		1DEB91F008733DB70010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -281,6 +297,7 @@
 		1DEB91F108733DB70010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
