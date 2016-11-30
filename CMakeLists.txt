@@ -3,12 +3,9 @@ project(ambisonic)
 
 include_directories(include source source/kiss_fft)
 
-list(APPEND HEADERS
-    include/Ambisonics.h
-)
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+file(GLOB_RECURSE headers LIST_DIRECTORIES false *.h)
 file(GLOB_RECURSE sources LIST_DIRECTORIES false *.h *.cpp *.c)
 
 add_library(ambisonic STATIC ${sources})
@@ -20,5 +17,5 @@ configure_file(
 )
 
 install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include)
+install(FILES ${headers} DESTINATION include/ambisonic)
 install(FILES ambisonic.pc DESTINATION lib/pkgconfig)
