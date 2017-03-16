@@ -18,4 +18,4 @@ configure_file(
 
 install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib)
 install(FILES ${headers} DESTINATION include/ambisonic)
-install(FILES ambisonic.pc DESTINATION lib/pkgconfig)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION lib/pkgconfig)
