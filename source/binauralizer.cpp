@@ -79,6 +79,7 @@ AmbBool Binauralizer::Create(AmbUInt nSampleRate,
         //Deallocate any buffers with previous settings
         DeallocateBuffers();
 
+        m_speakers = speakers;
         AmbUInt nSpeakers = speakers.size();
 
         //Allocate buffers with new settings
