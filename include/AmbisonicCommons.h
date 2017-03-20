@@ -36,9 +36,9 @@ typedef unsigned int AmbUInt;
 enum BFormatChannels3D
 {
 	kW,
-	kX, kY, kZ,
-	kR, kS, kT, kU, kV,
-	kK, kL, kM, kN, kO, kP, kQ,
+	kY, kZ, kX,
+	kV, kT, kR, kS, kU,
+	kQ, kO, kM, kK, kL, kN, kP,
 	kNumOfBformatChannels3D
 };
 

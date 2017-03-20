@@ -51,7 +51,10 @@ void CAmbisonicSpeaker::Process(CBFormat* pBFSrc, AmbUInt nSamples, AmbFloat* pf
 	{
 		for(niSample = 0; niSample < nSamples; niSample++)
 		{
-			pfDst[niSample] += pBFSrc->m_ppfChannels[niChannel][niSample] * m_pfCoeff[niChannel];
+			// The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
+			// for SN3D normalised Ambisonic inputs.
+			pfDst[niSample] += pBFSrc->m_ppfChannels[niChannel][niSample]
+						* m_pfCoeff[niChannel] * (2*floor(sqrt(niChannel)) + 1);
 		}
 	}
 }

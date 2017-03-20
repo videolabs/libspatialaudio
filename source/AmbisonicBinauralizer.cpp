@@ -14,6 +14,7 @@
 
 
 #include "AmbisonicBinauralizer.h"
+#include <iostream>
 
 
 CAmbisonicBinauralizer::CAmbisonicBinauralizer()
@@ -39,6 +40,8 @@ CAmbisonicBinauralizer::CAmbisonicBinauralizer()
     AmbUInt tail = 0;
     
 	Create(DEFAULT_ORDER, DEFAULT_HEIGHT, DEFAULT_SAMPLERATE, DEFAULT_BLOCKSIZE, DEFAULT_HRTFSET_DIFFUSED, tail);
+
+std::cout<<"Start AmbisonicBinauralizer"<<std::endl;
 }
 
 CAmbisonicBinauralizer::~CAmbisonicBinauralizer()
@@ -138,7 +141,7 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 				pfHRTF[1][niTap] = psHRTF[1][niTap] / 32767.f;
 			}
 			//Scale the HRTFs by the coefficient of the current channel/component
-			fCoefficient = m_AmbDecoder.GetCoefficient(niSpeaker, niChannel);
+			fCoefficient = m_AmbDecoder.GetCoefficient(niSpeaker, niChannel) * (2*floor(sqrt(niChannel)) + 1);
 			for(niTap = 0; niTap < m_nTaps; niTap++)
 			{
 				pfHRTF[0][niTap] *= fCoefficient;

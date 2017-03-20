@@ -32,7 +32,7 @@ bool CAmbisonicEncoder::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
     bool success = CAmbisonicSource::Create(nOrder, b3D, nMisc);
     if(!success)
         return false;
-    SetOrderWeight(0, 1.f / sqrtf(2.f));
+    //SetOrderWeight(0, 1.f / sqrtf(2.f)); // Removed as seems to break SN3D normalisation
     
     return true;
 }
