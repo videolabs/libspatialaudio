@@ -3,9 +3,9 @@
 
 #include <vector>
 
-#include <AmbisonicCommons.h>
-#include <BFormat.h>
-#include <AmbisonicSpeaker.h>
+#include "AmbisonicCommons.h"
+#include "BFormat.h"
+#include "AmbisonicSpeaker.h"
 
 #include "mit_hrtf_lib.h"
 #include "kiss_fftr.h"
