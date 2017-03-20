@@ -3,12 +3,13 @@
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicProcessor - Ambisonic Processor                               #*/
 /*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2017 Videolabs                                              #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicProcessor.h                                     #*/
-/*#  Version:       0.1                                                      #*/
+/*#  Version:       0.2                                                      #*/
 /*#  Date:          19/05/2007                                               #*/
-/*#  Author(s):     Aristotel Digenis                                        #*/
-/*#  Licence:       MIT                                                      #*/
+/*#  Author(s):     Aristotel Digenis, Peter Stitt                           #*/
+/*#  Licence:       LGPL                                                     #*/
 /*#                                                                          #*/
 /*############################################################################*/
 
@@ -35,12 +36,21 @@ enum ProcessorModes
 /// Struct for soundfield rotation.
 typedef struct Orientation
 {
-	/** rotation around the Z axis (rotate) */
+	/** rotation around the Z axis (yaw) */
 	AmbFloat fYaw;
-	/** rotation around the X axis (tilt) */
-	AmbFloat fRoll;
-	/** rotation around the Y axis (tumble) */
+	/** rotation around the Y axis (pitch) */
 	AmbFloat fPitch;
+	/** rotation around the X axis (roll) */
+	AmbFloat fRoll;
+
+	/** These angles are obtained from Yaw, Pitch and Roll (ZYX convention)**/
+	/** They follow the ZYZ convention to match the rotation equations **/
+	/** rotation around the Z axis */
+	AmbFloat fAlpha;
+	/** rotation around the X axis */
+	AmbFloat fBeta;
+	/** rotation around the new Z axis */
+	AmbFloat fGamma;
 } Orientation;
 
 /// Ambisonic processor.
@@ -104,6 +114,25 @@ protected:
 	AmbFloat m_fSin2Roll;
 	AmbFloat m_fCos2Pitch;
 	AmbFloat m_fSin2Pitch;
+
+	AmbFloat m_fCosAlpha;
+	AmbFloat m_fSinAlpha;
+	AmbFloat m_fCosBeta;
+	AmbFloat m_fSinBeta;
+	AmbFloat m_fCosGamma;
+	AmbFloat m_fSinGamma;
+	AmbFloat m_fCos2Alpha;
+	AmbFloat m_fSin2Alpha;
+	AmbFloat m_fCos2Beta;
+	AmbFloat m_fSin2Beta;
+	AmbFloat m_fCos2Gamma;
+	AmbFloat m_fSin2Gamma;
+	AmbFloat m_fCos3Alpha;
+	AmbFloat m_fSin3Alpha;
+	AmbFloat m_fCos3Beta;
+	AmbFloat m_fSin3Beta;
+	AmbFloat m_fCos3Gamma;
+	AmbFloat m_fSin3Gamma;
 };
 
 #endif // _AMBISONIC_PROCESSOR_H

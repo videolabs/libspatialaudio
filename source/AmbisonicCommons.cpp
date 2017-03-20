@@ -34,6 +34,8 @@ AmbUInt OrderToComponents(AmbUInt nOrder, AmbBool b3D)
 
 AmbUInt OrderToComponentPosition(AmbUInt nOrder, AmbBool b3D)
 {
+
+
 	AmbUInt nIndex = 0;
 
 	if(b3D)
@@ -62,6 +64,7 @@ AmbUInt OrderToComponentPosition(AmbUInt nOrder, AmbBool b3D)
 
 AmbUInt OrderToSpeakers(AmbUInt nOrder, AmbBool b3D)
 {
+
 	if(b3D)
 		return (nOrder * 2 + 2) * 2;
 	else
@@ -70,27 +73,28 @@ AmbUInt OrderToSpeakers(AmbUInt nOrder, AmbBool b3D)
 
 char ComponentToChannelLabel(AmbUInt nComponent, AmbBool b3D)
 {
+
     char cLabel = ' ';
     if(b3D)
     {
         switch(nComponent)
         {
         case 0:     cLabel = 'W';   break;
-        case 1:     cLabel = 'X';   break;
-        case 2:     cLabel = 'Y';   break;
-        case 3:     cLabel = 'Z';   break;
-        case 4:     cLabel = 'R';   break;
-        case 5:     cLabel = 'S';   break;
-        case 6:     cLabel = 'T';   break;
+        case 1:     cLabel = 'Y';   break;
+        case 2:     cLabel = 'Z';   break;
+        case 3:     cLabel = 'X';   break;
+        case 4:     cLabel = 'V';   break;
+        case 5:     cLabel = 'T';   break;
+        case 6:     cLabel = 'R';   break;
         case 7:     cLabel = 'U';   break;
-        case 8:     cLabel = 'V';   break;
-        case 9:     cLabel = 'K';   break;
-        case 10:    cLabel = 'L';   break;
+        case 8:     cLabel = 'S';   break;
+        case 9:     cLabel = 'Q';   break;
+        case 10:    cLabel = 'O';   break;
         case 11:    cLabel = 'M';   break;
-        case 12:    cLabel = 'N';   break;
-        case 13:    cLabel = 'O';   break;
-        case 14:    cLabel = 'P';   break;
-        case 15:    cLabel = 'Q';   break;
+        case 12:    cLabel = 'K';   break;
+        case 13:    cLabel = 'L';   break;
+        case 14:    cLabel = 'N';   break;
+        case 15:    cLabel = 'P';   break;
         };
     }
     else
