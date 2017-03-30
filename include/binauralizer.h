@@ -22,11 +22,12 @@ public:
     AmbBool Create(AmbUInt nSampleRate,
                    AmbUInt nBlockSize,
                    AmbBool bDiffused,
-                   std::vector<CAmbisonicSpeaker> speakers,
+                   CAmbisonicSpeaker *speakers,
+                   AmbUInt nSpeakers,
                    AmbUInt& tailLength);
 
     void Reset();
-    void Process(CBFormat* pBFSrc, AmbFloat** ppfDst);
+    void Process(AmbFloat** pBFSrc, AmbFloat** ppfDst);
 
 private:
     AmbUInt m_nBlockSize;
@@ -45,7 +46,8 @@ private:
     AmbFloat* m_pfScratchBufferB;
     AmbFloat* m_pfOverlap[2];
 
-    std::vector<CAmbisonicSpeaker> m_speakers;
+    CAmbisonicSpeaker *m_speakers;
+    AmbUInt m_nSpeakers;
 
     void AllocateBuffers();
     void DeallocateBuffers();

@@ -24,6 +24,7 @@ Binauralizer::Binauralizer()
     m_nFFTBins = 0;
     m_fFFTScaler = 0.f;
     m_nOverlapLength = 0;
+    m_nSpeakers = 0;
 
     m_pfScratchBufferA = NULL;
     m_pfScratchBufferB = NULL;
@@ -39,7 +40,7 @@ Binauralizer::Binauralizer()
     AmbUInt tail = 0;
 
     Create(DEFAULT_SAMPLERATE, DEFAULT_BLOCKSIZE, DEFAULT_HRTFSET_DIFFUSED,
-           std::vector<CAmbisonicSpeaker>(), tail);
+           NULL, 0, tail);
 }
 
 Binauralizer::~Binauralizer()
@@ -50,7 +51,8 @@ Binauralizer::~Binauralizer()
 AmbBool Binauralizer::Create(AmbUInt nSampleRate,
                              AmbUInt nBlockSize,
                              AmbBool bDiffused,
-                             std::vector<CAmbisonicSpeaker> speakers,
+                             CAmbisonicSpeaker *speakers,
+                             AmbUInt nSpeakers,
                              AmbUInt& tailLength)
 {
         //Iterators
@@ -80,7 +82,7 @@ AmbBool Binauralizer::Create(AmbUInt nSampleRate,
         DeallocateBuffers();
 
         m_speakers = speakers;
-        AmbUInt nSpeakers = speakers.size();
+        m_nSpeakers = nSpeakers;
 
         //Allocate buffers with new settings
         AllocateBuffers();
@@ -195,18 +197,16 @@ void Binauralizer::Reset()
 }
 
 
-void Binauralizer::Process(CBFormat* pBFSrc, AmbFloat** ppfDst)
+void Binauralizer::Process(AmbFloat** pBFSrc, AmbFloat** ppfDst)
 {
     kiss_fft_cpx cpTemp;
-
-    unsigned nbSpeakers = m_speakers.size();
 
     for (AmbUInt niEar = 0; niEar < 2; niEar++)
     {
         memset(m_pfScratchBufferA, 0, m_nFFTSize * sizeof(AmbFloat));
-        for (AmbUInt niChannel = 0; niChannel < nbSpeakers; niChannel++)
+        for (AmbUInt niChannel = 0; niChannel < m_nSpeakers; niChannel++)
         {
-            pBFSrc->ExtractStream(m_pfScratchBufferB, niChannel, m_nBlockSize);
+            memcpy(m_pfScratchBufferB, pBFSrc[niChannel], m_nBlockSize * sizeof(AmbFloat));
             memset(&m_pfScratchBufferB[m_nBlockSize], 0, (m_nFFTSize - m_nBlockSize) * sizeof(AmbFloat));
             kiss_fftr(m_pFFT_cfg, m_pfScratchBufferB, m_pcpScratch);
             for(AmbUInt ni = 0; ni < m_nFFTBins; ni++)
@@ -246,13 +246,11 @@ void Binauralizer::AllocateBuffers()
     m_pFFT_cfg = kiss_fftr_alloc(m_nFFTSize, 0, 0, 0);
     m_pIFFT_cfg = kiss_fftr_alloc(m_nFFTSize, 1, 0, 0);
 
-    unsigned nbSpeakers = m_speakers.size();
-
     //Allocate the FFTBins for each channel, for each ear
     for(AmbUInt niEar = 0; niEar < 2; niEar++)
     {
-        m_ppcpFilters[niEar] = new kiss_fft_cpx*[nbSpeakers];
-        for(AmbUInt niChannel = 0; niChannel < nbSpeakers; niChannel++)
+        m_ppcpFilters[niEar] = new kiss_fft_cpx*[m_nSpeakers];
+        for(AmbUInt niChannel = 0; niChannel < m_nSpeakers; niChannel++)
             m_ppcpFilters[niEar][niChannel] = new kiss_fft_cpx[m_nFFTBins];
     }
 
@@ -277,11 +275,9 @@ void Binauralizer::DeallocateBuffers()
     if(m_pIFFT_cfg)
         kiss_fftr_free(m_pIFFT_cfg);
 
-    unsigned nbSpeakers = m_speakers.size();
-
     for(AmbUInt niEar = 0; niEar < 2; niEar++)
     {
-        for(AmbUInt niChannel = 0; niChannel < nbSpeakers; niChannel++)
+        for(AmbUInt niChannel = 0; niChannel < m_nSpeakers; niChannel++)
         {
             if(m_ppcpFilters[niEar][niChannel])
                 delete [] m_ppcpFilters[niEar][niChannel];
