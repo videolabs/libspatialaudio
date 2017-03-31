@@ -3,12 +3,13 @@
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicBinauralizer - Ambisonic Binauralizer                         #*/
 /*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2017 Videolabs                                              #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicBinauralizer.h                                  #*/
-/*#  Version:       0.1                                                      #*/
+/*#  Version:       0.2                                                      #*/
 /*#  Date:          19/05/2007                                               #*/
-/*#  Author(s):     Aristotel Digenis                                        #*/
-/*#  Licence:       MIT                                                      #*/
+/*#  Author(s):     Aristotel Digenis, Peter Stitt                           #*/
+/*#  Licence:       LGPL                                                     #*/
 /*#                                                                          #*/
 /*############################################################################*/
 

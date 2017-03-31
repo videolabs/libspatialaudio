@@ -3,12 +3,13 @@
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicDecoder - Ambisonic Decoder                                   #*/
 /*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2017 Videolabs                                              #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicDecoder.h                                       #*/
-/*#  Version:       0.1                                                      #*/
+/*#  Version:       0.2                                                      #*/
 /*#  Date:          19/05/2007                                               #*/
-/*#  Author(s):     Aristotel Digenis                                        #*/
-/*#  Licence:       MIT                                                      #*/
+/*#  Author(s):     Aristotel Digenis, Peter Stitt                           #*/
+/*#  Licence:       LGPL                                                     #*/
 /*#                                                                          #*/
 /*############################################################################*/
 
@@ -29,6 +30,8 @@ enum Amblib_SpeakerSetUps
     kAmblib_Decadron, kAmblib_Dodecadron, 
 	///3D Speaker Setup
 	kAmblib_Cube,
+	kAmblib_Dodecahedron,
+	kAmblib_Cube2,
 	kAmblib_NumOfSpeakerSetUps
 };
 
