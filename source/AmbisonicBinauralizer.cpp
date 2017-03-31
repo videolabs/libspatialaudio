@@ -89,6 +89,7 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 	ArrangeSpeakers();
 	
 	AmbUInt nSpeakers = m_AmbDecoder.GetSpeakerCount();
+	std::cout << "Number of loudspeakers = " << nSpeakers << std::endl;
 	
 	//Allocate buffers with new settings
 	AllocateBuffers();
@@ -231,6 +232,9 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
 	AmbUInt ni = 0;
 	kiss_fft_cpx cpTemp;
 
+
+	/* If CPU load needs to be reduced then there is a way to use a symmetrical head assumption and perform
+	convolutions for only 1 ear */
 	for(niEar = 0; niEar < 2; niEar++)
 	{
 		memset(m_pfScratchBufferA, 0, m_nFFTSize * sizeof(AmbFloat));
@@ -262,10 +266,22 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
 
 void CAmbisonicBinauralizer::ArrangeSpeakers()
 {
+	AmbUInt nSpeakerSetUp;
 	//How many speakers will be needed? Add one for right above the listener
 	AmbUInt nSpeakers = OrderToSpeakers(m_nOrder, m_b3D);
 	//Custom speaker setup
-	m_AmbDecoder.Create(m_nOrder, m_b3D, kAmblib_CustomSpeakerSetUp, nSpeakers);
+	// Select cube layout for first order a dodecahedron for 2nd and 3rd
+	if (m_nOrder == 1)
+	{
+		std::cout << "Getting first order cube" << std::endl;
+		nSpeakerSetUp = kAmblib_Cube2;
+	}
+	else
+	{
+		std::cout << "Getting second/third order dodecahedron" << std::endl;
+		nSpeakerSetUp = kAmblib_Dodecahedron;
+	}
+	m_AmbDecoder.Create(m_nOrder, m_b3D, nSpeakerSetUp, nSpeakers);
 	AmbUInt niSpeaker = 0;
 	//How many radians apart is each speaker on the azimuth
 	AmbFloat fAzimuthIncrement = DegreesToRadians(360.f / (nSpeakers / 2.f));

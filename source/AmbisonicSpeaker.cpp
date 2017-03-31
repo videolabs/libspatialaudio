@@ -32,7 +32,7 @@ bool CAmbisonicSpeaker::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
     bool success = CAmbisonicSource::Create(nOrder, b3D, nMisc);
     if(!success)
         return false;
-    SetOrderWeight(0, sqrtf(2.f));
+    //SetOrderWeight(0, sqrtf(2.f)); // This seems to break SN3D weighting
     
     return true;
 }
