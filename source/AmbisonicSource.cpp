@@ -49,7 +49,21 @@ bool CAmbisonicSource::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 	m_pfCoeff = new AmbFloat[m_nChannelCount];
 	memset(m_pfCoeff, 0, m_nChannelCount * sizeof(AmbFloat));
 	m_pfOrderWeights = new AmbFloat[m_nOrder + 1];
-	SetOrderWeightAll(1.f);
+
+	// applying weights to the channels for each order to switch between basic and max rE decoding
+	AmbUInt MAXRE = 0;
+	if(MAXRE==1){
+		// For a max rE decoder (focus the loudspeaker energy in the intended source direction) an order
+		// dependent weight it used.
+		for(AmbUInt niOrder=0;niOrder<=m_nOrder;niOrder++)
+		{
+			SetOrderWeight(niOrder,cos(M_PI*niOrder/(2.f*m_nOrder + 2.f)));
+		}
+	}
+	else{
+		// for a Basic Ambisonics decoder all of the gains are set to 1.f
+		SetOrderWeightAll(1.f);
+	}
     
     return true;
 }
@@ -80,31 +94,31 @@ void CAmbisonicSource::Refresh()
 		// Uses ACN channel ordering and SN3D normalization scheme (AmbiX format)
 		if(m_nOrder >= 0)
 		{
-			m_pfCoeff[0] = 1;//m_pfOrderWeights[0]; // W
+			m_pfCoeff[0] = 1.f * m_pfOrderWeights[0]; // W
 		}
 		if(m_nOrder >= 1)
 		{
-			m_pfCoeff[1] = (fSinAzim * fCosElev);// * m_pfOrderWeights[1]; // Y
-			m_pfCoeff[2] = (fSinElev);// * m_pfOrderWeights[1]; // Z
-			m_pfCoeff[3] = (fCosAzim * fCosElev);// * m_pfOrderWeights[1]; // X
+			m_pfCoeff[1] = (fSinAzim * fCosElev) * m_pfOrderWeights[1]; // Y
+			m_pfCoeff[2] = (fSinElev) * m_pfOrderWeights[1]; // Z
+			m_pfCoeff[3] = (fCosAzim * fCosElev) * m_pfOrderWeights[1]; // X
 		}
 		if(m_nOrder >= 2)
 		{
-			m_pfCoeff[4] = fSqrt32*(fSin2Azim * powf(fCosElev, 2));// * m_pfOrderWeights[2]; // V
-			m_pfCoeff[5] = fSqrt32*(fSinAzim * fSin2Elev);// * m_pfOrderWeights[2]; // T
-			m_pfCoeff[6] = (1.5f * powf(fSinElev, 2.f) - 0.5f);// * m_pfOrderWeights[2]; // R
-			m_pfCoeff[7] = fSqrt32*(fCosAzim * fSin2Elev);// * m_pfOrderWeights[2]; // S
-			m_pfCoeff[8] = fSqrt32*(fCos2Azim * powf(fCosElev, 2));// * m_pfOrderWeights[2]; // U
+			m_pfCoeff[4] = fSqrt32*(fSin2Azim * powf(fCosElev, 2)) * m_pfOrderWeights[2]; // V
+			m_pfCoeff[5] = fSqrt32*(fSinAzim * fSin2Elev) * m_pfOrderWeights[2]; // T
+			m_pfCoeff[6] = (1.5f * powf(fSinElev, 2.f) - 0.5f) * m_pfOrderWeights[2]; // R
+			m_pfCoeff[7] = fSqrt32*(fCosAzim * fSin2Elev) * m_pfOrderWeights[2]; // S
+			m_pfCoeff[8] = fSqrt32*(fCos2Azim * powf(fCosElev, 2)) * m_pfOrderWeights[2]; // U
 		}
 		if(m_nOrder >= 3)
 		{
-			m_pfCoeff[9] = fSqrt58*(sinf(3.f * m_polPosition.fAzimuth) * powf(fCosElev, 3.f));// * m_pfOrderWeights[3]; // Q
-			m_pfCoeff[10] = fSqrt152*(fSin2Azim * fSinElev * powf(fCosElev, 2.f));// * m_pfOrderWeights[3]; // O
-			m_pfCoeff[11] = fSqrt38*(fSinAzim * fCosElev * (5.f * powf(fSinElev, 2.f) - 1.f));// * m_pfOrderWeights[3]; // M
-			m_pfCoeff[12] = (fSinElev * (5.f * powf(fSinElev, 2.f) - 3.f) * 0.5f);// * m_pfOrderWeights[3]; // K
-			m_pfCoeff[13] = fSqrt38*(fCosAzim * fCosElev * (5.f * powf(fSinElev, 2.f) - 1.f));// * m_pfOrderWeights[3]; // L
-			m_pfCoeff[14] = fSqrt152*(fCos2Azim * fSinElev * powf(fCosElev, 2.f));// * m_pfOrderWeights[3]; // N
-			m_pfCoeff[15] = fSqrt58*(cosf(3.f * m_polPosition.fAzimuth) * powf(fCosElev, 3.f));// * m_pfOrderWeights[3]; // P
+			m_pfCoeff[9] = fSqrt58*(sinf(3.f * m_polPosition.fAzimuth) * powf(fCosElev, 3.f)) * m_pfOrderWeights[3]; // Q
+			m_pfCoeff[10] = fSqrt152*(fSin2Azim * fSinElev * powf(fCosElev, 2.f)) * m_pfOrderWeights[3]; // O
+			m_pfCoeff[11] = fSqrt38*(fSinAzim * fCosElev * (5.f * powf(fSinElev, 2.f) - 1.f)) * m_pfOrderWeights[3]; // M
+			m_pfCoeff[12] = (fSinElev * (5.f * powf(fSinElev, 2.f) - 3.f) * 0.5f) * m_pfOrderWeights[3]; // K
+			m_pfCoeff[13] = fSqrt38*(fCosAzim * fCosElev * (5.f * powf(fSinElev, 2.f) - 1.f)) * m_pfOrderWeights[3]; // L
+			m_pfCoeff[14] = fSqrt152*(fCos2Azim * fSinElev * powf(fCosElev, 2.f)) * m_pfOrderWeights[3]; // N
+			m_pfCoeff[15] = fSqrt58*(cosf(3.f * m_polPosition.fAzimuth) * powf(fCosElev, 3.f)) * m_pfOrderWeights[3]; // P
 
 		}
 	}
