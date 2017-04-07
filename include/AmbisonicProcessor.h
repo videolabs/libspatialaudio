@@ -9,7 +9,7 @@
 /*#  Version:       0.2                                                      #*/
 /*#  Date:          19/05/2007                                               #*/
 /*#  Author(s):     Aristotel Digenis, Peter Stitt                           #*/
-/*#  Licence:       LGPL                                                     #*/
+/*#  Licence:       LGPL (+ Proprietary)                                     #*/
 /*#                                                                          #*/
 /*############################################################################*/
 
