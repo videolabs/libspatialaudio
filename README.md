@@ -1,7 +1,11 @@
-ambisonic-lib - Ambisonic C++ Library
+Ambisonic encoding / decoding and binauralization library
 =============
 
-A library for Ambisonic encoding, decoding, rotating, zooming, and other processing, up to 3rd order. It takes an object oriented approach.
+**libspatialaudio** is a fork of **ambisonic-lib** from Aristotel Digenis. Our version was mainly developped to support ACN/SN3D Ambisonics audio streams following the Google spatial audio specification:
+
+https://github.com/google/spatial-media/blob/master/docs/spatial-audio-rfc.md
+
+It allows to encode, decode, rotate, zoom... Ambisonics audio streams up to the 3rd order. We also added a binauralizer to render multichannels streams (5.1, 7.1...) for a stereo headset by applying a HRTF.
 
 ## What is this?
 
@@ -59,25 +63,26 @@ delete [] ppfSpeakerFeeds;
 ```
 
 ## Features
-###Encoder (CAmbisonicEncoder):
+### Encoder (CAmbisonicEncoder):
 Simple encoder up to 3rd order 3D, without any distance cues
 
-###Encoder with distance (CAmbisonicEncoderDist):
+### Encoder with distance (CAmbisonicEncoderDist):
 As the simple encoder, but with the addition of the following:  
 * Distance level-simulation  
 * Fractional delay lines  
 * Interior effect (W-Panning)
 
-###Decoder (CAmbisonicDecoder):
+### Decoder (CAmbisonicDecoder):
  With:  
 * Up to 3rd Order 3D  
 * Preset & custom speaker arrays
 
-###Processor (CAmbisonicProcessor):
-Up to 2nd order 3D yaw/roll/pitch of the soundfield
+### Processor (CAmbisonicProcessor):
+Up to 3rd order 3D yaw/roll/pitch of the soundfield
 
-###Binauralizer (CAmbisonicBinauralizer):
-Up to 1st order 3D decoding to headphones
+### Binauralizer (CAmbisonicBinauralizer):
+Up to 3rd order 3D decoding to headphones
 
-###Zoomer (CAmbisonicZoomer):
-Up to 1st order 3D front-back dominance control of the soundfield
+### Zoomer (CAmbisonicZoomer):
+Up to 1st order 3D front-back dominance control of the soundfield
+
