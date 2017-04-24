@@ -50,20 +50,8 @@ bool CAmbisonicSource::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 	memset(m_pfCoeff, 0, m_nChannelCount * sizeof(AmbFloat));
 	m_pfOrderWeights = new AmbFloat[m_nOrder + 1];
 
-	// applying weights to the channels for each order to switch between basic and max rE decoding
-	AmbUInt MAXRE = 0;
-	if(MAXRE==1){
-		// For a max rE decoder (focus the loudspeaker energy in the intended source direction) an order
-		// dependent weight it used.
-		for(AmbUInt niOrder=0;niOrder<=m_nOrder;niOrder++)
-		{
-			SetOrderWeight(niOrder,cos(M_PI*niOrder/(2.f*m_nOrder + 2.f)));
-		}
-	}
-	else{
-		// for a Basic Ambisonics decoder all of the gains are set to 1.f
-		SetOrderWeightAll(1.f);
-	}
+	// for a Basic Ambisonics decoder all of the gains are set to 1.f
+	SetOrderWeightAll(1.f);
     
     return true;
 }

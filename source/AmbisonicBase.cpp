@@ -20,6 +20,7 @@ CAmbisonicBase::CAmbisonicBase(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 	m_nOrder = 0;
 	m_b3D = 0;
 	m_nChannelCount = 0;
+	m_bOpt = 0;
 }
 
 CAmbisonicBase::~CAmbisonicBase()
