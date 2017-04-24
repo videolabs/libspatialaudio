@@ -66,6 +66,7 @@ protected:
 	AmbUInt m_nOrder;
 	AmbBool m_b3D;
 	AmbUInt m_nChannelCount;
+	AmbBool m_bOpt;
 };
 
 #endif //_AMBISONIC_BASE_H

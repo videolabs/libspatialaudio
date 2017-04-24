@@ -19,6 +19,8 @@
 
 #include "AmbisonicBase.h"
 #include "BFormat.h"
+#include "kiss_fftr.h"
+#include "AmbisonicPsychoacousticFilters.h"
 
 enum ProcessorDOR
 {
@@ -68,7 +70,7 @@ public:
         lost. The last argument is not used, it is just there to match with 
         the base class's form. Returns true if successful.
 	*/
-	bool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
+	bool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockSize, AmbUInt nMisc);
 	/**
 		Not implemented.
 	*/
@@ -98,10 +100,27 @@ private:
 	void ProcessOrder2_2D(CBFormat* pBFSrcDst, AmbUInt nSamples);
 	void ProcessOrder3_2D(CBFormat* pBFSrcDst, AmbUInt nSamples);
 
+	void ShelfFilterOrder(CBFormat* pBFSrcDst, AmbUInt nSamples);
+
 protected:
 	Orientation m_orientation;
 	AmbFloat* m_pfTempSample;
+
+	kiss_fftr_cfg m_pFFT_psych_cfg;
+	kiss_fftr_cfg m_pIFFT_psych_cfg;
 	
+	AmbFloat* m_pfScratchBufferA;
+	AmbFloat** m_pfOverlap;
+	AmbUInt m_nFFTSize;
+	AmbUInt m_nBlockSize;
+	AmbUInt m_nTaps;
+	AmbUInt m_nOverlapLength;
+	AmbUInt m_nFFTBins;
+	AmbFloat m_fFFTScaler;
+
+	kiss_fft_cpx** m_ppcpPsychFilters;
+	kiss_fft_cpx* m_pcpScratch;
+
 	AmbFloat m_fCosYaw;
 	AmbFloat m_fSinYaw;
 	AmbFloat m_fCosRoll;
