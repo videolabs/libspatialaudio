@@ -76,6 +76,7 @@ protected:
 
 	AmbFloat* m_pfScratchBufferA;
 	AmbFloat* m_pfScratchBufferB;
+	AmbFloat* m_pfScratchBufferC;
 	AmbFloat* m_pfOverlap[2];
 
 	void ArrangeSpeakers();
