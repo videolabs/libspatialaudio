@@ -28,6 +28,7 @@ CAmbisonicBinauralizer::CAmbisonicBinauralizer()
 
 	m_pfScratchBufferA = NULL;
 	m_pfScratchBufferB = NULL;
+	m_pfScratchBufferC = NULL;
 	m_pfOverlap[0] = NULL;
 	m_pfOverlap[1] = NULL;
 
@@ -234,8 +235,73 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
 	kiss_fft_cpx cpTemp;
 
 
-	/* If CPU load needs to be reduced then there is a way to use a symmetrical head assumption and perform
-	convolutions for only 1 ear */
+	/* If CPU load needs to be reduced then perform the convolution for each of the Ambisonics/spherical harmonic
+	decompositions of the loudspeakers HRTFs for the left ear. For the left ear the results of these convolutions
+	are summed to give the ear signal. For the right ear signal, the properties of the spherical harmonic decomposition
+	can be use to to create the ear signal. This is done by either adding or subtracting the correct channels.
+	Channels 1, 4, 5, 9, 10 and 11 are subtracted from the accumulated signal. All others are added.
+	For example, for a first order signal the ears are generated from:
+		SignalL = W x HRTF_W + Y x HRTF_Y + Z x HRTF_Z + X x HRTF_X
+		SignalR = W x HRTF_W - Y x HRTF_Y + Z x HRTF_Z + X x HRTF_X
+	where 'x' is a convolution, W/Y/Z/X are the Ambisonic signal channels and HRTF_x are the spherical harmonic 
+	decompositions of the virtual loudspeaker array HRTFs.
+	This has the effect of assuming a completel symmetric head. */
+
+	/* TODO: This bool flag should be either an automatic or user option depending on CPU. It should be 'true' if
+	CPU load needs to be limited */
+	AmbBool bLowCPU = true;
+	if(bLowCPU){
+		// Perform the convolutions for the left ear and generate the right ear from a modified accumulation of these channels
+		niEar = 0;
+		memset(m_pfScratchBufferA, 0, m_nFFTSize * sizeof(AmbFloat));
+		memset(m_pfScratchBufferC, 0, m_nFFTSize * sizeof(AmbFloat));
+		for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
+		{
+			memcpy(m_pfScratchBufferB, pBFSrc->m_ppfChannels[niChannel], m_nBlockSize * sizeof(AmbFloat));
+			memset(&m_pfScratchBufferB[m_nBlockSize], 0, (m_nFFTSize - m_nBlockSize) * sizeof(AmbFloat));
+			kiss_fftr(m_pFFT_cfg, m_pfScratchBufferB, m_pcpScratch);
+			for(ni = 0; ni < m_nFFTBins; ni++)
+			{
+				cpTemp.r = m_pcpScratch[ni].r * m_ppcpFilters[niEar][niChannel][ni].r
+							- m_pcpScratch[ni].i * m_ppcpFilters[niEar][niChannel][ni].i;
+				cpTemp.i = m_pcpScratch[ni].r * m_ppcpFilters[niEar][niChannel][ni].i
+							+ m_pcpScratch[ni].i * m_ppcpFilters[niEar][niChannel][ni].r;
+				m_pcpScratch[ni] = cpTemp;
+			}
+			kiss_fftri(m_pIFFT_cfg, m_pcpScratch, m_pfScratchBufferB);
+			for(ni = 0; ni < m_nFFTSize; ni++)
+				m_pfScratchBufferA[ni] += m_pfScratchBufferB[ni];
+
+			for(ni = 0; ni < m_nFFTSize; ni++){
+				// Subtract certain channels (such as Y) to generate right ear.
+				if((niChannel==1) || (niChannel==4) || (niChannel==5) ||
+					(niChannel==9) || (niChannel==10)|| (niChannel==11))
+				{
+					m_pfScratchBufferC[ni] -= m_pfScratchBufferB[ni];
+				}
+				else{
+					m_pfScratchBufferC[ni] += m_pfScratchBufferB[ni];
+				}
+			}
+		}
+		for(ni = 0; ni < m_nFFTSize; ni++){
+			m_pfScratchBufferA[ni] *= m_fFFTScaler;
+			m_pfScratchBufferC[ni] *= m_fFFTScaler;
+		}
+		memcpy(ppfDst[0], m_pfScratchBufferA, m_nBlockSize * sizeof(AmbFloat));
+		memcpy(ppfDst[1], m_pfScratchBufferC, m_nBlockSize * sizeof(AmbFloat));
+		for(ni = 0; ni < m_nOverlapLength; ni++){
+			ppfDst[0][ni] += m_pfOverlap[0][ni];
+			ppfDst[1][ni] += m_pfOverlap[1][ni];
+		}
+		memcpy(m_pfOverlap[0], &m_pfScratchBufferA[m_nBlockSize], m_nOverlapLength * sizeof(AmbFloat));
+		memcpy(m_pfOverlap[1], &m_pfScratchBufferC[m_nBlockSize], m_nOverlapLength * sizeof(AmbFloat));
+
+}
+else
+{
+	// Perform the convolution on both ears. Potentially more realistic results but requires double the number of
+	// convolutions.
 	for(niEar = 0; niEar < 2; niEar++)
 	{
 		memset(m_pfScratchBufferA, 0, m_nFFTSize * sizeof(AmbFloat));
@@ -263,6 +329,7 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
 			ppfDst[niEar][ni] += m_pfOverlap[niEar][ni];
 		memcpy(m_pfOverlap[niEar], &m_pfScratchBufferA[m_nBlockSize], m_nOverlapLength * sizeof(AmbFloat));
 	}
+}
 }
 
 void CAmbisonicBinauralizer::ArrangeSpeakers()
@@ -294,6 +361,7 @@ void CAmbisonicBinauralizer::AllocateBuffers()
 	//Allocate scratch buffers
 	m_pfScratchBufferA = new AmbFloat[m_nFFTSize];
 	m_pfScratchBufferB = new AmbFloat[m_nFFTSize];
+	m_pfScratchBufferC = new AmbFloat[m_nFFTSize];
 
 	//Allocate overlap-add buffers
 	m_pfOverlap[0] = new AmbFloat[m_nOverlapLength];
@@ -320,6 +388,8 @@ void CAmbisonicBinauralizer::DeallocateBuffers()
 		delete [] m_pfScratchBufferA;
 	if(m_pfScratchBufferB)
 		delete [] m_pfScratchBufferB;
+	if(m_pfScratchBufferC)
+		delete [] m_pfScratchBufferC;
 
 	if(m_pfOverlap[0])
 		delete [] m_pfOverlap[0];
