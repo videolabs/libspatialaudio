@@ -28,6 +28,7 @@
 #include "AmbisonicProcessor.h"
 #include "AmbisonicBinauralizer.h"
 #include "AmbisonicZoomer.h"
+#include "AmbisonicDecoderPresets.h"
 
 #endif //_AMBISONICS_H
 
