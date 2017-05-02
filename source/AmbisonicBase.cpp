@@ -15,7 +15,7 @@
 
 #include "AmbisonicBase.h"
 
-CAmbisonicBase::CAmbisonicBase(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
+CAmbisonicBase::CAmbisonicBase()
 {
 	m_nOrder = 0;
 	m_b3D = 0;
