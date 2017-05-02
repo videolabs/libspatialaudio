@@ -15,13 +15,12 @@
 
 #include "BFormat.h"
 
-CBFormat::CBFormat(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleCount)
+CBFormat::CBFormat()
 {
 	m_nSamples = 0;
 	m_nDataLength = 0;
-	m_pfData = 0;
-	m_ppfChannels = 0;
-	Create(nOrder, b3D, nSampleCount);
+    m_pfData = NULL;
+    m_ppfChannels = NULL;
 }
 
 CBFormat::~CBFormat()
