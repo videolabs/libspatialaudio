@@ -22,8 +22,6 @@ CAmbisonicZoomer::CAmbisonicZoomer()
 	m_fXCoeff = 0;
 	m_fYZCoeff = 0;
     m_pProcessFunction = 0;
-	Create(DEFAULT_ORDER, DEFAULT_HEIGHT, 0);
-    Reset();
 }
 
 CAmbisonicZoomer::~CAmbisonicZoomer()
