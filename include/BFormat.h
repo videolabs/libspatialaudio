@@ -27,13 +27,7 @@
 class CBFormat : public CAmbisonicBase
 {
 public:
-	/**
-		Constructor that allows for the format to be specified. If the format
-		arguments are not specified, the values set for ::DEFAULT_ORDER, 
-		::DEFAULT_HEIGHT, and ::DEFAULT_BFORMAT_SAMPLECOUNT will be used 
-		instead.	
-	*/
-	CBFormat(AmbUInt nOrder = DEFAULT_ORDER, AmbBool b3D = DEFAULT_HEIGHT, AmbUInt nSampleCount = DEFAULT_BFORMAT_SAMPLECOUNT);
+    CBFormat();
 	~CBFormat();
 	/**
 		Returns the number of samples.
