@@ -17,15 +17,10 @@
 
 
 CAmbisonicEncoder::CAmbisonicEncoder()
-{
-    Create(DEFAULT_ORDER, DEFAULT_HEIGHT, 0);
-	Refresh();
-}
+{ }
 
 CAmbisonicEncoder::~CAmbisonicEncoder()
-{
-	
-}
+{ }
 
 bool CAmbisonicEncoder::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 {
