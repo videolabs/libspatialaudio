@@ -18,14 +18,10 @@
 CAmbisonicMicrophone::CAmbisonicMicrophone()
 {
 	m_fDirectivity = 1.f;
-    Create(DEFAULT_ORDER, DEFAULT_HEIGHT, 0);
-	Refresh();
 }
 
 CAmbisonicMicrophone::~CAmbisonicMicrophone()
-{
-
-}
+{ }
 
 void CAmbisonicMicrophone::Refresh()
 {
