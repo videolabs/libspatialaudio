@@ -17,15 +17,10 @@
 
 
 CAmbisonicSpeaker::CAmbisonicSpeaker()
-{
-    Create(DEFAULT_ORDER, DEFAULT_HEIGHT, 0);
-	Refresh();
-}
+{ }
 
 CAmbisonicSpeaker::~CAmbisonicSpeaker()
-{
-
-}
+{ }
 
 bool CAmbisonicSpeaker::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 {
