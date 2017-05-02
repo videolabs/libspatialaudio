@@ -20,9 +20,7 @@ CAmbisonicDecoder::CAmbisonicDecoder()
 {
 	m_nSpeakerSetUp = 0;
 	m_nSpeakers = 0;
-	m_pAmbSpeakers = 0;
-
-	Create(DEFAULT_ORDER, DEFAULT_HEIGHT, kAmblib_Cube, 0);
+    m_pAmbSpeakers = NULL;
 }
 
 CAmbisonicDecoder::~CAmbisonicDecoder()
