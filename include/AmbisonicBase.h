@@ -26,13 +26,7 @@
 class CAmbisonicBase
 {
 public:
-	/**
-		Constructor that allows for the format to be specified. If the format
-		arguments are not specified, the values set for ::DEFAULT_ORDER, 
-		and ::DEFAULT_HEIGHT, will be used instead. The last argument is not
-		used, it is just there to match with the base class's form.
-	*/
-	CAmbisonicBase(AmbUInt nOrder = DEFAULT_ORDER, AmbBool b3D = DEFAULT_HEIGHT, AmbUInt nMisc = 0);
+    CAmbisonicBase();
 	virtual ~CAmbisonicBase();
 	/**
 		Gets the order of the current Ambisonic configuration.
