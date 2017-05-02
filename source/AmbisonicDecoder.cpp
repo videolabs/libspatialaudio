@@ -386,7 +386,9 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
 	case kAmblib_MonoCustom:
 		m_nSpeakers = 17;
 		m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
-		polPosition = {0.f, 0.f, 1.f};
+        polPosition.fAzimuth = 0.f;
+        polPosition.fElevation = 0.f;
+        polPosition.fDistance = 1.f;
 		for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
 		{
 			polPosition.fAzimuth = DegreesToRadians(0.f);
