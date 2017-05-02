@@ -32,17 +32,11 @@ CAmbisonicBinauralizer::CAmbisonicBinauralizer()
 	m_pfOverlap[0] = NULL;
 	m_pfOverlap[1] = NULL;
 
-	m_pFFT_cfg = NULL;	//TODO: Remove all the NULL dependencies
+    m_pFFT_cfg = NULL;
 	m_pIFFT_cfg = NULL;
 	m_ppcpFilters[0] = NULL;
 	m_ppcpFilters[1] = NULL;
 	m_pcpScratch = NULL;
-	
-    AmbUInt tail = 0;
-    
-	Create(DEFAULT_ORDER, DEFAULT_HEIGHT, DEFAULT_SAMPLERATE, DEFAULT_BLOCKSIZE, DEFAULT_HRTFSET_DIFFUSED, tail);
-
-std::cout<<"Start AmbisonicBinauralizer"<<std::endl;
 }
 
 CAmbisonicBinauralizer::~CAmbisonicBinauralizer()
