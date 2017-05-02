@@ -22,15 +22,12 @@
 
 CAmbisonicSource::CAmbisonicSource()
 {
-	m_pfCoeff = 0;
-	m_pfOrderWeights = 0;
+    m_pfCoeff = NULL;
+    m_pfOrderWeights = NULL;
 	m_polPosition.fAzimuth = 0.f;
 	m_polPosition.fElevation = 0.f;
 	m_polPosition.fDistance = 1.f;
 	m_fGain = 1.f;
-
-	Create(DEFAULT_ORDER, DEFAULT_HEIGHT, 0);
-	Refresh();
 }
 
 CAmbisonicSource::~CAmbisonicSource()
