@@ -18,18 +18,19 @@
 
 CAmbisonicProcessor::CAmbisonicProcessor()
 {
-
+    m_pfTempSample = NULL;
 	m_pfScratchBufferA = NULL;
+    m_pFFT_psych_cfg = NULL;
+    m_pIFFT_psych_cfg = NULL;
+    m_pcpScratch = NULL;
 	m_pfOverlap = NULL;
+
 	m_orientation.fYaw = 0.f;
 	m_orientation.fRoll = 0.f;
 	m_orientation.fPitch = 0.f;
 	m_orientation.fAlpha = 0.f;
 	m_orientation.fBeta = 0.f;
 	m_orientation.fGamma = 0.f;
-	m_pfTempSample = 0;
-    /*Create(DEFAULT_ORDER, DEFAULT_HEIGHT, 0, 0);
-        Reset();*/
 }
 
 CAmbisonicProcessor::~CAmbisonicProcessor()
