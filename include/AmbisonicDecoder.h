@@ -104,6 +104,11 @@ public:
 		specified speaker. Useful for the Binauralizer.
 	*/
 	virtual AmbFloat GetCoefficient(AmbUInt nSpeaker, AmbUInt nChannel);
+	/**
+		Sets the coefficient of the specified channel/component of the
+		specified speaker. Useful for presets for irregular physical loudspeakery arrays
+	*/
+	void SetCoefficient(AmbUInt nSpeaker, AmbUInt nChannel, AmbFloat fCoeff);
 
 protected:
 	void SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers = 1);

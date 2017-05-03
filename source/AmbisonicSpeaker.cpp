@@ -33,7 +33,6 @@ bool CAmbisonicSpeaker::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
     bool success = CAmbisonicSource::Create(nOrder, b3D, nMisc);
     if(!success)
         return false;
-    //SetOrderWeight(0, sqrtf(2.f)); // This seems to break SN3D weighting
     
     return true;
 }
@@ -50,7 +49,7 @@ void CAmbisonicSpeaker::Process(CBFormat* pBFSrc, AmbUInt nSamples, AmbFloat* pf
 	memset(pfDst, 0, nSamples * sizeof(AmbFloat));
 	for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
 	{
-		if(m_b3D){
+		if(m_b3D){ /* Decode to a 3D loudspeaker array */
 			for(niSample = 0; niSample < nSamples; niSample++)
 			{
 				// The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
@@ -60,7 +59,7 @@ void CAmbisonicSpeaker::Process(CBFormat* pBFSrc, AmbUInt nSamples, AmbFloat* pf
 			}
 		}
 		else
-		{
+		{	/* Decode to a 2D loudspeaker array */
 			for(niSample = 0; niSample < nSamples; niSample++)
 			{
 				// The spherical harmonic coefficients are multiplied by 2 to provide the correct decoder
