@@ -90,8 +90,6 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 	ArrangeSpeakers();
 
 	AmbUInt nSpeakers = m_AmbDecoder.GetSpeakerCount();
-	std::cout << "Number of loudspeakers = " << nSpeakers << std::endl;
-
 	
 	//Allocate buffers with new settings
 	AllocateBuffers();
@@ -144,6 +142,8 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 				pfHRTF[1][niTap] = psHRTF[1][niTap] / 32767.f;
 			}
 			//Scale the HRTFs by the coefficient of the current channel/component
+			// The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
+			// for SN3D normalised Ambisonic inputs.
 			fCoefficient = m_AmbDecoder.GetCoefficient(niSpeaker, niChannel) * (2*floor(sqrt(niChannel)) + 1);
 			for(niTap = 0; niTap < m_nTaps; niTap++)
 			{
@@ -283,9 +283,6 @@ void CAmbisonicBinauralizer::ArrangeSpeakers()
 		std::cout << "Getting second/third order dodecahedron" << std::endl;
 		nSpeakerSetUp = kAmblib_Dodecahedron;
 	}
-
-	// For debugging: single frontal mono loudspeaker
-	//nSpeakerSetUp = kAmblib_MonoCustom;
 
 	m_AmbDecoder.Create(m_nOrder, m_b3D, nSpeakerSetUp, nSpeakers);
 
