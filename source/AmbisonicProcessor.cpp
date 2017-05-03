@@ -55,6 +55,7 @@ void CAmbisonicProcessor::Reset()
 
 void CAmbisonicProcessor::Refresh()
 {
+	// TODO: Delete the Yaw, Roll and Pitch terms once old rotation equations are removed
 	m_fCosYaw = cosf(m_orientation.fYaw);
 	m_fSinYaw = sinf(m_orientation.fYaw);
 	m_fCosRoll = cosf(m_orientation.fRoll);
@@ -68,6 +69,7 @@ void CAmbisonicProcessor::Refresh()
 	m_fCos2Pitch = cosf(2.f * m_orientation.fPitch);
 	m_fSin2Pitch = sinf(2.f * m_orientation.fPitch);
 
+	// Trig terms used multiple times in rotation equations
 	m_fCosAlpha = cosf(m_orientation.fAlpha);
 	m_fSinAlpha = sinf(m_orientation.fAlpha);
 	m_fCosBeta = cosf(m_orientation.fBeta);
@@ -125,7 +127,7 @@ void CAmbisonicProcessor::SetOrientation(Orientation orientation)
 	//std::cout<< "sinAlpha = " << m_fSinAlpha << " cosAlpha = " << m_fCosAlpha << std::endl;
 	//std::cout<< "sinBeta = " << m_fSinBeta << " cosBeta = " << m_fCosBeta << std::endl;
 	//std::cout<< "sinGamma = " << m_fSinGamma << " cosGamma = " << m_fCosGamma << std::endl;
-	std::cout<<"Incoming angles from VLC video module"<<std::endl;
+	/*std::cout<<"Incoming angles from VLC video module"<<std::endl;
 	std::cout<<"Yaw: "<< orientation.fYaw/M_PI*180.f <<
 		" Pitch: " << orientation.fPitch/M_PI*180.f <<
 		" Roll: " << orientation.fRoll/M_PI*180.f << std::endl;
@@ -134,6 +136,7 @@ void CAmbisonicProcessor::SetOrientation(Orientation orientation)
 		" Beta: " << orientation.fBeta/M_PI*180.f <<
 		" Gamma: " << orientation.fGamma/M_PI*180.f << std::endl;
 	std::cout<< " " << std::endl;
+*/
 
 
 	m_orientation = orientation;
@@ -157,17 +160,27 @@ void CAmbisonicProcessor::Process(CBFormat* pBFSrcDst, AmbUInt nSamples)
 	}
 	else
 	{
+		// 2D rotations are not implemented. Content is expected in 3D ACN/SN3D	
+		/*
 		if(m_nOrder >= 1)
 			ProcessOrder1_2D(pBFSrcDst, nSamples);
 		if(m_nOrder >= 2)
 			ProcessOrder2_2D(pBFSrcDst, nSamples);
 		if(m_nOrder >= 3)
 			ProcessOrder3_2D(pBFSrcDst, nSamples);
+		*/
 	}	
 }
 
 void CAmbisonicProcessor::ProcessOrder1_3D(CBFormat* pBFSrcDst, AmbUInt nSamples)
 {
+	/* Rotations are performed in the following order:
+		1 - rotation around the z-axis
+		2 - rotation around the *new* y-axis (y')
+		3 - rotation around the new z-axis (z'')
+	This is different to the rotations obtained from the video, which are around z, y' then x''.
+	The rotation equations used here work for third order. However, for higher orders a recursive algorithm
+	should be considered.*/
 	for(AmbUInt niSample = 0; niSample < nSamples; niSample++)
 	{
 		// Alpha rotation
@@ -428,6 +441,10 @@ void CAmbisonicProcessor::ProcessOrder3_3D(CBFormat* pBFSrcDst, AmbUInt nSamples
 */
 }
 
+// ACN/SN3D is generally only ever produced for 3D Ambisonics.
+// If 2D Ambisonics is required then these equations need to be modified (they can be found in the 3D code for the first Z-rotation).
+// Generally, 2D-only rotations do not make sense for use with 360 degree videos.
+/*
 void CAmbisonicProcessor::ProcessOrder1_2D(CBFormat* pBFSrcDst, AmbUInt nSamples)
 {
 	for(AmbUInt niSample = 0; niSample < nSamples; niSample++)
@@ -468,3 +485,4 @@ void CAmbisonicProcessor::ProcessOrder3_2D(CBFormat* pBFSrcDst, AmbUInt nSamples
 {
 	//TODO
 }
+*/

@@ -243,7 +243,6 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
 		}
 		break;
 	case kAmblib_Cube:
-		std::cout << "Loudspeaker arrangement = 1st order cube preset" << std::endl;
 		m_nSpeakers = 8;
 		m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
 		polPosition.fElevation = DegreesToRadians(45.f);
@@ -262,7 +261,7 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
 		}
 		break;
 	case kAmblib_Dodecahedron:
-		std::cout << "Loudspeaker arrangement = dodecahedron" << std::endl;
+		// This arrangement is used for second and third orders
 		m_nSpeakers = 20;
 		m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
 		// Loudspeaker 1
@@ -358,10 +357,9 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
 		polPosition.fAzimuth = DegreesToRadians(-90.f);
 		m_pAmbSpeakers[19].Create(m_nOrder, m_b3D, 0);
 		m_pAmbSpeakers[19].SetPosition(polPosition);
-		std::cout << "Dodecahedron positions set" << std::endl;
 		break;
 	case kAmblib_Cube2:
-		std::cout << "Loudspeaker arrangement = 1st order cube" << std::endl;
+		// This configuration is a standard for first order decoding
 		m_nSpeakers = 8;
 		m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
 		polPosition.fElevation = DegreesToRadians(35.2f);
@@ -380,12 +378,12 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
 		}
 		break;
 	case kAmblib_MonoCustom:
-		std::cout << "Loudspeaker arrangement = 16channel mono" << std::endl;
 		m_nSpeakers = 17;
 		m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
 		polPosition = {0.f, 0.f, 1.f};
 		for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
 		{
+			polPosition.fAzimuth = DegreesToRadians(0.f);
 			m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
 			m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
 
