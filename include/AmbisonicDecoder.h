@@ -31,6 +31,7 @@ enum Amblib_SpeakerSetUps
 	kAmblib_Cube,
 	kAmblib_Dodecahedron,
 	kAmblib_Cube2,
+	kAmblib_MonoCustom,
 	kAmblib_NumOfSpeakerSetUps
 };
 
