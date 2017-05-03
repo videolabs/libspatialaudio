@@ -283,44 +283,6 @@ void CAmbisonicBinauralizer::ArrangeSpeakers()
 		nSpeakerSetUp = kAmblib_Dodecahedron;
 	}
 	m_AmbDecoder.Create(m_nOrder, m_b3D, nSpeakerSetUp, nSpeakers);
-	AmbUInt niSpeaker = 0;
-	//How many radians apart is each speaker on the azimuth
-	AmbFloat fAzimuthIncrement = DegreesToRadians(360.f / (nSpeakers / 2.f));
-	if(!m_b3D)
-        fAzimuthIncrement /= 2.f;
-
-    //Initialize initial position
-	PolarPoint position;
-    position.fAzimuth = -fAzimuthIncrement / 2.f;
-    position.fElevation = m_b3D ? DegreesToRadians(-40.f) : 0.f;
-    position.fDistance = 5.f;
-
-    if(m_b3D)
-    {
-        //Position speakers of lower elevation
-	    for(niSpeaker = 0; niSpeaker < nSpeakers / 2; niSpeaker++)
-	    {
-		    m_AmbDecoder.SetPosition(niSpeaker, position);
-		    position.fAzimuth -= fAzimuthIncrement;
-	    }
-        //Position speakers of upper elevation
-	    position.fAzimuth = -fAzimuthIncrement / 2.f;
-	    position.fElevation = DegreesToRadians(40.f);
-	    for(niSpeaker = nSpeakers / 2; niSpeaker < nSpeakers; niSpeaker++)
-	    {
-		    m_AmbDecoder.SetPosition(niSpeaker, position);
-		    position.fAzimuth -= fAzimuthIncrement;
-	    }
-    }
-    else
-    {
-        //Position speakers of lower elevation
-	    for(niSpeaker = 0; niSpeaker < nSpeakers; niSpeaker++)
-	    {
-		    m_AmbDecoder.SetPosition(niSpeaker, position);
-		    position.fAzimuth -= fAzimuthIncrement;
-	    }
-    }
 
 	//Calculate all the speaker coefficients
 	m_AmbDecoder.Refresh();
