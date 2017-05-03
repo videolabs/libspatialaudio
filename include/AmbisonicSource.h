@@ -60,6 +60,11 @@ public:
 	*/
 	virtual void SetOrderWeightAll(AmbFloat fWeight);
 	/**
+		Sets the spherical harmonic coefficient for a given component
+		Can be used for preset decoders to non-regular arrays where a Sampling decoder is sub-optimal
+	*/
+	virtual void SetCoefficient(AmbUInt nChannel, AmbFloat fCoeff);
+	/**
 		Gets the weight [0,1] for the spherical harmonics of the given order.
 	*/
 	virtual AmbFloat GetOrderWeight(AmbUInt nOrder);

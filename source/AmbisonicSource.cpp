@@ -15,6 +15,11 @@
 
 #include "AmbisonicSource.h"
 
+#define fSqrt32 sqrt(3.f)/2.f
+#define fSqrt58 sqrt(5.f/8.f)
+#define fSqrt152 sqrt(15.f)/2.f
+#define fSqrt38 sqrt(3.f/8.f)
+
 CAmbisonicSource::CAmbisonicSource()
 {
 	m_pfCoeff = 0;
@@ -71,11 +76,6 @@ void CAmbisonicSource::Refresh()
 	AmbFloat fCos2Azim = cosf(2.f * m_polPosition.fAzimuth);
 	AmbFloat fSin2Azim = sinf(2.f * m_polPosition.fAzimuth);
 	AmbFloat fSin2Elev = sinf(2.f * m_polPosition.fElevation);
-
-	AmbFloat fSqrt32 = sqrt(3.f)/2.f;
-	AmbFloat fSqrt58 = sqrt(5.f/8.f);
-	AmbFloat fSqrt152 = sqrt(15.f)/2.f;
-	AmbFloat fSqrt38 = sqrt(3.f/8.f);
 
 	if(m_b3D)
 	{
@@ -158,6 +158,11 @@ void CAmbisonicSource::SetOrderWeightAll(AmbFloat fWeight)
 	{
 		m_pfOrderWeights[niOrder] = fWeight;
 	}
+}
+
+void CAmbisonicSource::SetCoefficient(AmbUInt nChannel, AmbFloat fCoeff)
+{
+	m_pfCoeff[nChannel] = fCoeff;
 }
 
 AmbFloat CAmbisonicSource::GetOrderWeight(AmbUInt nOrder)

@@ -97,6 +97,11 @@ AmbFloat CAmbisonicDecoder::GetCoefficient(AmbUInt nSpeaker, AmbUInt nChannel)
 	return m_pAmbSpeakers[nSpeaker].GetCoefficient(nChannel);
 }
 
+void CAmbisonicDecoder::SetCoefficient(AmbUInt nSpeaker, AmbUInt nChannel, AmbFloat fCoeff)
+{
+	m_pAmbSpeakers[nSpeaker].SetCoefficient(nChannel, fCoeff);
+}
+
 void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
 {
 	m_nSpeakerSetUp = nSpeakerSetUp;
