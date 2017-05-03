@@ -88,9 +88,10 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 	CAmbisonicBase::Create(nOrder, b3D, bDiffused);
 	//Position speakers and recalculate coefficients
 	ArrangeSpeakers();
-	
+
 	AmbUInt nSpeakers = m_AmbDecoder.GetSpeakerCount();
 	std::cout << "Number of loudspeakers = " << nSpeakers << std::endl;
+
 	
 	//Allocate buffers with new settings
 	AllocateBuffers();
@@ -282,6 +283,10 @@ void CAmbisonicBinauralizer::ArrangeSpeakers()
 		std::cout << "Getting second/third order dodecahedron" << std::endl;
 		nSpeakerSetUp = kAmblib_Dodecahedron;
 	}
+
+	// For debugging: single frontal mono loudspeaker
+	//nSpeakerSetUp = kAmblib_MonoCustom;
+
 	m_AmbDecoder.Create(m_nOrder, m_b3D, nSpeakerSetUp, nSpeakers);
 
 	//Calculate all the speaker coefficients
