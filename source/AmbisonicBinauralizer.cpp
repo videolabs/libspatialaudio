@@ -14,6 +14,8 @@
 
 
 #include "AmbisonicBinauralizer.h"
+#include <fhkhrtf.h>
+
 #include <iostream>
 
 
@@ -93,8 +95,8 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 	AmbFloat* pfHRTF[2];
 	for(niEar = 0; niEar < 2; niEar++)
 	{
-		psHRTF[niEar] = new short[m_nTaps];
-		pfHRTF[niEar] = new AmbFloat[m_nTaps];
+        psHRTF[niEar] = new short[m_nTaps]();
+        pfHRTF[niEar] = new AmbFloat[m_nTaps]();
 	}
 
 	//Allocate buffers for HRTF accumulators
@@ -121,11 +123,13 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 		{
 			//What is the position of the current speaker
 			position = m_AmbDecoder.GetPosition(niSpeaker);
+#if 1
 			nAzimuth = (AmbInt)RadiansToDegrees(-position.fAzimuth);
 			if(nAzimuth > 180)
 				nAzimuth -= 360;
 			nElevation = (AmbInt)RadiansToDegrees(position.fElevation);
 			//Get HRTFs for given position
+
 			nResult = mit_hrtf_get(&nAzimuth, &nElevation, nSampleRate, bDiffused, psHRTF[0], psHRTF[1]);
 			if(!nResult)
 				nResult = nResult;
@@ -135,24 +139,32 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 				pfHRTF[0][niTap] = psHRTF[0][niTap] / 32767.f;
 				pfHRTF[1][niTap] = psHRTF[1][niTap] / 32767.f;
 			}
+#else
+            std::cout << "test!" << std::endl;
+            bool b_found = get_FHK_HRTF(position.fAzimuth, position.fElevation, 48000, pfHRTF);
+            if (!b_found)
+                // TODO: release memory.
+                return false;
+#endif
 			//Scale the HRTFs by the coefficient of the current channel/component
 			// The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
 			// for SN3D normalised Ambisonic inputs.
 			fCoefficient = m_AmbDecoder.GetCoefficient(niSpeaker, niChannel) * (2*floor(sqrt(niChannel)) + 1);
 			for(niTap = 0; niTap < m_nTaps; niTap++)
 			{
-				pfHRTF[0][niTap] *= fCoefficient;
-				pfHRTF[1][niTap] *= fCoefficient;
+                pfHRTF[0][niTap] *= fCoefficient;
+                pfHRTF[1][niTap] *= fCoefficient;
 			}
 			//Accumulate channel/component HRTF
 			for(niTap = 0; niTap < m_nTaps; niTap++)
 			{
-				ppfAccumulator[0][niChannel][niTap] += pfHRTF[0][niTap];
-				ppfAccumulator[1][niChannel][niTap] += pfHRTF[1][niTap];
+                ppfAccumulator[0][niChannel][niTap] += pfHRTF[0][niTap];
+                ppfAccumulator[1][niChannel][niTap] += pfHRTF[1][niTap];
 			}
 		}
 	}
 
+#if 0
 	//Find the maximum tap
 	AmbFloat fMax = 0;
 	for(niEar = 0; niEar < 2; niEar++)
@@ -170,7 +182,7 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 	//Normalize to pre-defined value
 	AmbFloat fUpperSample = 1.f;
 	AmbFloat fScaler = fUpperSample / fMax;
-	fScaler *= 0.35f;
+    fScaler *= 0.35f;
 	for(niEar = 0; niEar < 2; niEar++)
 	{
 		for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
@@ -181,6 +193,7 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 			}
 		}
 	}
+#endif
 
 	//Convert frequency domain filters
 	for(niEar = 0; niEar < 2; niEar++)
