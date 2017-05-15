@@ -21,6 +21,7 @@
 #include "BFormat.h"
 #include "kiss_fftr.h"
 #include "AmbisonicPsychoacousticFilters.h"
+#include "AmbisonicZoomer.h"
 
 enum ProcessorDOR
 {

@@ -3,12 +3,13 @@
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicZoomer - Ambisonic Zoomer                                     #*/
 /*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2017 Videolabs                                              #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicZoomer.h                                        #*/
-/*#  Version:       0.1                                                      #*/
+/*#  Version:       0.2                                                      #*/
 /*#  Date:          19/05/2007                                               #*/
-/*#  Author(s):     Aristotel Digenis                                        #*/
-/*#  Licence:       MIT                                                      #*/
+/*#  Author(s):     Aristotel Digenis, Peter Stitt                           #*/
+/*#  Licence:       LGPL (+ Proprietary)                                     #*/
 /*#                                                                          #*/
 /*############################################################################*/
 
@@ -17,6 +18,7 @@
 #define	_AMBISONIC_ZOOMER_H
 
 #include "AmbisonicBase.h"
+#include "AmbisonicDecoder.h"
 #include "BFormat.h"
 
 /// Ambisonic zoomer.
@@ -33,7 +35,7 @@ public:
         lost. The last argument is not used, it is just there to match with
         the base class's form. Returns true if successful.
 	*/
-	bool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
+	virtual AmbBool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
 	/**
 		Not implemented.
 	*/
@@ -55,9 +57,21 @@ public:
 		Zoom into B-Format stream.
 	*/
 	void Process(CBFormat* pBFSrcDst, AmbUInt nSamples);
-
+	/**
+		Compute factorial of integer
+	*/
+	AmbFloat factorial(AmbUInt M);
 protected:
+	CAmbisonicDecoder m_AmbDecoderFront;
+
+	AmbFloat* m_AmbEncoderFront;
+	AmbFloat* m_AmbEncoderFront_weighted;
+	AmbFloat* a_m;
+
 	AmbFloat m_fZoom;
+	AmbFloat m_fZoomRed;
+	AmbFloat m_AmbFrontMic;
+	AmbFloat m_fZoomBlend;
 
 	AmbFloat m_fWCoeff;
 	AmbFloat m_fXCoeff;
