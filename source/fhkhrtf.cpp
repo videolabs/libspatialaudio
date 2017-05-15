@@ -6,12 +6,12 @@
 #include <AmbisonicCommons.h>
 #include <fhkhrtfdata.h>
 
+#define FHK_HRTF_LEN 128
+
 
 bool get_FHK_HRTF(float f_azimuth, float f_elevation, unsigned i_samplerate, float **p_hrtf)
 {
-    float (*p_dbHRTF)[128] = NULL;
-
-    std::cout << p_hrtf[0] << " " << p_hrtf[1] << std::endl;
+    float (*p_dbHRTF)[FHK_HRTF_LEN] = NULL;
 
     if (i_samplerate != 48000)
         return false;
@@ -61,14 +61,8 @@ bool get_FHK_HRTF(float f_azimuth, float f_elevation, unsigned i_samplerate, flo
     if (p_dbHRTF == NULL)
         return false;
 
-    std::cout << p_dbHRTF << std::endl;
-    std::cout << hrtf_m450_353 << std::endl;
-
-        std::cout << p_dbHRTF[0] << std::endl;
-        std::cout << hrtf_m450_353[0] << std::endl;
-
-    memcpy(p_hrtf[0], p_dbHRTF[0], sizeof(float));
-    memcpy(p_hrtf[1], p_dbHRTF[1], sizeof(float));
+    memcpy(p_hrtf[0], p_dbHRTF[0], FHK_HRTF_LEN * sizeof(float));
+    memcpy(p_hrtf[1], p_dbHRTF[1], FHK_HRTF_LEN * sizeof(float));
 
     return true;
 }

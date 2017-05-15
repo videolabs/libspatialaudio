@@ -123,7 +123,7 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 		{
 			//What is the position of the current speaker
 			position = m_AmbDecoder.GetPosition(niSpeaker);
-#if 1
+#if 0
 			nAzimuth = (AmbInt)RadiansToDegrees(-position.fAzimuth);
 			if(nAzimuth > 180)
 				nAzimuth -= 360;
@@ -140,7 +140,6 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 				pfHRTF[1][niTap] = psHRTF[1][niTap] / 32767.f;
 			}
 #else
-            std::cout << "test!" << std::endl;
             bool b_found = get_FHK_HRTF(position.fAzimuth, position.fElevation, 48000, pfHRTF);
             if (!b_found)
                 // TODO: release memory.
@@ -164,7 +163,7 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 		}
 	}
 
-#if 0
+#if 1
 	//Find the maximum tap
 	AmbFloat fMax = 0;
 	for(niEar = 0; niEar < 2; niEar++)
