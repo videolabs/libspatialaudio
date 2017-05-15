@@ -26,21 +26,21 @@ Binauralizer::Binauralizer()
     m_nOverlapLength = 0;
     m_nSpeakers = 0;
 
-    m_pfScratchBufferA = NULL;
-    m_pfScratchBufferB = NULL;
-    m_pfOverlap[0] = NULL;
-    m_pfOverlap[1] = NULL;
+    m_pfScratchBufferA = nullptr;
+    m_pfScratchBufferB = nullptr;
+    m_pfOverlap[0] = nullptr;
+    m_pfOverlap[1] = nullptr;
 
-    m_pFFT_cfg = NULL;	//TODO: Remove all the NULL dependencies
-    m_pIFFT_cfg = NULL;
-    m_ppcpFilters[0] = NULL;
-    m_ppcpFilters[1] = NULL;
-    m_pcpScratch = NULL;
+    m_pFFT_cfg = nullptr;	//TODO: Remove all the nullptr dependencies
+    m_pIFFT_cfg = nullptr;
+    m_ppcpFilters[0] = nullptr;
+    m_ppcpFilters[1] = nullptr;
+    m_pcpScratch = nullptr;
 
     AmbUInt tail = 0;
 
     Create(DEFAULT_SAMPLERATE, DEFAULT_BLOCKSIZE, DEFAULT_HRTFSET_DIFFUSED,
-           NULL, 0, tail);
+           nullptr, 0, tail);
 }
 
 Binauralizer::~Binauralizer()

@@ -19,8 +19,8 @@ CBFormat::CBFormat()
 {
 	m_nSamples = 0;
 	m_nDataLength = 0;
-    m_pfData = NULL;
-    m_ppfChannels = NULL;
+    m_pfData = nullptr;
+    m_ppfChannels = nullptr;
 }
 
 CBFormat::~CBFormat()
