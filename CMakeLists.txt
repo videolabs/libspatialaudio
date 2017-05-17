@@ -1,14 +1,20 @@
 cmake_minimum_required(VERSION 2.6)
 project(ambisonic)
 
-include_directories(include source source/kiss_fft)
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 file(GLOB_RECURSE headers LIST_DIRECTORIES false *.h)
 file(GLOB_RECURSE sources LIST_DIRECTORIES false *.h *.cpp *.c)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+find_package(MySofa REQUIRED)
+
+include_directories(include source source/kiss_fft ${MYSOFA_INCLUDE_DIRS})
+
 add_library(ambisonic STATIC ${sources})
+
+target_link_libraries(ambisonic ${MYSOFA_LIBRARIES})
 
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ambisonic.pc.cmake"
