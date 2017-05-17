@@ -66,10 +66,10 @@ AmbBool CAmbisonicZoomer::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 	AmbUInt iDegree=0;
 	for(AmbUInt iChannel = 0; iChannel<m_nChannelCount; iChannel++)
 	{
-		m_AmbEncoderFront[iChannel] = m_AmbDecoderFront.GetCoefficient(1,iChannel);
+        m_AmbEncoderFront[iChannel] = m_AmbDecoderFront.GetCoefficient(0, iChannel);
 		iDegree = (int)floor(sqrt(iChannel));
 		m_AmbEncoderFront_weighted[iChannel] = m_AmbEncoderFront[iChannel] * a_m[iDegree];
-		std::cout << "Channel " << iChannel << " = " << m_AmbDecoderFront.GetCoefficient(1,iChannel) << std::endl;
+        std::cout << "Channel " << iChannel << " = " << m_AmbDecoderFront.GetCoefficient(0,iChannel) << std::endl;
 		// Normalisation factor
 		m_AmbFrontMic += m_AmbEncoderFront[iChannel] * m_AmbEncoderFront_weighted[iChannel];
 	}
