@@ -7,5 +7,5 @@ includedir=${prefix}/include
 Name: ambisonic-lib
 Description: Ambisonic decoding library
 Version: 0.0.1
-Libs: -L${libdir} -L${libdir_mysofa} -lambisonic -lmysofa
+Libs: -L${libdir} -L${libdir_mysofa} -lambisonic -l:libmysofa.a -lm -lz
 Cflags: -I${includedir}

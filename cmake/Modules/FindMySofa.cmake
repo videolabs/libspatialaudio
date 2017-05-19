@@ -22,7 +22,7 @@ find_path(MYSOFA_ROOT_DIR
 )
 
 find_library(MYSOFA_LIBRARIES
-    NAMES mysofa
+    NAMES libmysofa.a mysofa
     HINTS ${MYSOFA_ROOT_DIR}/lib
 )
 
