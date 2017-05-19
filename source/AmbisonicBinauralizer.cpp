@@ -13,6 +13,7 @@
 /*#                                                                          #*/
 /*############################################################################*/
 
+#include <mysofa.h>
 
 #include "AmbisonicBinauralizer.h"
 #include <iostream>
@@ -58,12 +59,29 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 	AmbUInt niSpeaker = 0;
 	AmbUInt niTap = 0;
 
+#if 0
 	//How many taps will there be in the HRTFs
 	tailLength = mit_hrtf_availability(0, 0, nSampleRate, bDiffused);
 	if(!tailLength)
 		return false;
 
 	m_nTaps = tailLength;
+#else
+    int filter_length;
+    int err;
+    struct MYSOFA_EASY *hrtf;
+
+    hrtf = mysofa_open("file.sofa", nSampleRate, &filter_length, &err);
+    if (hrtf == NULL)
+    {
+        // TODO: release memory
+        std::cout << "Could no open the HRTF file." << std::endl;
+        return false;
+    }
+
+    tailLength = m_nTaps = filter_length;
+#endif
+
 	m_nBlockSize = nBlockSize;
 
 	//What will the overlap size be?
@@ -122,6 +140,8 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 		{
 			//What is the position of the current speaker
 			position = m_AmbDecoder.GetPosition(niSpeaker);
+
+#if 0
 			nAzimuth = (AmbInt)RadiansToDegrees(-position.fAzimuth);
 			if(nAzimuth > 180)
 				nAzimuth -= 360;
@@ -136,6 +156,21 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 				pfHRTF[0][niTap] = psHRTF[0][niTap] / 32767.f;
 				pfHRTF[1][niTap] = psHRTF[1][niTap] / 32767.f;
 			}
+
+#else
+            float leftDelay;          // unit is samples
+            float rightDelay;         // unit is samples
+
+            float p[3] = {position.fAzimuth, position.fElevation, 1.f};
+            mysofa_s2c(p);
+
+            mysofa_getfilter_float(hrtf, p[0], p[1], p[2], pfHRTF[0], pfHRTF[1], &leftDelay, &rightDelay);
+            if (leftDelay != 0 || rightDelay != 0)
+            {
+                std::cout << "HRTF delays not null:" << leftDelay << " " << rightDelay << std::endl;
+            }
+#endif
+
 			//Scale the HRTFs by the coefficient of the current channel/component
 			// The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
 			// for SN3D normalised Ambisonic inputs.
@@ -206,6 +241,10 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 			delete [] ppfAccumulator[niEar][niChannel];
 		delete [] ppfAccumulator[niEar];
 	}
+
+#if 1
+    mysofa_close(hrtf);
+#endif
 	
     return true;
 }
