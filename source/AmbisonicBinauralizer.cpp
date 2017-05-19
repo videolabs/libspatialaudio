@@ -61,7 +61,7 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 
 #if 0
 	//How many taps will there be in the HRTFs
-	tailLength = mit_hrtf_availability(0, 0, nSampleRate, bDiffused);
+    tailLength = mit_hrtf_availability(0, 0, nSampleRate, bDiffused);
 	if(!tailLength)
 		return false;
 
@@ -71,15 +71,15 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
     int err;
     struct MYSOFA_EASY *hrtf;
 
-    hrtf = mysofa_open("file.sofa", nSampleRate, &filter_length, &err);
+    hrtf = mysofa_open("dodeca_and_7channel_FHK_HRTF.sofa", nSampleRate, &filter_length, &err);
     if (hrtf == NULL)
     {
-        // TODO: release memory
-        std::cout << "Could no open the HRTF file." << std::endl;
+        std::cout << "Could not open the HRTF file." << std::endl;
         return false;
     }
 
-    tailLength = m_nTaps = filter_length;
+    int filter_extra_length = filter_length / 2;
+    tailLength = m_nTaps = filter_length + filter_extra_length;
 #endif
 
 	m_nBlockSize = nBlockSize;
@@ -156,19 +156,29 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 				pfHRTF[0][niTap] = psHRTF[0][niTap] / 32767.f;
 				pfHRTF[1][niTap] = psHRTF[1][niTap] / 32767.f;
 			}
-
 #else
-            float leftDelay;          // unit is samples
-            float rightDelay;         // unit is samples
+            float delaysSec[2]; // unit is second.
+            unsigned delaysSamples[2]; // unit is samples.
+            AmbFloat pfHRTFNotDelayed[2][m_nTaps];
 
-            float p[3] = {position.fAzimuth, position.fElevation, 1.f};
+            float p[3] = {RadiansToDegrees(position.fAzimuth), RadiansToDegrees(position.fElevation), 1.f};
             mysofa_s2c(p);
 
-            mysofa_getfilter_float(hrtf, p[0], p[1], p[2], pfHRTF[0], pfHRTF[1], &leftDelay, &rightDelay);
-            if (leftDelay != 0 || rightDelay != 0)
+            mysofa_getfilter_float(hrtf, p[0], p[1], p[2],
+                pfHRTFNotDelayed[0], pfHRTFNotDelayed[1], &delaysSec[0], &delaysSec[1]);
+            delaysSamples[0] = std::roundf(delaysSec[0] * nSampleRate);
+            delaysSamples[1] = std::roundf(delaysSec[1] * nSampleRate);
+
+            if (delaysSamples[0] > filter_extra_length
+                || delaysSamples[1] > filter_extra_length)
             {
-                std::cout << "HRTF delays not null:" << leftDelay << " " << rightDelay << std::endl;
+                std::cout << "Too big HRTF delay" << std::endl;
+                DeallocateBuffers();
+                return false;
             }
+
+            std::copy(pfHRTFNotDelayed[0], pfHRTFNotDelayed[0] + filter_length, pfHRTF[0] + delaysSamples[0]);
+            std::copy(pfHRTFNotDelayed[1], pfHRTFNotDelayed[1] + filter_length, pfHRTF[1] + delaysSamples[1]);
 #endif
 
 			//Scale the HRTFs by the coefficient of the current channel/component
@@ -188,6 +198,10 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 			}
 		}
 	}
+
+#if 1
+    mysofa_close(hrtf);
+#endif
 
 	//Find the maximum tap
 	AmbFloat fMax = 0;
@@ -241,10 +255,6 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 			delete [] ppfAccumulator[niEar][niChannel];
 		delete [] ppfAccumulator[niEar];
 	}
-
-#if 1
-    mysofa_close(hrtf);
-#endif
 	
     return true;
 }
@@ -417,34 +427,65 @@ void CAmbisonicBinauralizer::AllocateBuffers()
 
 void CAmbisonicBinauralizer::DeallocateBuffers()
 {
-	if(m_pfScratchBufferA)
+    if (m_pfScratchBufferA)
+    {
 		delete [] m_pfScratchBufferA;
-	if(m_pfScratchBufferB)
+        m_pfScratchBufferA = nullptr;
+    }
+
+    if (m_pfScratchBufferB)
+    {
 		delete [] m_pfScratchBufferB;
-	if(m_pfScratchBufferC)
+        m_pfScratchBufferB = nullptr;
+    }
+
+    if (m_pfScratchBufferC)
+    {
 		delete [] m_pfScratchBufferC;
+        m_pfScratchBufferC = nullptr;
+    }
 
-	if(m_pfOverlap[0])
+    if (m_pfOverlap[0])
+    {
 		delete [] m_pfOverlap[0];
-	if(m_pfOverlap[1])
-		delete [] m_pfOverlap[1];
+        m_pfOverlap[0] = nullptr;
+    }
 
-	if(m_pFFT_cfg)
+    if (m_pfOverlap[1])
+    {
+		delete [] m_pfOverlap[1];
+        m_pfOverlap[1] = nullptr;
+    }
+
+    if (m_pFFT_cfg)
+    {
 		kiss_fftr_free(m_pFFT_cfg);
-	if(m_pIFFT_cfg)
+        m_pFFT_cfg = nullptr;
+    }
+
+    if (m_pIFFT_cfg)
+    {
 		kiss_fftr_free(m_pIFFT_cfg);
+        m_pIFFT_cfg = nullptr;
+    }
 
 	for(AmbUInt niEar = 0; niEar < 2; niEar++)
 	{
-		for(AmbUInt niChannel = 0; niChannel < m_nChannelCount; niChannel++)
-		{
-			if(m_ppcpFilters[niEar][niChannel])
-				delete [] m_ppcpFilters[niEar][niChannel];
-		}
-		if(m_ppcpFilters[niEar])
-			delete [] m_ppcpFilters[niEar];
+        if(m_ppcpFilters[niEar])
+        {
+            for(AmbUInt niChannel = 0; niChannel < m_nChannelCount; niChannel++)
+            {
+                if(m_ppcpFilters[niEar][niChannel])
+                    delete [] m_ppcpFilters[niEar][niChannel];
+            }
+            delete [] m_ppcpFilters[niEar];
+            m_ppcpFilters[niEar] = nullptr;
+        }
 	}
 
 	if(m_pcpScratch)
+    {
 		delete [] m_pcpScratch;
+        m_pcpScratch = nullptr;
+    }
 }
