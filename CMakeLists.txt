@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 find_package(MySofa REQUIRED)
 
-include_directories(include source source/kiss_fft ${MYSOFA_INCLUDE_DIRS})
+include_directories(include include/hrtf source source/kiss_fft ${MYSOFA_INCLUDE_DIRS})
 
 add_library(ambisonic STATIC ${sources})
 

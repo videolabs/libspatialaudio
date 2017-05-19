@@ -12,10 +12,11 @@
 /*#                                                                          #*/
 /*############################################################################*/
 
-#include <mysofa.h>
-
 #include "AmbisonicBinauralizer.h"
 #include <iostream>
+
+#include <mit_hrtf.h>
+#include <sofa_hrtf.h>
 
 
 CAmbisonicBinauralizer::CAmbisonicBinauralizer()
@@ -58,28 +59,20 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 	AmbUInt niSpeaker = 0;
 	AmbUInt niTap = 0;
 
-#if 0
-	//How many taps will there be in the HRTFs
-    tailLength = mit_hrtf_availability(0, 0, nSampleRate, bDiffused);
-	if(!tailLength)
-		return false;
+//#define USE_MIT
 
-	m_nTaps = tailLength;
+    HRTF *p_hrtf;
+#ifdef USE_MIT
+    p_hrtf = new MIT_HRTF(nSampleRate, bDiffused);
 #else
-    int filter_length;
-    int err;
-    struct MYSOFA_EASY *hrtf;
-
-    hrtf = mysofa_open("dodeca_and_7channel_FHK_HRTF.sofa", nSampleRate, &filter_length, &err);
-    if (hrtf == NULL)
-    {
-        std::cout << "Could not open the HRTF file." << std::endl;
-        return false;
-    }
-
-    int filter_extra_length = filter_length / 2;
-    tailLength = m_nTaps = filter_length + filter_extra_length;
+    p_hrtf = new SOFA_HRTF("dodeca_and_7channel_FHK_HRTF.sofa", nSampleRate);
 #endif
+
+    if (p_hrtf == NULL || !p_hrtf->isLoaded())
+        return false;
+
+    tailLength = m_nTaps = p_hrtf->getHRTFLen();
+
 
 	m_nBlockSize = nBlockSize;
 
@@ -127,63 +120,24 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 		}
 	}
 
-	PolarPoint position = {0.f, 0.f, 0.f};
-	AmbInt nAzimuth = 0;
-	AmbInt nElevation = 0;
-	AmbUInt nResult = 0;
-	AmbFloat fCoefficient = 0.f;
-
 	for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
 	{
 		for(niSpeaker = 0; niSpeaker < nSpeakers; niSpeaker++)
 		{
 			//What is the position of the current speaker
-			position = m_AmbDecoder.GetPosition(niSpeaker);
+            PolarPoint position = m_AmbDecoder.GetPosition(niSpeaker);
 
-#if 0
-			nAzimuth = (AmbInt)RadiansToDegrees(-position.fAzimuth);
-			if(nAzimuth > 180)
-				nAzimuth -= 360;
-			nElevation = (AmbInt)RadiansToDegrees(position.fElevation);
-			//Get HRTFs for given position
-			nResult = mit_hrtf_get(&nAzimuth, &nElevation, nSampleRate, bDiffused, psHRTF[0], psHRTF[1]);
-			if(!nResult)
-				nResult = nResult;
-			//Convert from short to float representation
-			for(niTap = 0; niTap < m_nTaps; niTap++)
-			{
-				pfHRTF[0][niTap] = psHRTF[0][niTap] / 32767.f;
-				pfHRTF[1][niTap] = psHRTF[1][niTap] / 32767.f;
-			}
-#else
-            float delaysSec[2]; // unit is second.
-            unsigned delaysSamples[2]; // unit is samples.
-            AmbFloat pfHRTFNotDelayed[2][m_nTaps];
-
-            float p[3] = {RadiansToDegrees(position.fAzimuth), RadiansToDegrees(position.fElevation), 1.f};
-            mysofa_s2c(p);
-
-            mysofa_getfilter_float(hrtf, p[0], p[1], p[2],
-                pfHRTFNotDelayed[0], pfHRTFNotDelayed[1], &delaysSec[0], &delaysSec[1]);
-            delaysSamples[0] = std::roundf(delaysSec[0] * nSampleRate);
-            delaysSamples[1] = std::roundf(delaysSec[1] * nSampleRate);
-
-            if (delaysSamples[0] > filter_extra_length
-                || delaysSamples[1] > filter_extra_length)
+            bool b_found = p_hrtf->get(position.fAzimuth, position.fElevation, pfHRTF);
+            if (!b_found)
             {
-                std::cout << "Too big HRTF delay" << std::endl;
                 DeallocateBuffers();
                 return false;
             }
 
-            std::copy(pfHRTFNotDelayed[0], pfHRTFNotDelayed[0] + filter_length, pfHRTF[0] + delaysSamples[0]);
-            std::copy(pfHRTFNotDelayed[1], pfHRTFNotDelayed[1] + filter_length, pfHRTF[1] + delaysSamples[1]);
-#endif
-
 			//Scale the HRTFs by the coefficient of the current channel/component
 			// The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
 			// for SN3D normalised Ambisonic inputs.
-			fCoefficient = m_AmbDecoder.GetCoefficient(niSpeaker, niChannel) * (2*floor(sqrt(niChannel)) + 1);
+            AmbFloat fCoefficient = m_AmbDecoder.GetCoefficient(niSpeaker, niChannel) * (2*floor(sqrt(niChannel)) + 1);
 			for(niTap = 0; niTap < m_nTaps; niTap++)
 			{
 				pfHRTF[0][niTap] *= fCoefficient;
@@ -198,9 +152,7 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 		}
 	}
 
-#if 1
-    mysofa_close(hrtf);
-#endif
+    delete p_hrtf;
 
 	//Find the maximum tap
 	AmbFloat fMax = 0;
