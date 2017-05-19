@@ -57,10 +57,8 @@ AmbBool CAmbisonicZoomer::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 	// When applied to the encoded channels and decoded to a particular loudspeaker direction they will create a
 	// virtual microphone pattern with no rear lobes.
 	// When used for decoding this is known as in-phase decoding.
-	for(AmbUInt iOrder = 0; iOrder<m_nOrder; iOrder++)
-	{
-		a_m[iOrder] = (2*iOrder+1)*factorial(m_nOrder)*factorial(m_nOrder+1) / (factorial(m_nOrder+iOrder+1)*(m_nOrder-iOrder));
-	}
+    for(AmbUInt iOrder = 0; iOrder<=m_nOrder; iOrder++)
+        a_m[iOrder] = (2*iOrder+1)*factorial(m_nOrder)*factorial(m_nOrder+1) / (factorial(m_nOrder+iOrder+1)*factorial(m_nOrder-iOrder));
 
 	AmbUInt iDegree=0;
 	for(AmbUInt iChannel = 0; iChannel<m_nChannelCount; iChannel++)
@@ -68,10 +66,11 @@ AmbBool CAmbisonicZoomer::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
         m_AmbEncoderFront[iChannel] = m_AmbDecoderFront.GetCoefficient(0, iChannel);
 		iDegree = (int)floor(sqrt(iChannel));
 		m_AmbEncoderFront_weighted[iChannel] = m_AmbEncoderFront[iChannel] * a_m[iDegree];
-        std::cout << "Channel " << iChannel << " = " << m_AmbDecoderFront.GetCoefficient(0,iChannel) << std::endl;
+        std::cout << "Channel " << iChannel << " = " << m_AmbDecoderFront.GetCoefficient(0,iChannel)
+                  << " " << m_AmbEncoderFront_weighted[iChannel] << std::endl;
 		// Normalisation factor
 		m_AmbFrontMic += m_AmbEncoderFront[iChannel] * m_AmbEncoderFront_weighted[iChannel];
-	}
+    }
     
     return true;
 }
@@ -120,9 +119,10 @@ void CAmbisonicZoomer::Process2D(CBFormat* pBFSrcDst, AmbUInt nSamples)
 
 void CAmbisonicZoomer::Process3D(CBFormat* pBFSrcDst, AmbUInt nSamples)
 {
-    AmbFloat fMic = 0.f;
 	for(AmbUInt niSample = 0; niSample < nSamples; niSample++)
 	{
+        AmbFloat fMic = 0.f;
+
 		for(AmbUInt iChannel=0; iChannel<m_nChannelCount; iChannel++)
 		{
 			// virtual microphone with polar pattern narrowing as Ambisonic order increases
@@ -135,8 +135,7 @@ void CAmbisonicZoomer::Process3D(CBFormat* pBFSrcDst, AmbUInt nSamples)
 				// Blend original channel with the virtual microphone pointed directly to the front
 				// Only do this for Ambisonics components that aren't zero for an encoded frontal source
 				pBFSrcDst->m_ppfChannels[iChannel][niSample] = (m_fZoomBlend * pBFSrcDst->m_ppfChannels[iChannel][niSample]
-					+ m_AmbEncoderFront[iChannel]*m_fZoom*fMic)
-					/ (m_fZoomBlend + m_fZoom*m_AmbFrontMic);
+                    + m_AmbEncoderFront[iChannel]*m_fZoom*fMic) / (m_fZoomBlend + fabs(m_fZoom)*m_AmbFrontMic);
 			}
 			else{
 				// reduce the level of the Ambisonic components that are zero for a frontal source
