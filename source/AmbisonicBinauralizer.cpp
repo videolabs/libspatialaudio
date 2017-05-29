@@ -109,12 +109,9 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 	AmbFloat** ppfAccumulator[2];
 	for(niEar = 0; niEar < 2; niEar++)
 	{
-		ppfAccumulator[niEar] = new AmbFloat*[m_nChannelCount];
+        ppfAccumulator[niEar] = new AmbFloat*[m_nChannelCount];
 		for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
-		{
-			ppfAccumulator[niEar][niChannel] = new AmbFloat[m_nTaps];
-			memset(ppfAccumulator[niEar][niChannel], 0, m_nTaps * sizeof(AmbFloat));
-		}
+            ppfAccumulator[niEar][niChannel] = new AmbFloat[m_nTaps]();
 	}
 
 	for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
