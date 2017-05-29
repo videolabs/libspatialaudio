@@ -34,34 +34,34 @@ bool CAmbisonicSpeaker::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 
 void CAmbisonicSpeaker::Refresh()
 {
-	CAmbisonicSource::Refresh();
+    CAmbisonicSource::Refresh();
 }
 
 void CAmbisonicSpeaker::Process(CBFormat* pBFSrc, AmbUInt nSamples, AmbFloat* pfDst)
 {
-	AmbUInt niChannel = 0;
-	AmbUInt niSample = 0;
-	memset(pfDst, 0, nSamples * sizeof(AmbFloat));
-	for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
-	{
-		if(m_b3D){ /* Decode to a 3D loudspeaker array */
-			for(niSample = 0; niSample < nSamples; niSample++)
-			{
-				// The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
-				// for SN3D normalised Ambisonic inputs.
-				pfDst[niSample] += pBFSrc->m_ppfChannels[niChannel][niSample]
-							* m_pfCoeff[niChannel] * (2*floor(sqrt(niChannel)) + 1);
-			}
-		}
-		else
-		{	/* Decode to a 2D loudspeaker array */
-			for(niSample = 0; niSample < nSamples; niSample++)
-			{
-				// The spherical harmonic coefficients are multiplied by 2 to provide the correct decoder
-				// for SN3D normalised Ambisonic inputs decoded to a horizontal loudspeaker array
-				pfDst[niSample] += pBFSrc->m_ppfChannels[niChannel][niSample]
-							* m_pfCoeff[niChannel] * 2.f;
-			}
-		}
-	}
+    AmbUInt niChannel = 0;
+    AmbUInt niSample = 0;
+    memset(pfDst, 0, nSamples * sizeof(AmbFloat));
+    for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
+    {
+        if(m_b3D){ /* Decode to a 3D loudspeaker array */
+            for(niSample = 0; niSample < nSamples; niSample++)
+            {
+                // The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
+                // for SN3D normalised Ambisonic inputs.
+                pfDst[niSample] += pBFSrc->m_ppfChannels[niChannel][niSample]
+                            * m_pfCoeff[niChannel] * (2*floor(sqrt(niChannel)) + 1);
+            }
+        }
+        else
+        {    /* Decode to a 2D loudspeaker array */
+            for(niSample = 0; niSample < nSamples; niSample++)
+            {
+                // The spherical harmonic coefficients are multiplied by 2 to provide the correct decoder
+                // for SN3D normalised Ambisonic inputs decoded to a horizontal loudspeaker array
+                pfDst[niSample] += pBFSrc->m_ppfChannels[niChannel][niSample]
+                            * m_pfCoeff[niChannel] * 2.f;
+            }
+        }
+    }
 }

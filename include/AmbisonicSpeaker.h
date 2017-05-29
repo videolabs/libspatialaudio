@@ -14,7 +14,7 @@
 
 
 #ifndef _AMBISONIC_SPEAKER_H
-#define	_AMBISONIC_SPEAKER_H
+#define _AMBISONIC_SPEAKER_H
 
 #include "AmbisonicSource.h"
 #include "BFormat.h"
@@ -26,22 +26,22 @@
 class CAmbisonicSpeaker : public CAmbisonicSource
 {
 public:
-	CAmbisonicSpeaker();
-	~CAmbisonicSpeaker();
+    CAmbisonicSpeaker();
+    ~CAmbisonicSpeaker();
     /**
-		Re-create the object for the given configuration. Previous data is
+        Re-create the object for the given configuration. Previous data is
         lost. The last argument is not used, it is just there to match with 
         the base class's form. Returns true if successful.
-	*/
-	virtual bool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
-	/**
-		Recalculate coefficients, and apply normalisation factors.
-	*/
-	void Refresh();
-	/**
-		Decode B-Format to speaker feed.
-	*/
-	void Process(CBFormat* pBFSrc, AmbUInt nSamples, AmbFloat* pfDst);
+    */
+    virtual bool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
+    /**
+        Recalculate coefficients, and apply normalisation factors.
+    */
+    void Refresh();
+    /**
+        Decode B-Format to speaker feed.
+    */
+    void Process(CBFormat* pBFSrc, AmbUInt nSamples, AmbFloat* pfDst);
 };
 
 #endif // _AMBISONIC_SPEAKER_H

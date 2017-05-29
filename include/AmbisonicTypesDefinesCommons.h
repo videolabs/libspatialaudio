@@ -13,15 +13,15 @@
 /*############################################################################*/
 
 #ifndef _AMBISONICTYPEDEFINESCOMMONS_H
-#define	_AMBISONICTYPEDEFINESCOMMONS_H
+#define _AMBISONICTYPEDEFINESCOMMONS_H
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <memory.h>
 
-#define DEFAULT_ORDER	1
-#define	DEFAULT_HEIGHT	true
-#define DEFAULT_BFORMAT_SAMPLES	512
+#define DEFAULT_ORDER    1
+#define    DEFAULT_HEIGHT    true
+#define DEFAULT_BFORMAT_SAMPLES    512
 
 
 
