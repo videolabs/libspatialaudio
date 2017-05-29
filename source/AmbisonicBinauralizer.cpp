@@ -148,17 +148,34 @@ AmbBool CAmbisonicBinauralizer::Create(    AmbUInt nOrder,
     delete p_hrtf;
 
     //Find the maximum tap
-    AmbFloat fMax = 0.f;
-    for(niEar = 0; niEar < 2; niEar++)
+    AmbFloat fMax = 0;
+
+    // encode a source at azimuth 90deg and elevation 0
+    CAmbisonicEncoder myEncoder;
+    myEncoder.Create(m_nOrder, true, 0);
+
+    PolarPoint position90;
+    position90.fAzimuth = DegreesToRadians(90.f);
+    position90.fElevation = 0.f;
+    position90.fDistance = 5.f;
+    myEncoder.SetPosition(position90);
+    myEncoder.Refresh();
+
+    AmbFloat* pfLeftEar90;
+    pfLeftEar90 = new AmbFloat[m_nTaps]();
+    for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
     {
-        for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
+        for(niTap = 0; niTap < m_nTaps; niTap++)
         {
-            for(niTap = 0; niTap < m_nTaps; niTap++)
-            {
-                float val = fabs(ppfAccumulator[niEar][niChannel][niTap]);
-                fMax = val > fMax ? val : fMax;
-            }
+            pfLeftEar90[niTap] += myEncoder.GetCoefficient(niChannel) * ppfAccumulator[0][niChannel][niTap];
         }
+    }
+
+    //Find the maximum value for a source encoded at 90degrees
+    for(niTap = 0; niTap < m_nTaps; niTap++)
+    {
+        fMax = fabs(pfLeftEar90[niTap]) > fMax ?
+                fabs(pfLeftEar90[niTap]) : fMax;
     }
 
     //Normalize to pre-defined value

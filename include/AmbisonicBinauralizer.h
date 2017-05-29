@@ -17,6 +17,7 @@
 #define _AMBISONIC_BINAURALIZER_H
 
 #include "AmbisonicDecoder.h"
+#include "AmbisonicEncoder.h"
 #include "kiss_fftr.h"
 
 /// Ambisonic binauralizer
