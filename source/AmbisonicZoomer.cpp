@@ -20,9 +20,6 @@
 CAmbisonicZoomer::CAmbisonicZoomer()
 {
     m_fZoom = 0;
-    m_fWCoeff = 0;
-    m_fXCoeff = 0;
-    m_fYZCoeff = 0;
     m_pProcessFunction = 0;
 }
 
@@ -66,8 +63,6 @@ AmbBool CAmbisonicZoomer::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
         m_AmbEncoderFront[iChannel] = m_AmbDecoderFront.GetCoefficient(0, iChannel);
         iDegree = (int)floor(sqrt(iChannel));
         m_AmbEncoderFront_weighted[iChannel] = m_AmbEncoderFront[iChannel] * a_m[iDegree];
-        std::cout << "Channel " << iChannel << " = " << m_AmbDecoderFront.GetCoefficient(0,iChannel)
-                  << " " << m_AmbEncoderFront_weighted[iChannel] << std::endl;
         // Normalisation factor
         m_AmbFrontMic += m_AmbEncoderFront[iChannel] * m_AmbEncoderFront_weighted[iChannel];
     }
@@ -82,10 +77,6 @@ void CAmbisonicZoomer::Reset()
 
 void CAmbisonicZoomer::Refresh()
 {
-    m_fWCoeff = 1.f / sqrtf(2.f) * m_fZoom;
-    m_fXCoeff = sqrtf(2.f) * m_fZoom;
-    m_fYZCoeff = sqrtf(1.f - m_fZoom * m_fZoom);
-
     m_fZoomRed = sqrtf(1.f - m_fZoom * m_fZoom);
     m_fZoomBlend = 1.f - m_fZoom;
 }
@@ -103,18 +94,6 @@ AmbFloat CAmbisonicZoomer::GetZoom()
 void CAmbisonicZoomer::Process(CBFormat* pBFSrcDst, AmbUInt nSamples)
 {
     (this->*m_pProcessFunction)(pBFSrcDst, nSamples);
-}
-
-void CAmbisonicZoomer::Process2D(CBFormat* pBFSrcDst, AmbUInt nSamples)
-{
-    AmbFloat fW = 0.f;
-    for(AmbUInt niSample = 0; niSample < nSamples; niSample++)
-    {
-        fW = pBFSrcDst->m_ppfChannels[kW][niSample];
-        pBFSrcDst->m_ppfChannels[kW][niSample] = pBFSrcDst->m_ppfChannels[kW][niSample] + m_fWCoeff * pBFSrcDst->m_ppfChannels[kX][niSample];
-        pBFSrcDst->m_ppfChannels[kX][niSample] = pBFSrcDst->m_ppfChannels[kX][niSample] + m_fXCoeff * fW;
-        pBFSrcDst->m_ppfChannels[kY][niSample] *= m_fYZCoeff;
-    }
 }
 
 void CAmbisonicZoomer::Process3D(CBFormat* pBFSrcDst, AmbUInt nSamples)
