@@ -17,6 +17,7 @@
 
 #include <mit_hrtf.h>
 #include <sofa_hrtf.h>
+#include <config.h>
 
 
 CAmbisonicBinauralizer::CAmbisonicBinauralizer()
@@ -46,12 +47,13 @@ CAmbisonicBinauralizer::~CAmbisonicBinauralizer()
     DeallocateBuffers();
 }
 
-AmbBool CAmbisonicBinauralizer::Create(    AmbUInt nOrder,
-                                        AmbBool b3D,
-                                        AmbUInt nSampleRate,
-                                        AmbUInt nBlockSize,
-                                        AmbBool bDiffused,
-                                        AmbUInt& tailLength)
+AmbBool CAmbisonicBinauralizer::Create(AmbUInt nOrder,
+                                       AmbBool b3D,
+                                       AmbUInt nSampleRate,
+                                       AmbUInt nBlockSize,
+                                       AmbBool bDiffused,
+                                       AmbUInt& tailLength,
+                                       std::string HRTFPath)
 {    
     //Iterators
     AmbUInt niEar = 0;
@@ -59,13 +61,17 @@ AmbBool CAmbisonicBinauralizer::Create(    AmbUInt nOrder,
     AmbUInt niSpeaker = 0;
     AmbUInt niTap = 0;
 
-//#define USE_MIT
-
     HRTF *p_hrtf;
-#ifdef USE_MIT
-    p_hrtf = new MIT_HRTF(nSampleRate, bDiffused);
+
+#ifdef HAVE_MYSOFA
+    if (HRTFPath == "")
+        p_hrtf = new MIT_HRTF(nSampleRate, bDiffused);
+    else
+        p_hrtf = new SOFA_HRTF(HRTFPath, nSampleRate);
 #else
-    p_hrtf = new SOFA_HRTF("dodeca_and_7channel_FHK_HRTF.sofa", nSampleRate);
+    if (HRTFPath != "")
+        return false;
+    p_hrtf = new MIT_HRTF(nSampleRate, bDiffused);
 #endif
 
     if (p_hrtf == NULL || !p_hrtf->isLoaded())
@@ -164,18 +170,14 @@ AmbBool CAmbisonicBinauralizer::Create(    AmbUInt nOrder,
     AmbFloat* pfLeftEar90;
     pfLeftEar90 = new AmbFloat[m_nTaps]();
     for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
-    {
         for(niTap = 0; niTap < m_nTaps; niTap++)
-        {
             pfLeftEar90[niTap] += myEncoder.GetCoefficient(niChannel) * ppfAccumulator[0][niChannel][niTap];
-        }
-    }
 
     //Find the maximum value for a source encoded at 90degrees
     for(niTap = 0; niTap < m_nTaps; niTap++)
     {
-        fMax = fabs(pfLeftEar90[niTap]) > fMax ?
-                fabs(pfLeftEar90[niTap]) : fMax;
+        float val = fabs(pfLeftEar90[niTap]);
+        fMax = val > fMax ? val : fMax;
     }
 
     //Normalize to pre-defined value

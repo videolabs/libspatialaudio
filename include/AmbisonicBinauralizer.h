@@ -16,6 +16,8 @@
 #ifndef _AMBISONIC_BINAURALIZER_H
 #define _AMBISONIC_BINAURALIZER_H
 
+#include <string>
+
 #include "AmbisonicDecoder.h"
 #include "AmbisonicEncoder.h"
 #include "kiss_fftr.h"
@@ -35,12 +37,13 @@ public:
         used for the processing, and this can be used to offset the delay 
         this causes. The function returns true if the call is successful.
     */
-    virtual AmbBool Create( AmbUInt nOrder,
-                            AmbBool b3D,
-                            AmbUInt nSampleRate,
-                            AmbUInt nBlockSize,
-                            AmbBool bDiffused,
-                            AmbUInt& tailLength);
+    virtual AmbBool Create(AmbUInt nOrder,
+                           AmbBool b3D,
+                           AmbUInt nSampleRate,
+                           AmbUInt nBlockSize,
+                           AmbBool bDiffused,
+                           AmbUInt& tailLength,
+                           std::string HRTFPath = "");
     /**
         Resets members.
     */
