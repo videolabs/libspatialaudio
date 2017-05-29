@@ -17,6 +17,7 @@
 #include <iostream>
 
 CAmbisonicProcessor::CAmbisonicProcessor()
+    : m_orientation(0, 0, 0)
 {
     m_pfTempSample = NULL;
 	m_pfScratchBufferA = NULL;
@@ -25,13 +26,6 @@ CAmbisonicProcessor::CAmbisonicProcessor()
     m_ppcpPsychFilters = NULL;
     m_pcpScratch = NULL;
 	m_pfOverlap = NULL;
-
-	m_orientation.fYaw = 0.f;
-	m_orientation.fRoll = 0.f;
-	m_orientation.fPitch = 0.f;
-	m_orientation.fAlpha = 0.f;
-	m_orientation.fBeta = 0.f;
-	m_orientation.fGamma = 0.f;
 }
 
 CAmbisonicProcessor::~CAmbisonicProcessor()
@@ -151,20 +145,6 @@ void CAmbisonicProcessor::Reset()
 
 void CAmbisonicProcessor::Refresh()
 {
-	// TODO: Delete the Yaw, Roll and Pitch terms once old rotation equations are removed
-	m_fCosYaw = cosf(m_orientation.fYaw);
-	m_fSinYaw = sinf(m_orientation.fYaw);
-	m_fCosRoll = cosf(m_orientation.fRoll);
-	m_fSinRoll = sinf(m_orientation.fRoll);
-	m_fCosPitch = cosf(m_orientation.fPitch);
-	m_fSinPitch = sinf(m_orientation.fPitch);
-	m_fCos2Yaw = cosf(2.f * m_orientation.fYaw);
-	m_fSin2Yaw = sinf(2.f * m_orientation.fYaw);
-	m_fCos2Roll = cosf(2.f * m_orientation.fRoll);
-	m_fSin2Roll = sinf(2.f * m_orientation.fRoll);
-	m_fCos2Pitch = cosf(2.f * m_orientation.fPitch);
-	m_fSin2Pitch = sinf(2.f * m_orientation.fPitch);
-
 	// Trig terms used multiple times in rotation equations
 	m_fCosAlpha = cosf(m_orientation.fAlpha);
 	m_fSinAlpha = sinf(m_orientation.fAlpha);
@@ -188,53 +168,6 @@ void CAmbisonicProcessor::Refresh()
 
 void CAmbisonicProcessor::SetOrientation(Orientation orientation)
 {
-	/* Conversion from yaw, pitch, roll (ZYX) to ZYZ convention to match rotation matrices 
-	This method reduces the complexity of the rotation matrices since the Z0 and Z1 rotations are the same form */
-	AmbFloat r33 = m_fCosPitch * m_fCosRoll;
-	if (r33 == 1.f)
-	{
-		orientation.fBeta = 0.f;
-		orientation.fGamma = 0.f;
-		orientation.fAlpha = atan2(m_fSinYaw,m_fCosYaw);
-	}
-	else {
-		if (r33 == -1.f)
-		{
-			orientation.fBeta = M_PI;
-			orientation.fGamma = 0.f;
-			orientation.fAlpha = atan2(-m_fSinYaw,m_fCosYaw);
-		}
-		else
-		{
-
-			AmbFloat r32 = -m_fCosYaw * m_fSinRoll + m_fCosRoll * m_fSinPitch * m_fSinYaw ;
-			AmbFloat r31 = m_fCosRoll * m_fCosYaw * m_fSinPitch + m_fSinRoll * m_fSinYaw ;
-			orientation.fAlpha = atan2( r32 , r31 );
-
-			orientation.fBeta = acos( r33 );
-
-			AmbFloat r23 = m_fCosPitch * m_fSinRoll;
-			AmbFloat r13 = -m_fSinPitch;
-			orientation.fGamma = atan2( r23 , -r13 );
-		}
-	}
-
-	/* Display for debugging */
-	//std::cout<< "sinAlpha = " << m_fSinAlpha << " cosAlpha = " << m_fCosAlpha << std::endl;
-	//std::cout<< "sinBeta = " << m_fSinBeta << " cosBeta = " << m_fCosBeta << std::endl;
-	//std::cout<< "sinGamma = " << m_fSinGamma << " cosGamma = " << m_fCosGamma << std::endl;
-	/*std::cout<<"Incoming angles from VLC video module"<<std::endl;
-	std::cout<<"Yaw: "<< orientation.fYaw/M_PI*180.f <<
-		" Pitch: " << orientation.fPitch/M_PI*180.f <<
-		" Roll: " << orientation.fRoll/M_PI*180.f << std::endl;
-	std::cout<<"ZYZ Euler angles used for the rotations"<<std::endl;
-	std::cout<<"Alpha: "<< orientation.fAlpha/M_PI*180.f <<
-		" Beta: " << orientation.fBeta/M_PI*180.f <<
-		" Gamma: " << orientation.fGamma/M_PI*180.f << std::endl;
-	std::cout<< " " << std::endl;
-*/
-
-
 	m_orientation = orientation;
 }
 
