@@ -149,15 +149,15 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
     delete p_hrtf;
 
 	//Find the maximum tap
-	AmbFloat fMax = 0;
+    AmbFloat fMax = 0.f;
 	for(niEar = 0; niEar < 2; niEar++)
 	{
 		for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
 		{
 			for(niTap = 0; niTap < m_nTaps; niTap++)
-			{  
-				fMax = fabs(ppfAccumulator[niEar][niChannel][niTap]) > fMax ? 
-						fabs(ppfAccumulator[niEar][niChannel][niTap]) : fMax;		
+            {
+                float val = fabs(ppfAccumulator[niEar][niChannel][niTap]);
+                fMax = val > fMax ? val : fMax;
 			}
 		}
 	}
