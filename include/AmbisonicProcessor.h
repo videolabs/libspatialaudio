@@ -36,9 +36,60 @@ enum ProcessorModes
 	kNumProcessorModes
 };
 
+
+class CAmbisonicProcessor;
+
+
 /// Struct for soundfield rotation.
-typedef struct Orientation
+class Orientation
 {
+public:
+    Orientation(AmbFloat fYaw, AmbFloat fPitch, AmbFloat fRoll)
+        : fYaw(fYaw), fPitch(fPitch), fRoll(fRoll)
+    {
+        AmbFloat fCosYaw = cosf(fYaw);
+        AmbFloat fSinYaw = sinf(fYaw);
+        AmbFloat fCosRoll = cosf(fRoll);
+        AmbFloat fSinRoll = sinf(fRoll);
+        AmbFloat fCosPitch = cosf(fPitch);
+        AmbFloat fSinPitch = sinf(fPitch);
+
+        /* Conversion from yaw, pitch, roll (ZYX) to ZYZ convention to match rotation matrices
+        This method reduces the complexity of the rotation matrices since the Z0 and Z1 rotations are the same form */
+        AmbFloat r33 = fCosPitch * fCosRoll;
+        if (r33 == 1.f)
+        {
+            fBeta = 0.f;
+            fGamma = 0.f;
+            fAlpha = atan2(fSinYaw, fCosYaw);
+        }
+        else
+        {
+            if (r33 == -1.f)
+            {
+                fBeta = M_PI;
+                fGamma = 0.f;
+                fAlpha = atan2(-fSinYaw, fCosYaw);
+            }
+            else
+            {
+
+                AmbFloat r32 = -fCosYaw * fSinRoll + fCosRoll * fSinPitch * fSinYaw ;
+                AmbFloat r31 = fCosRoll * fCosYaw * fSinPitch + fSinRoll * fSinYaw ;
+                fAlpha = atan2( r32 , r31 );
+
+                fBeta = acos( r33 );
+
+                AmbFloat r23 = fCosPitch * fSinRoll;
+                AmbFloat r13 = -fSinPitch;
+                fGamma = atan2( r23 , -r13 );
+            }
+        }
+    }
+
+    friend class CAmbisonicProcessor;
+
+private:
 	/** rotation around the Z axis (yaw) */
 	AmbFloat fYaw;
 	/** rotation around the Y axis (pitch) */
@@ -54,7 +105,8 @@ typedef struct Orientation
 	AmbFloat fBeta;
 	/** rotation around the new Z axis */
 	AmbFloat fGamma;
-} Orientation;
+};
+
 
 /// Ambisonic processor.
 
@@ -121,19 +173,6 @@ protected:
 
 	kiss_fft_cpx** m_ppcpPsychFilters;
 	kiss_fft_cpx* m_pcpScratch;
-
-	AmbFloat m_fCosYaw;
-	AmbFloat m_fSinYaw;
-	AmbFloat m_fCosRoll;
-	AmbFloat m_fSinRoll;
-	AmbFloat m_fCosPitch;
-	AmbFloat m_fSinPitch;
-	AmbFloat m_fCos2Yaw;
-	AmbFloat m_fSin2Yaw;
-	AmbFloat m_fCos2Roll;
-	AmbFloat m_fSin2Roll;
-	AmbFloat m_fCos2Pitch;
-	AmbFloat m_fSin2Pitch;
 
 	AmbFloat m_fCosAlpha;
 	AmbFloat m_fSinAlpha;
