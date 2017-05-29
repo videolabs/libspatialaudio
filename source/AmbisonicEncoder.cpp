@@ -34,18 +34,18 @@ bool CAmbisonicEncoder::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 
 void CAmbisonicEncoder::Refresh()
 {
-	CAmbisonicSource::Refresh();
+    CAmbisonicSource::Refresh();
 }
 
 void CAmbisonicEncoder::Process(AmbFloat* pfSrc, AmbUInt nSamples, CBFormat* pfDst)
 {
-	AmbUInt niChannel = 0;
-	AmbUInt niSample = 0;
-	for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
-	{
-		for(niSample = 0; niSample < nSamples; niSample++)
-		{
-			pfDst->m_ppfChannels[niChannel][niSample] = pfSrc[niSample] * m_pfCoeff[niChannel];
-		}
-	}
+    AmbUInt niChannel = 0;
+    AmbUInt niSample = 0;
+    for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
+    {
+        for(niSample = 0; niSample < nSamples; niSample++)
+        {
+            pfDst->m_ppfChannels[niChannel][niSample] = pfSrc[niSample] * m_pfCoeff[niChannel];
+        }
+    }
 }

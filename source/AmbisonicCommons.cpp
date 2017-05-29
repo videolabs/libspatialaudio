@@ -16,59 +16,59 @@
 
 AmbFloat DegreesToRadians(AmbFloat fDegrees)
 {
-	return fDegrees * (AmbFloat)M_PI / 180.f;
+    return fDegrees * (AmbFloat)M_PI / 180.f;
 }
 
 AmbFloat RadiansToDegrees(AmbFloat fRadians)
 {
-	return fRadians * 180.f / (AmbFloat)M_PI;
+    return fRadians * 180.f / (AmbFloat)M_PI;
 }
 
 AmbUInt OrderToComponents(AmbUInt nOrder, AmbBool b3D)
 {
-	if(b3D)
-		return (AmbUInt) powf(nOrder + 1.f, 2.f);
-	else
-		return nOrder * 2 + 1;
+    if(b3D)
+        return (AmbUInt) powf(nOrder + 1.f, 2.f);
+    else
+        return nOrder * 2 + 1;
 }
 
 AmbUInt OrderToComponentPosition(AmbUInt nOrder, AmbBool b3D)
 {
 
 
-	AmbUInt nIndex = 0;
+    AmbUInt nIndex = 0;
 
-	if(b3D)
-	{
-		switch(nOrder)
-		{
-		case 0:	nIndex = 0;	break;
-		case 1:	nIndex = 1;	break;
-		case 2:	nIndex = 4;	break;
-		case 3:	nIndex = 10;break;
-		}
-	}
-	else
-	{
-		switch(nOrder)
-		{
-		case 0:	nIndex = 0;	break;
-		case 1:	nIndex = 1;	break;
-		case 2:	nIndex = 3;	break;
-		case 3:	nIndex = 5;	break;
-		}
-	}
+    if(b3D)
+    {
+        switch(nOrder)
+        {
+        case 0:    nIndex = 0;    break;
+        case 1:    nIndex = 1;    break;
+        case 2:    nIndex = 4;    break;
+        case 3:    nIndex = 10;break;
+        }
+    }
+    else
+    {
+        switch(nOrder)
+        {
+        case 0:    nIndex = 0;    break;
+        case 1:    nIndex = 1;    break;
+        case 2:    nIndex = 3;    break;
+        case 3:    nIndex = 5;    break;
+        }
+    }
 
-	return nIndex;
+    return nIndex;
 }
 
 AmbUInt OrderToSpeakers(AmbUInt nOrder, AmbBool b3D)
 {
 
-	if(b3D)
-		return (nOrder * 2 + 2) * 2;
-	else
-		return nOrder * 2 + 2;
+    if(b3D)
+        return (nOrder * 2 + 2) * 2;
+    else
+        return nOrder * 2 + 2;
 }
 
 char ComponentToChannelLabel(AmbUInt nComponent, AmbBool b3D)

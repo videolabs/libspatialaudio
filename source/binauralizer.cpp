@@ -31,7 +31,7 @@ Binauralizer::Binauralizer()
     m_pfOverlap[0] = NULL;
     m_pfOverlap[1] = NULL;
 
-    m_pFFT_cfg = NULL;	//TODO: Remove all the NULL dependencies
+    m_pFFT_cfg = NULL; //TODO: Remove all the NULL dependencies
     m_pIFFT_cfg = NULL;
     m_ppcpFilters[0] = NULL;
     m_ppcpFilters[1] = NULL;
