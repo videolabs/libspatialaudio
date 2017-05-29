@@ -51,6 +51,9 @@ bool SOFA_HRTF::get(float f_azimuth, float f_elevation, float** pfHRTF)
         return false;
     }
 
+    std::fill(pfHRTF[0], pfHRTF[0] + i_len, 0);
+    std::fill(pfHRTF[1], pfHRTF[1] + i_len, 0);
+
     std::copy(pfHRTFNotDelayed[0], pfHRTFNotDelayed[0] + i_internalLength, pfHRTF[0] + delaysSamples[0]);
     std::copy(pfHRTFNotDelayed[1], pfHRTFNotDelayed[1] + i_internalLength, pfHRTF[1] + delaysSamples[1]);
 
