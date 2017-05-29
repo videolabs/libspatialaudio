@@ -73,9 +73,6 @@ protected:
     AmbFloat m_AmbFrontMic;
     AmbFloat m_fZoomBlend;
 
-    AmbFloat m_fWCoeff;
-    AmbFloat m_fXCoeff;
-    AmbFloat m_fYZCoeff;
     void Process2D(CBFormat* pBFSrcDst, AmbUInt nSamples);
     void Process3D(CBFormat* pBFSrcDst, AmbUInt nSamples);
     void (CAmbisonicZoomer::*m_pProcessFunction)(CBFormat* pBFSrcDst, AmbUInt nSamples);
