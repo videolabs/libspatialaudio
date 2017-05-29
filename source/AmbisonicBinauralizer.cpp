@@ -101,13 +101,9 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 	AllocateBuffers();
 
 	//Allocate temporary buffers for retrieving taps from mit_hrtf_lib
-	short* psHRTF[2];
 	AmbFloat* pfHRTF[2];
 	for(niEar = 0; niEar < 2; niEar++)
-	{
-		psHRTF[niEar] = new short[m_nTaps];
-		pfHRTF[niEar] = new AmbFloat[m_nTaps];
-	}
+        pfHRTF[niEar] = new AmbFloat[m_nTaps];
 
 	//Allocate buffers for HRTF accumulators
 	AmbFloat** ppfAccumulator[2];
@@ -196,10 +192,7 @@ AmbBool CAmbisonicBinauralizer::Create(	AmbUInt nOrder,
 	}
 
 	for(niEar = 0; niEar < 2; niEar++)
-	{
-		delete [] psHRTF[niEar];
 		delete [] pfHRTF[niEar];
-	}
 
 	for(niEar = 0; niEar < 2; niEar++)
 	{
