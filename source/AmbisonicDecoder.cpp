@@ -20,7 +20,7 @@ CAmbisonicDecoder::CAmbisonicDecoder()
 {
 	m_nSpeakerSetUp = 0;
 	m_nSpeakers = 0;
-    m_pAmbSpeakers = NULL;
+    m_pAmbSpeakers = nullptr;
 }
 
 CAmbisonicDecoder::~CAmbisonicDecoder()

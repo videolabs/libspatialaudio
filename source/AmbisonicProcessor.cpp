@@ -18,12 +18,12 @@
 
 CAmbisonicProcessor::CAmbisonicProcessor()
 {
-    m_pfTempSample = NULL;
-	m_pfScratchBufferA = NULL;
-    m_pFFT_psych_cfg = NULL;
-    m_pIFFT_psych_cfg = NULL;
-    m_pcpScratch = NULL;
-	m_pfOverlap = NULL;
+    m_pfTempSample = nullptr;
+	m_pfScratchBufferA = nullptr;
+    m_pFFT_psych_cfg = nullptr;
+    m_pIFFT_psych_cfg = nullptr;
+    m_pcpScratch = nullptr;
+	m_pfOverlap = nullptr;
 
 	m_orientation.fYaw = 0.f;
 	m_orientation.fRoll = 0.f;
@@ -73,7 +73,7 @@ bool CAmbisonicProcessor::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockSize
 	// All optimisation filters have the same number of taps so take from the first order 3D impulse response arbitrarily
 	unsigned nbTaps = sizeof(first_order_3D[0]) / sizeof(int16_t);
 
-	m_ppcpPsychFilters = NULL;
+	m_ppcpPsychFilters = nullptr;
 
 	m_nBlockSize = nBlockSize;
 	m_nTaps = nbTaps;

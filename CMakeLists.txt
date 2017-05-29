@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 project(ambisonic)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE headers LIST_DIRECTORIES false *.h)
 file(GLOB_RECURSE sources LIST_DIRECTORIES false *.h *.cpp *.c)
