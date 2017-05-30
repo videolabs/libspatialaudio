@@ -21,7 +21,6 @@
 CAmbisonicZoomer::CAmbisonicZoomer()
 {
     m_fZoom = 0;
-    m_pProcessFunction = 0;
 }
 
 CAmbisonicZoomer::~CAmbisonicZoomer()
@@ -34,11 +33,6 @@ AmbBool CAmbisonicZoomer::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
     bool success = CAmbisonicBase::Create(nOrder, b3D, nMisc);
     if(!success)
         return false;
-
-    if(m_b3D)
-        m_pProcessFunction = &CAmbisonicZoomer::Process3D;
-    else
-        m_pProcessFunction = &CAmbisonicZoomer::Process2D;
 
     m_AmbDecoderFront.Create(m_nOrder, 1, kAmblib_Mono, 1);
 
@@ -93,11 +87,6 @@ AmbFloat CAmbisonicZoomer::GetZoom()
 }
 
 void CAmbisonicZoomer::Process(CBFormat* pBFSrcDst, AmbUInt nSamples)
-{
-    (this->*m_pProcessFunction)(pBFSrcDst, nSamples);
-}
-
-void CAmbisonicZoomer::Process3D(CBFormat* pBFSrcDst, AmbUInt nSamples)
 {
     for(AmbUInt niSample = 0; niSample < nSamples; niSample++)
     {
