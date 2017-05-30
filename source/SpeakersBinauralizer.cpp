@@ -13,10 +13,10 @@
 /*############################################################################*/
 
 
-#include "binauralizer.h"
+#include "SpeakersBinauralizer.h"
 
 
-Binauralizer::Binauralizer()
+SpeakersBinauralizer::SpeakersBinauralizer()
 {
     m_nBlockSize = 0;
     m_nTaps = 0;
@@ -26,29 +26,24 @@ Binauralizer::Binauralizer()
     m_nOverlapLength = 0;
     m_nSpeakers = 0;
 
-    m_pfScratchBufferA = NULL;
-    m_pfScratchBufferB = NULL;
-    m_pfOverlap[0] = NULL;
-    m_pfOverlap[1] = NULL;
+    m_pfScratchBufferA = nullptr;
+    m_pfScratchBufferB = nullptr;
+    m_pfOverlap[0] = nullptr;
+    m_pfOverlap[1] = nullptr;
 
-    m_pFFT_cfg = NULL; //TODO: Remove all the NULL dependencies
-    m_pIFFT_cfg = NULL;
-    m_ppcpFilters[0] = NULL;
-    m_ppcpFilters[1] = NULL;
-    m_pcpScratch = NULL;
-
-    AmbUInt tail = 0;
-
-    Create(DEFAULT_SAMPLERATE, DEFAULT_BLOCKSIZE, DEFAULT_HRTFSET_DIFFUSED,
-           NULL, 0, tail);
+    m_pFFT_cfg = nullptr; //TODO: Remove all the NULL dependencies
+    m_pIFFT_cfg = nullptr;
+    m_ppcpFilters[0] = nullptr;
+    m_ppcpFilters[1] = nullptr;
+    m_pcpScratch = nullptr;
 }
 
-Binauralizer::~Binauralizer()
+SpeakersBinauralizer::~SpeakersBinauralizer()
 {
     DeallocateBuffers();
 }
 
-AmbBool Binauralizer::Create(AmbUInt nSampleRate,
+AmbBool SpeakersBinauralizer::Create(AmbUInt nSampleRate,
                              AmbUInt nBlockSize,
                              AmbBool bDiffused,
                              CAmbisonicSpeaker *speakers,
@@ -190,14 +185,14 @@ AmbBool Binauralizer::Create(AmbUInt nSampleRate,
     return true;
 }
 
-void Binauralizer::Reset()
+void SpeakersBinauralizer::Reset()
 {
     memset(m_pfOverlap[0], 0, m_nOverlapLength * sizeof(AmbFloat));
     memset(m_pfOverlap[1], 0, m_nOverlapLength * sizeof(AmbFloat));
 }
 
 
-void Binauralizer::Process(AmbFloat** pBFSrc, AmbFloat** ppfDst)
+void SpeakersBinauralizer::Process(AmbFloat** pBFSrc, AmbFloat** ppfDst)
 {
     kiss_fft_cpx cpTemp;
 
@@ -232,7 +227,7 @@ void Binauralizer::Process(AmbFloat** pBFSrc, AmbFloat** ppfDst)
 }
 
 
-void Binauralizer::AllocateBuffers()
+void SpeakersBinauralizer::AllocateBuffers()
 {
     //Allocate scratch buffers
     m_pfScratchBufferA = new AmbFloat[m_nFFTSize];
@@ -258,7 +253,7 @@ void Binauralizer::AllocateBuffers()
 }
 
 
-void Binauralizer::DeallocateBuffers()
+void SpeakersBinauralizer::DeallocateBuffers()
 {
     if(m_pfScratchBufferA)
         delete [] m_pfScratchBufferA;

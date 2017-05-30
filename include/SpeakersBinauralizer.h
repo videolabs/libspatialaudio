@@ -13,11 +13,11 @@
 
 /** Binaural decoder. */
 
-class Binauralizer
+class SpeakersBinauralizer
 {
 public:
-    Binauralizer();
-    ~Binauralizer();
+    SpeakersBinauralizer();
+    ~SpeakersBinauralizer();
 
     AmbBool Create(AmbUInt nSampleRate,
                    AmbUInt nBlockSize,
