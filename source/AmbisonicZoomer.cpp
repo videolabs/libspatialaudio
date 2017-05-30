@@ -77,7 +77,8 @@ void CAmbisonicZoomer::Refresh()
 
 void CAmbisonicZoomer::SetZoom(AmbFloat fZoom)
 {
-    m_fZoom = fZoom;
+    // Limit the zoom value to always preserve the spacial effect.
+    m_fZoom = std::min(fZoom, 0.99f);
 }
 
 AmbFloat CAmbisonicZoomer::GetZoom()
