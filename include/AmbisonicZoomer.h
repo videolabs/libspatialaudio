@@ -71,10 +71,6 @@ protected:
     AmbFloat m_fZoomRed;
     AmbFloat m_AmbFrontMic;
     AmbFloat m_fZoomBlend;
-
-    void Process2D(CBFormat* pBFSrcDst, AmbUInt nSamples);
-    void Process3D(CBFormat* pBFSrcDst, AmbUInt nSamples);
-    void (CAmbisonicZoomer::*m_pProcessFunction)(CBFormat* pBFSrcDst, AmbUInt nSamples);
 };
 
 #endif // _AMBISONIC_ZOOMER_H
