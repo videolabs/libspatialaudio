@@ -1,9 +1,11 @@
 
-#include <AmbisonicCommons.h>
-
 #include <iostream>
 
 #include <sofa_hrtf.h>
+
+#if HAVE_MYSOFA
+
+#include <AmbisonicCommons.h>
 
 
 SOFA_HRTF::SOFA_HRTF(std::string path, unsigned i_sampleRate)
@@ -59,3 +61,5 @@ bool SOFA_HRTF::get(float f_azimuth, float f_elevation, float** pfHRTF)
 
     return true;
 }
+
+#endif
