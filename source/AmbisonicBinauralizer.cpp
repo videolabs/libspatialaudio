@@ -26,17 +26,17 @@ CAmbisonicBinauralizer::CAmbisonicBinauralizer()
     m_fFFTScaler = 0.f;
     m_nOverlapLength = 0;
 
-    m_pfScratchBufferA = NULL;
-    m_pfScratchBufferB = NULL;
-    m_pfScratchBufferC = NULL;
-    m_pfOverlap[0] = NULL;
-    m_pfOverlap[1] = NULL;
+    m_pfScratchBufferA = nullptr;
+    m_pfScratchBufferB = nullptr;
+    m_pfScratchBufferC = nullptr;
+    m_pfOverlap[0] = nullptr;
+    m_pfOverlap[1] = nullptr;
 
-    m_pFFT_cfg = NULL;
-    m_pIFFT_cfg = NULL;
-    m_ppcpFilters[0] = NULL;
-    m_ppcpFilters[1] = NULL;
-    m_pcpScratch = NULL;
+    m_pFFT_cfg = nullptr;
+    m_pIFFT_cfg = nullptr;
+    m_ppcpFilters[0] = nullptr;
+    m_ppcpFilters[1] = nullptr;
+    m_pcpScratch = nullptr;
 }
 
 CAmbisonicBinauralizer::~CAmbisonicBinauralizer()
@@ -58,7 +58,7 @@ AmbBool CAmbisonicBinauralizer::Create(AmbUInt nOrder,
     AmbUInt niTap = 0;
 
     HRTF *p_hrtf = getHRTF(nSampleRate, HRTFPath);
-    if (p_hrtf == NULL)
+    if (p_hrtf == nullptr)
         return false;
 
     tailLength = m_nTaps = p_hrtf->getHRTFLen();
@@ -353,17 +353,17 @@ HRTF *CAmbisonicBinauralizer::getHRTF(AmbUInt nSampleRate, std::string HRTFPath)
         p_hrtf = new SOFA_HRTF(HRTFPath, nSampleRate);
 #else
     if (HRTFPath != "")
-        return NULL;
+        return nullptr;
     p_hrtf = new MIT_HRTF(nSampleRate);
 #endif
 
-    if (p_hrtf == NULL)
-        return NULL;
+    if (p_hrtf == nullptr)
+        return nullptr;
 
     if (!p_hrtf->isLoaded())
     {
         delete p_hrtf;
-        return NULL;
+        return nullptr;
     }
 
     return p_hrtf;

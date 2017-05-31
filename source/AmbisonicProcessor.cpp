@@ -19,13 +19,13 @@
 CAmbisonicProcessor::CAmbisonicProcessor()
     : m_orientation(0, 0, 0)
 {
-    m_pfTempSample = NULL;
-    m_pfScratchBufferA = NULL;
-    m_pFFT_psych_cfg = NULL;
-    m_pIFFT_psych_cfg = NULL;
-    m_ppcpPsychFilters = NULL;
-    m_pcpScratch = NULL;
-    m_pfOverlap = NULL;
+    m_pfTempSample = nullptr;
+    m_pfScratchBufferA = nullptr;
+    m_pFFT_psych_cfg = nullptr;
+    m_pIFFT_psych_cfg = nullptr;
+    m_ppcpPsychFilters = nullptr;
+    m_pcpScratch = nullptr;
+    m_pfOverlap = nullptr;
 }
 
 CAmbisonicProcessor::~CAmbisonicProcessor()

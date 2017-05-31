@@ -28,7 +28,7 @@ AmbBool SpeakersBinauralizer::Create(AmbUInt nSampleRate,
         AmbUInt niTap = 0;
 
         HRTF *p_hrtf = getHRTF(nSampleRate, HRTFPath);
-        if (p_hrtf == NULL)
+        if (p_hrtf == nullptr)
             return false;
 
         m_nTaps = tailLength = p_hrtf->getHRTFLen();

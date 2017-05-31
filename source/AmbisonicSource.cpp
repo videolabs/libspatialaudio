@@ -22,8 +22,8 @@
 
 CAmbisonicSource::CAmbisonicSource()
 {
-    m_pfCoeff = NULL;
-    m_pfOrderWeights = NULL;
+    m_pfCoeff = nullptr;
+    m_pfOrderWeights = nullptr;
     m_polPosition.fAzimuth = 0.f;
     m_polPosition.fElevation = 0.f;
     m_polPosition.fDistance = 1.f;
