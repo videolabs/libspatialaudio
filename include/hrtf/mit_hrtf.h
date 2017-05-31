@@ -1,7 +1,7 @@
 #ifndef MIT_HRTF_H
 #define MIT_HRTF_H
 
-#include <hrtf.h>
+#include "hrtf.h"
 
 
 class MIT_HRTF : public HRTF
