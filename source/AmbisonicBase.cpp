@@ -32,7 +32,7 @@ unsigned CAmbisonicBase::GetOrder()
     return m_nOrder;
 }
 
-unsigned CAmbisonicBase::GetHeight()
+bool CAmbisonicBase::GetHeight()
 {
     return m_b3D;
 }
