@@ -53,7 +53,7 @@ public:
         Else, if using one of the default configurations, nSpeakers does not
         need to be specified. Function returns true if successful.
     */
-    bool Create(AmbUInt nOrder, AmbBool b3D, AmbInt nSpeakerSetUp, AmbUInt nSpeakers = 0);
+    bool Configure(AmbUInt nOrder, AmbBool b3D, AmbInt nSpeakerSetUp, AmbUInt nSpeakers = 0);
     /**
         Resets all the speakers.
     */

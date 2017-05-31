@@ -24,7 +24,7 @@ CBFormat myBFormat;
 
 // Ambisonic encoder, also 3rd order 3D
 CAmbisonicEncoder myEncoder;
-myEncoder.Create(1, true, 0);
+myEncoder.Configure(1, true, 0);
 
 // Set test signal's position in the soundfield
 PolarPoint position;
@@ -39,7 +39,7 @@ myEncoder.Process(sinewave, 512, &myBFormat);
 
 // Ambisonic decoder, also 1st order 3D, for a 5.0 setup
 CAmbisonicDecoder myDecoder;
-myDecoder.Create(1, true, kAmblib_50, 5);
+myDecoder.Configure(1, true, kAmblib_50, 5);
 
 // Allocate buffers for speaker feeds
 float** ppfSpeakerFeeds = new float*[5];

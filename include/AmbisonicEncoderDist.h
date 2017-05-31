@@ -37,7 +37,7 @@ public:
         Re-create the object for the given configuration. Previous data is
         lost. Returns true if successful.
     */
-    virtual bool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleRate);
+    virtual bool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleRate);
     /**
         Resets members such as delay lines.
     */

@@ -42,7 +42,7 @@ AmbUInt CAmbisonicBase::GetChannelCount()
     return m_nChannelCount;
 }
 
-AmbBool CAmbisonicBase::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
+AmbBool CAmbisonicBase::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 {
     m_nOrder = nOrder;
     m_b3D = b3D;

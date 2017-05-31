@@ -22,9 +22,9 @@ CAmbisonicEncoder::CAmbisonicEncoder()
 CAmbisonicEncoder::~CAmbisonicEncoder()
 { }
 
-bool CAmbisonicEncoder::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
+bool CAmbisonicEncoder::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 {
-    bool success = CAmbisonicSource::Create(nOrder, b3D, nMisc);
+    bool success = CAmbisonicSource::Configure(nOrder, b3D, nMisc);
     if(!success)
         return false;
     //SetOrderWeight(0, 1.f / sqrtf(2.f)); // Removed as seems to break SN3D normalisation

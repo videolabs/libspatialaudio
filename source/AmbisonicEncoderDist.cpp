@@ -29,7 +29,7 @@ CAmbisonicEncoderDist::CAmbisonicEncoderDist()
     m_fInteriorGain = 0.f;
     m_fExteriorGain = 0.f;
 
-    Create(DEFAULT_ORDER, DEFAULT_HEIGHT, DEFAULT_SAMPLERATE);
+    Configure(DEFAULT_ORDER, DEFAULT_HEIGHT, DEFAULT_SAMPLERATE);
 }
 
 CAmbisonicEncoderDist::~CAmbisonicEncoderDist()
@@ -38,9 +38,9 @@ CAmbisonicEncoderDist::~CAmbisonicEncoderDist()
         delete [] m_pfDelayBuffer;
 }
 
-bool CAmbisonicEncoderDist::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleRate)
+bool CAmbisonicEncoderDist::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleRate)
 {
-    bool success = CAmbisonicEncoder::Create(nOrder, b3D, 0);
+    bool success = CAmbisonicEncoder::Configure(nOrder, b3D, 0);
     if(!success)
         return false;
     m_nSampleRate = nSampleRate;

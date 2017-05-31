@@ -55,9 +55,9 @@ CAmbisonicProcessor::~CAmbisonicProcessor()
     }
 }
 
-bool CAmbisonicProcessor::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockSize, AmbUInt nMisc)
+bool CAmbisonicProcessor::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockSize, AmbUInt nMisc)
 {
-    bool success = CAmbisonicBase::Create(nOrder, b3D, nMisc);
+    bool success = CAmbisonicBase::Configure(nOrder, b3D, nMisc);
     if(!success)
         return false;
     if(m_pfTempSample)

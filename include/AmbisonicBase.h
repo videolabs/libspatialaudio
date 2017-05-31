@@ -46,7 +46,7 @@ public:
         Re-create the object for the given configuration. Previous data is
         lost.
     */
-    virtual AmbBool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
+    virtual AmbBool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
     /**
         Not implemented.
     */

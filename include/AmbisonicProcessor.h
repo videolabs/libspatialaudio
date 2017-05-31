@@ -122,7 +122,7 @@ public:
         lost. The last argument is not used, it is just there to match with 
         the base class's form. Returns true if successful.
     */
-    bool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockSize, AmbUInt nMisc);
+    bool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockSize, AmbUInt nMisc);
     /**
         Not implemented.
     */

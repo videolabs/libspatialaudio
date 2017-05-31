@@ -29,9 +29,9 @@ CAmbisonicDecoder::~CAmbisonicDecoder()
         delete [] m_pAmbSpeakers;
 }
 
-bool CAmbisonicDecoder::Create(AmbUInt nOrder, AmbBool b3D, AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
+bool CAmbisonicDecoder::Configure(AmbUInt nOrder, AmbBool b3D, AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
 {
-    bool success = CAmbisonicBase::Create(nOrder, b3D, nSpeakerSetUp);
+    bool success = CAmbisonicBase::Configure(nOrder, b3D, nSpeakerSetUp);
     if(!success)
         return false;
     SpeakerSetUp(nSpeakerSetUp, nSpeakers);
@@ -118,71 +118,71 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         {
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
         }
         break;
     case kAmblib_Mono:
         m_nSpeakers = 1;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
-        m_pAmbSpeakers[0].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[0].SetPosition(polPosition);
         break;
     case kAmblib_Stereo:
         m_nSpeakers = 2;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(30.f);
-        m_pAmbSpeakers[0].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[0].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(-30.f);
-        m_pAmbSpeakers[1].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[1].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[1].SetPosition(polPosition);
         break;
     case kAmblib_LCR:
         m_nSpeakers = 3;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(30.f);
-        m_pAmbSpeakers[0].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[0].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(0.f);
-        m_pAmbSpeakers[1].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[1].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[1].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(-30.f);
-        m_pAmbSpeakers[2].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[2].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[2].SetPosition(polPosition);
         break;
     case kAmblib_Quad:
         m_nSpeakers = 4;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(45.f);
-        m_pAmbSpeakers[0].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[0].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(-45.f);
-        m_pAmbSpeakers[1].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[1].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[1].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(135.f);
-        m_pAmbSpeakers[2].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[2].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[2].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(-135.f);
-        m_pAmbSpeakers[3].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[3].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[3].SetPosition(polPosition);
         break;
     case kAmblib_50:
         m_nSpeakers = 5;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(30.f);
-        m_pAmbSpeakers[0].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[0].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(-30.f);
-        m_pAmbSpeakers[1].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[1].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[1].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(0.f);
-        m_pAmbSpeakers[2].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[2].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[2].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(110.f);
-        m_pAmbSpeakers[3].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[3].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[3].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(-110.f);
-        m_pAmbSpeakers[4].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[4].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[4].SetPosition(polPosition);
         break;
     case kAmblib_Pentagon:
@@ -191,7 +191,7 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / m_nSpeakers);
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
@@ -201,7 +201,7 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / m_nSpeakers + 30.f);
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
@@ -211,7 +211,7 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / m_nSpeakers);
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
@@ -221,7 +221,7 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / m_nSpeakers);
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
@@ -231,7 +231,7 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / m_nSpeakers);
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
@@ -241,7 +241,7 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / m_nSpeakers);
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
@@ -252,14 +252,14 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
         for(niSpeaker = 0; niSpeaker < m_nSpeakers / 2; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / (m_nSpeakers / 2) + 45.f);
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         polPosition.fElevation = DegreesToRadians(-45.f);
         for(niSpeaker = m_nSpeakers / 2; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians((niSpeaker - 4) * 360.f / (m_nSpeakers / 2) + 45.f);
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
@@ -270,95 +270,95 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
         // Loudspeaker 1
         polPosition.fElevation = DegreesToRadians(-69.1f);
         polPosition.fAzimuth = DegreesToRadians(90.f);
-        m_pAmbSpeakers[0].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[0].SetPosition(polPosition);
         // Loudspeaker 2
         polPosition.fAzimuth = DegreesToRadians(-90.f);
-        m_pAmbSpeakers[1].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[1].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[1].SetPosition(polPosition);
 
         // Loudspeaker 3
         polPosition.fElevation = DegreesToRadians(-35.3f);
         polPosition.fAzimuth = DegreesToRadians(45.f);
-        m_pAmbSpeakers[2].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[2].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[2].SetPosition(polPosition);
         // Loudspeaker 4
         polPosition.fAzimuth = DegreesToRadians(135.f);
-        m_pAmbSpeakers[3].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[3].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[3].SetPosition(polPosition);
         // Loudspeaker 5
         polPosition.fAzimuth = DegreesToRadians(-45.f);
-        m_pAmbSpeakers[4].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[4].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[4].SetPosition(polPosition);
         // Loudspeaker 6
         polPosition.fAzimuth = DegreesToRadians(-135.f);
-        m_pAmbSpeakers[5].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[5].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[5].SetPosition(polPosition);
 
         // Loudspeaker 7
         polPosition.fElevation = DegreesToRadians(-20.9f);
         polPosition.fAzimuth = DegreesToRadians(180.f);
-        m_pAmbSpeakers[6].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[6].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[6].SetPosition(polPosition);
         // Loudspeaker 8
         polPosition.fAzimuth = DegreesToRadians(0.f);
-        m_pAmbSpeakers[7].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[7].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[7].SetPosition(polPosition);
 
         // Loudspeaker 9
         polPosition.fElevation = DegreesToRadians(0.f);
         polPosition.fAzimuth = DegreesToRadians(69.1f);
-        m_pAmbSpeakers[8].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[8].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[8].SetPosition(polPosition);
         // Loudspeaker 10
         polPosition.fAzimuth = DegreesToRadians(110.9f);
-        m_pAmbSpeakers[9].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[9].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[9].SetPosition(polPosition);
         // Loudspeaker 11
         polPosition.fAzimuth = DegreesToRadians(-69.1f);
-        m_pAmbSpeakers[10].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[10].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[10].SetPosition(polPosition);
         // Loudspeaker 12
         polPosition.fAzimuth = DegreesToRadians(-110.9f);
-        m_pAmbSpeakers[11].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[11].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[11].SetPosition(polPosition);
 
         // Loudspeaker 13
         polPosition.fElevation = DegreesToRadians(20.9f);
         polPosition.fAzimuth = DegreesToRadians(180.f);
-        m_pAmbSpeakers[12].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[12].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[12].SetPosition(polPosition);
         // Loudspeaker 14
         polPosition.fAzimuth = DegreesToRadians(0.f);
-        m_pAmbSpeakers[13].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[13].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[13].SetPosition(polPosition);
 
         // Loudspeaker 15
         polPosition.fElevation = DegreesToRadians(35.3f);
         polPosition.fAzimuth = DegreesToRadians(45.f);
-        m_pAmbSpeakers[14].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[14].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[14].SetPosition(polPosition);
         // Loudspeaker 16
         polPosition.fAzimuth = DegreesToRadians(135.f);
-        m_pAmbSpeakers[15].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[15].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[15].SetPosition(polPosition);
         // Loudspeaker 17
         polPosition.fAzimuth = DegreesToRadians(-45.f);
-        m_pAmbSpeakers[16].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[16].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[16].SetPosition(polPosition);
         // Loudspeaker 18
         polPosition.fAzimuth = DegreesToRadians(-135.f);
-        m_pAmbSpeakers[17].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[17].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[17].SetPosition(polPosition);
 
         // Loudspeaker 19
         polPosition.fElevation = DegreesToRadians(69.1f);
         polPosition.fAzimuth = DegreesToRadians(90.f);
-        m_pAmbSpeakers[18].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[18].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[18].SetPosition(polPosition);
         // Loudspeaker 20
         polPosition.fAzimuth = DegreesToRadians(-90.f);
-        m_pAmbSpeakers[19].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[19].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[19].SetPosition(polPosition);
         break;
     case kAmblib_Cube2:
@@ -369,14 +369,14 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
         for(niSpeaker = 0; niSpeaker < m_nSpeakers / 2; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / (m_nSpeakers / 2) + 45.f);
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         polPosition.fElevation = DegreesToRadians(-35.2f);
         for(niSpeaker = m_nSpeakers / 2; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians((niSpeaker - 4) * 360.f / (m_nSpeakers / 2) + 45.f);
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
@@ -389,7 +389,7 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = DegreesToRadians(0.f);
-            m_pAmbSpeakers[niSpeaker].Create(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
 
         }
@@ -397,7 +397,7 @@ void CAmbisonicDecoder::SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers)
     default:
         m_nSpeakers = 1;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
-        m_pAmbSpeakers[0].Create(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[0].SetPosition(polPosition);
         break;
     };

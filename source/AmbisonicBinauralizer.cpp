@@ -44,7 +44,7 @@ CAmbisonicBinauralizer::~CAmbisonicBinauralizer()
     DeallocateBuffers();
 }
 
-AmbBool CAmbisonicBinauralizer::Create(AmbUInt nOrder,
+AmbBool CAmbisonicBinauralizer::Configure(AmbUInt nOrder,
                                        AmbBool b3D,
                                        AmbUInt nSampleRate,
                                        AmbUInt nBlockSize,
@@ -78,7 +78,7 @@ AmbBool CAmbisonicBinauralizer::Create(AmbUInt nOrder,
     //Deallocate any buffers with previous settings
     DeallocateBuffers();
 
-    CAmbisonicBase::Create(nOrder, b3D, 0);
+    CAmbisonicBase::Configure(nOrder, b3D, 0);
     //Position speakers and recalculate coefficients
     ArrangeSpeakers();
 
@@ -140,7 +140,7 @@ AmbBool CAmbisonicBinauralizer::Create(AmbUInt nOrder,
 
     // encode a source at azimuth 90deg and elevation 0
     CAmbisonicEncoder myEncoder;
-    myEncoder.Create(m_nOrder, true, 0);
+    myEncoder.Configure(m_nOrder, true, 0);
 
     PolarPoint position90;
     position90.fAzimuth = DegreesToRadians(90.f);
@@ -335,7 +335,7 @@ void CAmbisonicBinauralizer::ArrangeSpeakers()
         nSpeakerSetUp = kAmblib_Dodecahedron;
     }
 
-    m_AmbDecoder.Create(m_nOrder, m_b3D, nSpeakerSetUp, nSpeakers);
+    m_AmbDecoder.Configure(m_nOrder, m_b3D, nSpeakerSetUp, nSpeakers);
 
     //Calculate all the speaker coefficients
     m_AmbDecoder.Refresh();
