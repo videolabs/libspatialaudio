@@ -1,11 +1,15 @@
 #ifndef SOFA_HRTF_H
 #define SOFA_HRTF_H
 
+#include "config.h"
+
+#if HAVE_MYSOFA
+
 #include <string>
 
 #include <mysofa.h>
 
-#include <hrtf.h>
+#include "hrtf.h"
 
 
 class SOFA_HRTF : public HRTF
@@ -22,5 +26,6 @@ private:
     int i_internalLength;
 };
 
+#endif
 
 #endif // SOFA_HRTF_H
