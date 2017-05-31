@@ -14,18 +14,18 @@
 class SpeakersBinauralizer : public CAmbisonicBinauralizer
 {
 public:
-    AmbBool Configure(AmbUInt nSampleRate,
-                   AmbUInt nBlockSize,
+    bool Configure(unsigned nSampleRate,
+                   unsigned nBlockSize,
                    CAmbisonicSpeaker *speakers,
-                   AmbUInt nSpeakers,
-                   AmbUInt& tailLength,
+                   unsigned nSpeakers,
+                   unsigned& tailLength,
                    std::string HRTFPath = "");
 
-    void Process(AmbFloat** pBFSrc, AmbFloat** ppfDst);
+    void Process(float** pBFSrc, float** ppfDst);
 
 protected:
     CAmbisonicSpeaker *m_speakers;
-    AmbUInt m_nSpeakers;
+    unsigned m_nSpeakers;
 
     virtual void AllocateBuffers();
     virtual void DeallocateBuffers();

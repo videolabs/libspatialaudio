@@ -32,12 +32,12 @@ public:
     /**
         Returns the number of samples.
     */
-    AmbUInt GetSampleCount();
+    unsigned GetSampleCount();
     /**
         Re-create the buffers needed for the given configuration. Previous
         buffer contents are lost.
     */
-    bool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleCount);
+    bool Configure(unsigned nOrder, bool b3D, unsigned nSampleCount);
     /**
         Fill the buffer with zeros.
     */
@@ -49,11 +49,11 @@ public:
     /**
         Copy a number of samples to a specific channel of the BFormat.
     */
-    void InsertStream(AmbFloat* pfData, AmbUInt nChannel, AmbUInt nSamples);
+    void InsertStream(float* pfData, unsigned nChannel, unsigned nSamples);
     /**
         Copy a number of samples from a specific channel of the BFormat.
     */
-    void ExtractStream(AmbFloat* pfData, AmbUInt nChannel, AmbUInt nSamples);
+    void ExtractStream(float* pfData, unsigned nChannel, unsigned nSamples);
 
     /**
         Copy the content of the buffer. It is assumed that the two objects are
@@ -63,25 +63,25 @@ public:
     /**
         Returns true if the configuration of the two objects match.
     */
-    AmbBool operator == (const CBFormat &bf);
+    bool operator == (const CBFormat &bf);
     /**
         Returns true if the configuration of the two objects don't match.
     */
-    AmbBool operator != (const CBFormat &bf);
+    bool operator != (const CBFormat &bf);
     CBFormat& operator += (const CBFormat &bf);
     CBFormat& operator -= (const CBFormat &bf);
     CBFormat& operator *= (const CBFormat &bf);
     CBFormat& operator /= (const CBFormat &bf);
-    CBFormat& operator += (const AmbFloat &fValue);
-    CBFormat& operator -= (const AmbFloat &fValue);
-    CBFormat& operator *= (const AmbFloat &fValue);
-    CBFormat& operator /= (const AmbFloat &fValue);
+    CBFormat& operator += (const float &fValue);
+    CBFormat& operator -= (const float &fValue);
+    CBFormat& operator *= (const float &fValue);
+    CBFormat& operator /= (const float &fValue);
 
 protected:
-    AmbUInt m_nSamples;
-    AmbUInt m_nDataLength;
-    AmbFloat* m_pfData;
-    AmbFloat** m_ppfChannels;
+    unsigned m_nSamples;
+    unsigned m_nDataLength;
+    float* m_pfData;
+    float** m_ppfChannels;
 
     //friend classes cannot be pure abstract type,
     //so must list each friend class manually

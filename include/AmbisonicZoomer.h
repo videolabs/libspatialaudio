@@ -34,7 +34,7 @@ public:
         lost. The last argument is not used, it is just there to match with
         the base class's form. Returns true if successful.
     */
-    virtual AmbBool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
+    virtual bool Configure(unsigned nOrder, bool b3D, unsigned nMisc);
     /**
         Not implemented.
     */
@@ -47,30 +47,30 @@ public:
         Set zoom factor. This is in a range from -1 to 1, with 0 being no zoom,
         1 full forward zoom, and -1 full forward backwards.
     */
-    void SetZoom(AmbFloat fZoom);
+    void SetZoom(float fZoom);
     /**
         Get zoom factor.
     */
-    AmbFloat GetZoom();
+    float GetZoom();
     /**
         Zoom into B-Format stream.
     */
-    void Process(CBFormat* pBFSrcDst, AmbUInt nSamples);
+    void Process(CBFormat* pBFSrcDst, unsigned nSamples);
     /**
         Compute factorial of integer
     */
-    AmbFloat factorial(AmbUInt M);
+    float factorial(unsigned M);
 protected:
     CAmbisonicDecoder m_AmbDecoderFront;
 
-    AmbFloat* m_AmbEncoderFront;
-    AmbFloat* m_AmbEncoderFront_weighted;
-    AmbFloat* a_m;
+    float* m_AmbEncoderFront;
+    float* m_AmbEncoderFront_weighted;
+    float* a_m;
 
-    AmbFloat m_fZoom;
-    AmbFloat m_fZoomRed;
-    AmbFloat m_AmbFrontMic;
-    AmbFloat m_fZoomBlend;
+    float m_fZoom;
+    float m_fZoomRed;
+    float m_AmbFrontMic;
+    float m_fZoomBlend;
 };
 
 #endif // _AMBISONIC_ZOOMER_H

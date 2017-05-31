@@ -27,11 +27,6 @@
 #define DEFAULT_HRTFSET_DIFFUSED false
 
 
-typedef float AmbFloat;
-typedef bool AmbBool;
-typedef int AmbInt;
-typedef unsigned int AmbUInt;
-
 //TODO
 enum BFormatChannels3D
 {
@@ -55,44 +50,44 @@ enum BFormatChannels3D
 typedef struct PolarPoint
 {
     /** horizontal positioning */
-    AmbFloat fAzimuth;
+    float fAzimuth;
     /** vertical positioning */
-    AmbFloat fElevation;
+    float fElevation;
     /** distance from centre of soundfield (radius)*/
-    AmbFloat fDistance;
+    float fDistance;
 } PolarPoint;
 
 /**
     Convert degrees to radians.
 */
-AmbFloat DegreesToRadians(AmbFloat fDegrees);
+float DegreesToRadians(float fDegrees);
 
 /**
     Convert radians to degrees.
 */
-AmbFloat RadiansToDegrees(AmbFloat fRadians);
+float RadiansToDegrees(float fRadians);
 
 /**
     Get the number of BFormat components for a given BFormat configuration.
 */
-AmbUInt OrderToComponents(AmbUInt nOrder, AmbBool b3D);
+unsigned OrderToComponents(unsigned nOrder, bool b3D);
 
 /**
     Returns the index component of a BFormat stream where components of a given
     configuration start. For example, in a BFormat stream, the components of a
     2nd order 3D configuration, would start at index 4.
 */
-AmbUInt OrderToComponentPosition(AmbUInt nOrder, AmbBool b3D);
+unsigned OrderToComponentPosition(unsigned nOrder, bool b3D);
 
 /**
     Get the recommended minimum speakers needed to decode a BFormat stream of
     a given configuration.
 */
-AmbUInt OrderToSpeakers(AmbUInt nOrder, AmbBool b3D);
+unsigned OrderToSpeakers(unsigned nOrder, bool b3D);
 
 /**
     Get the label for a given index component in a BFormat stream.
 */
-char ComponentToChannelLabel(AmbUInt nComponent, AmbBool b3D);
+char ComponentToChannelLabel(unsigned nComponent, bool b3D);
 
 #endif //_AMBISONICCOMMONS_H

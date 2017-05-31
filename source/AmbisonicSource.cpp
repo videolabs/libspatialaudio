@@ -38,7 +38,7 @@ CAmbisonicSource::~CAmbisonicSource()
         delete [] m_pfOrderWeights;
 }
 
-bool CAmbisonicSource::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
+bool CAmbisonicSource::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
 {
     bool success = CAmbisonicBase::Configure(nOrder, b3D, nMisc);
     if(!success)
@@ -48,9 +48,9 @@ bool CAmbisonicSource::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
         delete [] m_pfCoeff;
     if(m_pfOrderWeights)
         delete [] m_pfOrderWeights;
-    m_pfCoeff = new AmbFloat[m_nChannelCount];
-    memset(m_pfCoeff, 0, m_nChannelCount * sizeof(AmbFloat));
-    m_pfOrderWeights = new AmbFloat[m_nOrder + 1];
+    m_pfCoeff = new float[m_nChannelCount];
+    memset(m_pfCoeff, 0, m_nChannelCount * sizeof(float));
+    m_pfOrderWeights = new float[m_nOrder + 1];
 
     // for a Basic Ambisonics decoder all of the gains are set to 1.f
     SetOrderWeightAll(1.f);
@@ -60,19 +60,19 @@ bool CAmbisonicSource::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 
 void CAmbisonicSource::Reset()
 {
-    //memset(m_pfCoeff, 0, m_nChannelCount * sizeof(AmbFloat));
+    //memset(m_pfCoeff, 0, m_nChannelCount * sizeof(float));
 }
 
 void CAmbisonicSource::Refresh()
 {
-    AmbFloat fCosAzim = cosf(m_polPosition.fAzimuth);
-    AmbFloat fSinAzim = sinf(m_polPosition.fAzimuth);
-    AmbFloat fCosElev = cosf(m_polPosition.fElevation);
-    AmbFloat fSinElev = sinf(m_polPosition.fElevation);
+    float fCosAzim = cosf(m_polPosition.fAzimuth);
+    float fSinAzim = sinf(m_polPosition.fAzimuth);
+    float fCosElev = cosf(m_polPosition.fElevation);
+    float fSinElev = sinf(m_polPosition.fElevation);
 
-    AmbFloat fCos2Azim = cosf(2.f * m_polPosition.fAzimuth);
-    AmbFloat fSin2Azim = sinf(2.f * m_polPosition.fAzimuth);
-    AmbFloat fSin2Elev = sinf(2.f * m_polPosition.fElevation);
+    float fCos2Azim = cosf(2.f * m_polPosition.fAzimuth);
+    float fSin2Azim = sinf(2.f * m_polPosition.fAzimuth);
+    float fSin2Elev = sinf(2.f * m_polPosition.fElevation);
 
     if(m_b3D)
     {
@@ -130,7 +130,7 @@ void CAmbisonicSource::Refresh()
         }
     }
 
-    for(AmbUInt ni = 0; ni < m_nChannelCount; ni++)
+    for(unsigned ni = 0; ni < m_nChannelCount; ni++)
         m_pfCoeff[ni] *= m_fGain;
 }
 
@@ -144,40 +144,40 @@ PolarPoint CAmbisonicSource::GetPosition()
     return m_polPosition;
 }
 
-void CAmbisonicSource::SetOrderWeight(AmbUInt nOrder, AmbFloat fWeight)
+void CAmbisonicSource::SetOrderWeight(unsigned nOrder, float fWeight)
 {
     m_pfOrderWeights[nOrder] = fWeight;
 }
 
-void CAmbisonicSource::SetOrderWeightAll(AmbFloat fWeight)
+void CAmbisonicSource::SetOrderWeightAll(float fWeight)
 {
-    for(AmbUInt niOrder = 0; niOrder < m_nOrder + 1; niOrder++)
+    for(unsigned niOrder = 0; niOrder < m_nOrder + 1; niOrder++)
     {
         m_pfOrderWeights[niOrder] = fWeight;
     }
 }
 
-void CAmbisonicSource::SetCoefficient(AmbUInt nChannel, AmbFloat fCoeff)
+void CAmbisonicSource::SetCoefficient(unsigned nChannel, float fCoeff)
 {
     m_pfCoeff[nChannel] = fCoeff;
 }
 
-AmbFloat CAmbisonicSource::GetOrderWeight(AmbUInt nOrder)
+float CAmbisonicSource::GetOrderWeight(unsigned nOrder)
 {
     return m_pfOrderWeights[nOrder];
 }
 
-AmbFloat CAmbisonicSource::GetCoefficient(AmbUInt nChannel)
+float CAmbisonicSource::GetCoefficient(unsigned nChannel)
 {
     return m_pfCoeff[nChannel];
 }
 
-void CAmbisonicSource::SetGain(AmbFloat fGain)
+void CAmbisonicSource::SetGain(float fGain)
 {
     m_fGain = fGain;
 }
 
-AmbFloat CAmbisonicSource::GetGain()
+float CAmbisonicSource::GetGain()
 {
     return m_fGain;
 }

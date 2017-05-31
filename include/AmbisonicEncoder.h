@@ -34,7 +34,7 @@ public:
         Re-create the object for the given configuration. Previous data is
         lost. Returns true if successful.
     */
-    virtual bool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
+    virtual bool Configure(unsigned nOrder, bool b3D, unsigned nMisc);
     /**
         Recalculate coefficients, and apply normalisation factors.
     */
@@ -42,7 +42,7 @@ public:
     /**
         Encode mono stream to B-Format.
     */
-    void Process(AmbFloat* pfSrc, AmbUInt nSamples, CBFormat* pBFDst);
+    void Process(float* pfSrc, unsigned nSamples, CBFormat* pBFDst);
 };
 
 #endif // _AMBISONIC_ENCODER_H

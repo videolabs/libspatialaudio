@@ -22,7 +22,7 @@ CAmbisonicEncoder::CAmbisonicEncoder()
 CAmbisonicEncoder::~CAmbisonicEncoder()
 { }
 
-bool CAmbisonicEncoder::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
+bool CAmbisonicEncoder::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
 {
     bool success = CAmbisonicSource::Configure(nOrder, b3D, nMisc);
     if(!success)
@@ -37,10 +37,10 @@ void CAmbisonicEncoder::Refresh()
     CAmbisonicSource::Refresh();
 }
 
-void CAmbisonicEncoder::Process(AmbFloat* pfSrc, AmbUInt nSamples, CBFormat* pfDst)
+void CAmbisonicEncoder::Process(float* pfSrc, unsigned nSamples, CBFormat* pfDst)
 {
-    AmbUInt niChannel = 0;
-    AmbUInt niSample = 0;
+    unsigned niChannel = 0;
+    unsigned niSample = 0;
     for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
     {
         for(niSample = 0; niSample < nSamples; niSample++)

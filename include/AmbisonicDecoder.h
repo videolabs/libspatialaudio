@@ -53,7 +53,7 @@ public:
         Else, if using one of the default configurations, nSpeakers does not
         need to be specified. Function returns true if successful.
     */
-    bool Configure(AmbUInt nOrder, AmbBool b3D, AmbInt nSpeakerSetUp, AmbUInt nSpeakers = 0);
+    bool Configure(unsigned nOrder, bool b3D, int nSpeakerSetUp, unsigned nSpeakers = 0);
     /**
         Resets all the speakers.
     */
@@ -65,55 +65,55 @@ public:
     /**
         Decode B-Format to speaker feeds.
     */
-    void Process(CBFormat* pBFSrc, AmbUInt nSamples, AmbFloat** ppfDst);
+    void Process(CBFormat* pBFSrc, unsigned nSamples, float** ppfDst);
     /**
         Returns the current speaker setup, which is a ::SpeakerSetUps
         enumeration.
     */
-    AmbInt GetSpeakerSetUp();
+    int GetSpeakerSetUp();
     /**
         Returns the number of speakers in the current speaker setup.
     */
-    AmbUInt GetSpeakerCount();
+    unsigned GetSpeakerCount();
     /**
         Used when current speaker setup is ::kCustomSpeakerSetUp, to position
         each speaker. Should be used by iterating nSpeaker for the number of speakers
         declared present in the current speaker setup, using polPosition to position
         each on.
     */
-    void SetPosition(AmbUInt nSpeaker, PolarPoint polPosition);
+    void SetPosition(unsigned nSpeaker, PolarPoint polPosition);
     /**
         Used when current speaker setup is ::kCustomSpeakerSetUp, it returns
         the position of the speaker of index nSpeaker, in the current speaker
         setup.
     */
-    PolarPoint GetPosition(AmbUInt nSpeaker);
+    PolarPoint GetPosition(unsigned nSpeaker);
     /**
         Sets the weight [0,1] for the spherical harmonics of the given order,
         at the given speaker.
     */
-    void SetOrderWeight(AmbUInt nSpeaker, AmbUInt nOrder, AmbFloat fWeight);
+    void SetOrderWeight(unsigned nSpeaker, unsigned nOrder, float fWeight);
     /**
         Returns the weight [0,1] for the spherical harmonics of the given order,
         at the given speaker.
     */
-    AmbFloat GetOrderWeight(AmbUInt nSpeaker, AmbUInt nOrder);
+    float GetOrderWeight(unsigned nSpeaker, unsigned nOrder);
     /**
         Gets the coefficient of the specified channel/component of the
         specified speaker. Useful for the Binauralizer.
     */
-    virtual AmbFloat GetCoefficient(AmbUInt nSpeaker, AmbUInt nChannel);
+    virtual float GetCoefficient(unsigned nSpeaker, unsigned nChannel);
     /**
         Sets the coefficient of the specified channel/component of the
         specified speaker. Useful for presets for irregular physical loudspeakery arrays
     */
-    void SetCoefficient(AmbUInt nSpeaker, AmbUInt nChannel, AmbFloat fCoeff);
+    void SetCoefficient(unsigned nSpeaker, unsigned nChannel, float fCoeff);
 
 protected:
-    void SpeakerSetUp(AmbInt nSpeakerSetUp, AmbUInt nSpeakers = 1);
+    void SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers = 1);
 
-    AmbInt m_nSpeakerSetUp;
-    AmbUInt m_nSpeakers;
+    int m_nSpeakerSetUp;
+    unsigned m_nSpeakers;
     CAmbisonicSpeaker* m_pAmbSpeakers;
 };
 

@@ -27,22 +27,22 @@ CAmbisonicBase::~CAmbisonicBase()
 {
 }
 
-AmbUInt CAmbisonicBase::GetOrder()
+unsigned CAmbisonicBase::GetOrder()
 {
     return m_nOrder;
 }
 
-AmbUInt CAmbisonicBase::GetHeight()
+unsigned CAmbisonicBase::GetHeight()
 {
     return m_b3D;
 }
 
-AmbUInt CAmbisonicBase::GetChannelCount()
+unsigned CAmbisonicBase::GetChannelCount()
 {
     return m_nChannelCount;
 }
 
-AmbBool CAmbisonicBase::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
+bool CAmbisonicBase::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
 {
     m_nOrder = nOrder;
     m_b3D = b3D;

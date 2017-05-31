@@ -40,7 +40,7 @@ CAmbisonicProcessor::~CAmbisonicProcessor()
         kiss_fftr_free(m_pIFFT_psych_cfg);
     if (m_ppcpPsychFilters)
     {
-        for(AmbUInt i=0; i<=m_nOrder; i++)
+        for(unsigned i=0; i<=m_nOrder; i++)
             if(m_ppcpPsychFilters[i])
                 delete [] m_ppcpPsychFilters[i];
         delete [] m_ppcpPsychFilters;
@@ -48,22 +48,22 @@ CAmbisonicProcessor::~CAmbisonicProcessor()
     if(m_pcpScratch)
         delete [] m_pcpScratch;
     if(m_pfOverlap){
-        for(AmbUInt i=0; i<m_nChannelCount; i++)
+        for(unsigned i=0; i<m_nChannelCount; i++)
             if(m_pfOverlap[i])
                 delete [] m_pfOverlap[i];
         delete [] m_pfOverlap;
     }
 }
 
-bool CAmbisonicProcessor::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockSize, AmbUInt nMisc)
+bool CAmbisonicProcessor::Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, unsigned nMisc)
 {
     bool success = CAmbisonicBase::Configure(nOrder, b3D, nMisc);
     if(!success)
         return false;
     if(m_pfTempSample)
         delete [] m_pfTempSample;
-    m_pfTempSample = new AmbFloat[m_nChannelCount];
-    memset(m_pfTempSample, 0, m_nChannelCount * sizeof(AmbFloat));
+    m_pfTempSample = new float[m_nChannelCount];
+    memset(m_pfTempSample, 0, m_nChannelCount * sizeof(float));
 
     /* This bool should be set as a user option to turn optimisation on and off*/
     m_bOpt = true;
@@ -86,22 +86,22 @@ bool CAmbisonicProcessor::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockS
     m_fFFTScaler = 1.f / m_nFFTSize;
 
     //Allocate buffers
-        m_pfOverlap = new AmbFloat*[m_nChannelCount];
-    for(AmbUInt i=0; i<m_nChannelCount; i++)
-        m_pfOverlap[i] = new AmbFloat[m_nOverlapLength];
+        m_pfOverlap = new float*[m_nChannelCount];
+    for(unsigned i=0; i<m_nChannelCount; i++)
+        m_pfOverlap[i] = new float[m_nOverlapLength];
 
-    m_pfScratchBufferA = new AmbFloat[m_nFFTSize];
+    m_pfScratchBufferA = new float[m_nFFTSize];
     m_ppcpPsychFilters = new kiss_fft_cpx*[m_nOrder+1];
-    for(AmbUInt i = 0; i <= m_nOrder; i++)
+    for(unsigned i = 0; i <= m_nOrder; i++)
         m_ppcpPsychFilters[i] = new kiss_fft_cpx[m_nFFTBins];
 
     m_pcpScratch = new kiss_fft_cpx[m_nFFTBins];
 
     //Allocate temporary buffers for retrieving taps of psychoacoustic opimisation filters
-    AmbFloat* pfPsychIR[m_nOrder+1];
-    for(AmbUInt i = 0; i <= m_nOrder; i++)
+    float* pfPsychIR[m_nOrder+1];
+    for(unsigned i = 0; i <= m_nOrder; i++)
     {
-        pfPsychIR[i] = new AmbFloat[m_nTaps];
+        pfPsychIR[i] = new float[m_nTaps];
     }
 
     Reset();
@@ -112,7 +112,7 @@ bool CAmbisonicProcessor::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockS
 
     // get impulse responses for psychoacoustic optimisation based on playback system (2D or 3D) and playback order (1 to 3)
     //Convert from short to float representation
-    for (AmbUInt i_m = 0; i_m <= m_nOrder; i_m++){
+    for (unsigned i_m = 0; i_m <= m_nOrder; i_m++){
         for(unsigned i = 0; i < m_nTaps; i++)
             if(m_b3D){
                 switch(m_nOrder){
@@ -129,8 +129,8 @@ bool CAmbisonicProcessor::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockS
                 }
             }
         // Convert the impulse responses to the frequency domain
-        memcpy(m_pfScratchBufferA, pfPsychIR[i_m], m_nTaps * sizeof(AmbFloat));
-        memset(&m_pfScratchBufferA[m_nTaps], 0, (m_nFFTSize - m_nTaps) * sizeof(AmbFloat));
+        memcpy(m_pfScratchBufferA, pfPsychIR[i_m], m_nTaps * sizeof(float));
+        memset(&m_pfScratchBufferA[m_nTaps], 0, (m_nFFTSize - m_nTaps) * sizeof(float));
         kiss_fftr(m_pFFT_psych_cfg, m_pfScratchBufferA, m_ppcpPsychFilters[i_m]);
     }
     
@@ -139,8 +139,8 @@ bool CAmbisonicProcessor::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockS
 
 void CAmbisonicProcessor::Reset()
 {
-    for(AmbUInt i=0; i<m_nChannelCount; i++)
-        memset(m_pfOverlap[i], 0, m_nOverlapLength * sizeof(AmbFloat));
+    for(unsigned i=0; i<m_nChannelCount; i++)
+        memset(m_pfOverlap[i], 0, m_nOverlapLength * sizeof(float));
 }
 
 void CAmbisonicProcessor::Refresh()
@@ -176,7 +176,7 @@ Orientation CAmbisonicProcessor::GetOrientation()
     return m_orientation;
 }
 
-void CAmbisonicProcessor::Process(CBFormat* pBFSrcDst, AmbUInt nSamples)
+void CAmbisonicProcessor::Process(CBFormat* pBFSrcDst, unsigned nSamples)
 {
 
     /* Rotate the sound scene based on the rotation angle from the 360 video*/
@@ -199,7 +199,7 @@ void CAmbisonicProcessor::Process(CBFormat* pBFSrcDst, AmbUInt nSamples)
         ProcessOrder3_3D(pBFSrcDst, nSamples);
 }
 
-void CAmbisonicProcessor::ProcessOrder1_3D(CBFormat* pBFSrcDst, AmbUInt nSamples)
+void CAmbisonicProcessor::ProcessOrder1_3D(CBFormat* pBFSrcDst, unsigned nSamples)
 {
     /* Rotations are performed in the following order:
         1 - rotation around the z-axis
@@ -208,7 +208,7 @@ void CAmbisonicProcessor::ProcessOrder1_3D(CBFormat* pBFSrcDst, AmbUInt nSamples
     This is different to the rotations obtained from the video, which are around z, y' then x''.
     The rotation equations used here work for third order. However, for higher orders a recursive algorithm
     should be considered.*/
-    for(AmbUInt niSample = 0; niSample < nSamples; niSample++)
+    for(unsigned niSample = 0; niSample < nSamples; niSample++)
     {
         // Alpha rotation
         m_pfTempSample[kY] = -pBFSrcDst->m_ppfChannels[kX][niSample] * m_fSinAlpha
@@ -237,11 +237,11 @@ void CAmbisonicProcessor::ProcessOrder1_3D(CBFormat* pBFSrcDst, AmbUInt nSamples
     }
 }
 
-void CAmbisonicProcessor::ProcessOrder2_3D(CBFormat* pBFSrcDst, AmbUInt nSamples)
+void CAmbisonicProcessor::ProcessOrder2_3D(CBFormat* pBFSrcDst, unsigned nSamples)
 {
-    AmbFloat fSqrt3 = sqrt(3.f);
+    float fSqrt3 = sqrt(3.f);
 
-    for(AmbUInt niSample = 0; niSample < nSamples; niSample++)
+    for(unsigned niSample = 0; niSample < nSamples; niSample++)
     {
         // Alpha rotation
         m_pfTempSample[kV] = - pBFSrcDst->m_ppfChannels[kU][niSample] * m_fSin2Alpha
@@ -289,14 +289,14 @@ void CAmbisonicProcessor::ProcessOrder2_3D(CBFormat* pBFSrcDst, AmbUInt nSamples
     }
 }
 
-void CAmbisonicProcessor::ProcessOrder3_3D(CBFormat* pBFSrcDst, AmbUInt nSamples)
+void CAmbisonicProcessor::ProcessOrder3_3D(CBFormat* pBFSrcDst, unsigned nSamples)
 {
         /* (should move these somewhere that does recompute each time) */
-        AmbFloat fSqrt3_2 = sqrt(3.f/2.f);
-        AmbFloat fSqrt15 = sqrt(15.f);
-        AmbFloat fSqrt5_2 = sqrt(5.f/2.f);
+        float fSqrt3_2 = sqrt(3.f/2.f);
+        float fSqrt15 = sqrt(15.f);
+        float fSqrt5_2 = sqrt(5.f/2.f);
 
-    for(AmbUInt niSample = 0; niSample < nSamples; niSample++)
+    for(unsigned niSample = 0; niSample < nSamples; niSample++)
     {
         // Alpha rotation
         m_pfTempSample[kQ] = - pBFSrcDst->m_ppfChannels[kP][niSample] * m_fSin3Alpha
@@ -369,9 +369,9 @@ void CAmbisonicProcessor::ProcessOrder3_3D(CBFormat* pBFSrcDst, AmbUInt nSamples
 // If 2D Ambisonics is required then these equations need to be modified (they can be found in the 3D code for the first Z-rotation).
 // Generally, 2D-only rotations do not make sense for use with 360 degree videos.
 /*
-void CAmbisonicProcessor::ProcessOrder1_2D(CBFormat* pBFSrcDst, AmbUInt nSamples)
+void CAmbisonicProcessor::ProcessOrder1_2D(CBFormat* pBFSrcDst, unsigned nSamples)
 {
-    for(AmbUInt niSample = 0; niSample < nSamples; niSample++)
+    for(unsigned niSample = 0; niSample < nSamples; niSample++)
     {
         //Yaw
         m_pfTempSample[kX] = pBFSrcDst->m_ppfChannels[kX][niSample] * m_fCosYaw
@@ -384,9 +384,9 @@ void CAmbisonicProcessor::ProcessOrder1_2D(CBFormat* pBFSrcDst, AmbUInt nSamples
     }
 }
 
-void CAmbisonicProcessor::ProcessOrder2_2D(CBFormat* pBFSrcDst, AmbUInt nSamples)
+void CAmbisonicProcessor::ProcessOrder2_2D(CBFormat* pBFSrcDst, unsigned nSamples)
 {
-    for(AmbUInt niSample = 0; niSample < nSamples; niSample++)
+    for(unsigned niSample = 0; niSample < nSamples; niSample++)
     {
         //Yaw
         m_pfTempSample[kS] = pBFSrcDst->m_ppfChannels[kS][niSample] * m_fCosYaw
@@ -405,33 +405,33 @@ void CAmbisonicProcessor::ProcessOrder2_2D(CBFormat* pBFSrcDst, AmbUInt nSamples
     }
 }
 
-void CAmbisonicProcessor::ProcessOrder3_2D(CBFormat* pBFSrcDst, AmbUInt nSamples)
+void CAmbisonicProcessor::ProcessOrder3_2D(CBFormat* pBFSrcDst, unsigned nSamples)
 {
     //TODO
 }
 */
 
-void CAmbisonicProcessor::ShelfFilterOrder(CBFormat* pBFSrcDst, AmbUInt nSamples)
+void CAmbisonicProcessor::ShelfFilterOrder(CBFormat* pBFSrcDst, unsigned nSamples)
 {
     kiss_fft_cpx cpTemp;
 
-    AmbUInt iChannelOrder = 0;
+    unsigned iChannelOrder = 0;
 
     // Filter the Ambisonics channels
     // All  channels are filtered using linear phase FIR filters.
     // In the case of the 0th order signal (W channel) this takes the form of a delay
     // For all other channels shelf filters are used
-    memset(m_pfScratchBufferA, 0, m_nFFTSize * sizeof(AmbFloat));
-    for(AmbUInt niChannel = 0; niChannel < m_nChannelCount; niChannel++)
+    memset(m_pfScratchBufferA, 0, m_nFFTSize * sizeof(float));
+    for(unsigned niChannel = 0; niChannel < m_nChannelCount; niChannel++)
     {
 
         iChannelOrder = int(sqrt(niChannel));    //get the order of the current channel
 
-        memcpy(m_pfScratchBufferA, pBFSrcDst->m_ppfChannels[niChannel], m_nBlockSize * sizeof(AmbFloat));
-        memset(&m_pfScratchBufferA[m_nBlockSize], 0, (m_nFFTSize - m_nBlockSize) * sizeof(AmbFloat));
+        memcpy(m_pfScratchBufferA, pBFSrcDst->m_ppfChannels[niChannel], m_nBlockSize * sizeof(float));
+        memset(&m_pfScratchBufferA[m_nBlockSize], 0, (m_nFFTSize - m_nBlockSize) * sizeof(float));
         kiss_fftr(m_pFFT_psych_cfg, m_pfScratchBufferA, m_pcpScratch);
         // Perform the convolution in the frequency domain
-        for(AmbUInt ni = 0; ni < m_nFFTBins; ni++)
+        for(unsigned ni = 0; ni < m_nFFTBins; ni++)
         {
             cpTemp.r = m_pcpScratch[ni].r * m_ppcpPsychFilters[iChannelOrder][ni].r
                         - m_pcpScratch[ni].i * m_ppcpPsychFilters[iChannelOrder][ni].i;
@@ -441,13 +441,13 @@ void CAmbisonicProcessor::ShelfFilterOrder(CBFormat* pBFSrcDst, AmbUInt nSamples
         }
         // Convert from frequency domain back to time domain
         kiss_fftri(m_pIFFT_psych_cfg, m_pcpScratch, m_pfScratchBufferA);
-        for(AmbUInt ni = 0; ni < m_nFFTSize; ni++)
+        for(unsigned ni = 0; ni < m_nFFTSize; ni++)
             m_pfScratchBufferA[ni] *= m_fFFTScaler;
-                memcpy(pBFSrcDst->m_ppfChannels[niChannel], m_pfScratchBufferA, m_nBlockSize * sizeof(AmbFloat));
-        for(AmbUInt ni = 0; ni < m_nOverlapLength; ni++)
+                memcpy(pBFSrcDst->m_ppfChannels[niChannel], m_pfScratchBufferA, m_nBlockSize * sizeof(float));
+        for(unsigned ni = 0; ni < m_nOverlapLength; ni++)
                 {
                         pBFSrcDst->m_ppfChannels[niChannel][ni] += m_pfOverlap[niChannel][ni];
                 }
-                memcpy(m_pfOverlap[niChannel], &m_pfScratchBufferA[m_nBlockSize], m_nOverlapLength * sizeof(AmbFloat));
+                memcpy(m_pfOverlap[niChannel], &m_pfScratchBufferA[m_nBlockSize], m_nOverlapLength * sizeof(float));
     }
 }
