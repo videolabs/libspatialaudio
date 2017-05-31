@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.9)
 project(ambisonic)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -21,6 +21,12 @@ configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
+
+if(${HAVE_MYSOFA})
+    set(MYSOFA_LIB "-L${MYSOFA_ROOT_DIR}/lib -l:libmysofa.a")
+    set(MYSOFA_INCLUDE "-I${MYSOFA_ROOT_DIR}/include")
+endif(${HAVE_MYSOFA})
+
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ambisonic.pc.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
@@ -30,4 +36,4 @@ configure_file(
 install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib)
 install(FILES ${headers} DESTINATION include/ambisonic)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION lib/pkgconfig)
-install(FILES ${PROJECT_BINARY_DIR}/config.h DESTINATION include)
+install(FILES ${PROJECT_BINARY_DIR}/config.h DESTINATION include/ambisonic)
