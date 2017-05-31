@@ -28,7 +28,7 @@ CAmbisonicZoomer::~CAmbisonicZoomer()
 
 }
 
-AmbBool CAmbisonicZoomer::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
+bool CAmbisonicZoomer::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
 {
     bool success = CAmbisonicBase::Configure(nOrder, b3D, nMisc);
     if(!success)
@@ -41,19 +41,19 @@ AmbBool CAmbisonicZoomer::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 
     m_fZoomRed = 0.f;
 
-    m_AmbEncoderFront = new AmbFloat[m_nChannelCount];
-    m_AmbEncoderFront_weighted = new AmbFloat[m_nChannelCount];
-    a_m = new AmbFloat[m_nOrder];
+    m_AmbEncoderFront = new float[m_nChannelCount];
+    m_AmbEncoderFront_weighted = new float[m_nChannelCount];
+    a_m = new float[m_nOrder];
 
     // These weights a_m are applied to the channels of a corresponding order within the Ambisonics signals.
     // When applied to the encoded channels and decoded to a particular loudspeaker direction they will create a
     // virtual microphone pattern with no rear lobes.
     // When used for decoding this is known as in-phase decoding.
-    for(AmbUInt iOrder = 0; iOrder<=m_nOrder; iOrder++)
+    for(unsigned iOrder = 0; iOrder<=m_nOrder; iOrder++)
         a_m[iOrder] = (2*iOrder+1)*factorial(m_nOrder)*factorial(m_nOrder+1) / (factorial(m_nOrder+iOrder+1)*factorial(m_nOrder-iOrder));
 
-    AmbUInt iDegree=0;
-    for(AmbUInt iChannel = 0; iChannel<m_nChannelCount; iChannel++)
+    unsigned iDegree=0;
+    for(unsigned iChannel = 0; iChannel<m_nChannelCount; iChannel++)
     {
         m_AmbEncoderFront[iChannel] = m_AmbDecoderFront.GetCoefficient(0, iChannel);
         iDegree = (int)floor(sqrt(iChannel));
@@ -76,29 +76,29 @@ void CAmbisonicZoomer::Refresh()
     m_fZoomBlend = 1.f - m_fZoom;
 }
 
-void CAmbisonicZoomer::SetZoom(AmbFloat fZoom)
+void CAmbisonicZoomer::SetZoom(float fZoom)
 {
     // Limit the zoom value to always preserve the spacial effect.
     m_fZoom = std::min(fZoom, 0.99f);
 }
 
-AmbFloat CAmbisonicZoomer::GetZoom()
+float CAmbisonicZoomer::GetZoom()
 {
     return m_fZoom;
 }
 
-void CAmbisonicZoomer::Process(CBFormat* pBFSrcDst, AmbUInt nSamples)
+void CAmbisonicZoomer::Process(CBFormat* pBFSrcDst, unsigned nSamples)
 {
-    for(AmbUInt niSample = 0; niSample < nSamples; niSample++)
+    for(unsigned niSample = 0; niSample < nSamples; niSample++)
     {
-        AmbFloat fMic = 0.f;
+        float fMic = 0.f;
 
-        for(AmbUInt iChannel=0; iChannel<m_nChannelCount; iChannel++)
+        for(unsigned iChannel=0; iChannel<m_nChannelCount; iChannel++)
         {
             // virtual microphone with polar pattern narrowing as Ambisonic order increases
             fMic += m_AmbEncoderFront_weighted[iChannel] * pBFSrcDst->m_ppfChannels[iChannel][niSample];
         }
-        for(AmbUInt iChannel=0; iChannel<m_nChannelCount; iChannel++)
+        for(unsigned iChannel=0; iChannel<m_nChannelCount; iChannel++)
         {
             if(abs(m_AmbEncoderFront[iChannel])>1e-6)
             {
@@ -115,9 +115,9 @@ void CAmbisonicZoomer::Process(CBFormat* pBFSrcDst, AmbUInt nSamples)
     }
 }
 
-AmbFloat CAmbisonicZoomer::factorial(AmbUInt M)
+float CAmbisonicZoomer::factorial(unsigned M)
 {
-    AmbUInt ret = 1;
+    unsigned ret = 1;
     for(unsigned int i = 1; i <= M; ++i)
         ret *= i;
     return ret;

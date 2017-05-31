@@ -44,19 +44,19 @@ class CAmbisonicProcessor;
 class Orientation
 {
 public:
-    Orientation(AmbFloat fYaw, AmbFloat fPitch, AmbFloat fRoll)
+    Orientation(float fYaw, float fPitch, float fRoll)
         : fYaw(fYaw), fPitch(fPitch), fRoll(fRoll)
     {
-        AmbFloat fCosYaw = cosf(fYaw);
-        AmbFloat fSinYaw = sinf(fYaw);
-        AmbFloat fCosRoll = cosf(fRoll);
-        AmbFloat fSinRoll = sinf(fRoll);
-        AmbFloat fCosPitch = cosf(fPitch);
-        AmbFloat fSinPitch = sinf(fPitch);
+        float fCosYaw = cosf(fYaw);
+        float fSinYaw = sinf(fYaw);
+        float fCosRoll = cosf(fRoll);
+        float fSinRoll = sinf(fRoll);
+        float fCosPitch = cosf(fPitch);
+        float fSinPitch = sinf(fPitch);
 
         /* Conversion from yaw, pitch, roll (ZYX) to ZYZ convention to match rotation matrices
         This method reduces the complexity of the rotation matrices since the Z0 and Z1 rotations are the same form */
-        AmbFloat r33 = fCosPitch * fCosRoll;
+        float r33 = fCosPitch * fCosRoll;
         if (r33 == 1.f)
         {
             fBeta = 0.f;
@@ -74,14 +74,14 @@ public:
             else
             {
 
-                AmbFloat r32 = -fCosYaw * fSinRoll + fCosRoll * fSinPitch * fSinYaw ;
-                AmbFloat r31 = fCosRoll * fCosYaw * fSinPitch + fSinRoll * fSinYaw ;
+                float r32 = -fCosYaw * fSinRoll + fCosRoll * fSinPitch * fSinYaw ;
+                float r31 = fCosRoll * fCosYaw * fSinPitch + fSinRoll * fSinYaw ;
                 fAlpha = atan2( r32 , r31 );
 
                 fBeta = acos( r33 );
 
-                AmbFloat r23 = fCosPitch * fSinRoll;
-                AmbFloat r13 = -fSinPitch;
+                float r23 = fCosPitch * fSinRoll;
+                float r13 = -fSinPitch;
                 fGamma = atan2( r23 , -r13 );
             }
         }
@@ -91,20 +91,20 @@ public:
 
 private:
     /** rotation around the Z axis (yaw) */
-    AmbFloat fYaw;
+    float fYaw;
     /** rotation around the Y axis (pitch) */
-    AmbFloat fPitch;
+    float fPitch;
     /** rotation around the X axis (roll) */
-    AmbFloat fRoll;
+    float fRoll;
 
     /** These angles are obtained from Yaw, Pitch and Roll (ZYX convention)**/
     /** They follow the ZYZ convention to match the rotation equations **/
     /** rotation around the Z axis */
-    AmbFloat fAlpha;
+    float fAlpha;
     /** rotation around the X axis */
-    AmbFloat fBeta;
+    float fBeta;
     /** rotation around the new Z axis */
-    AmbFloat fGamma;
+    float fGamma;
 };
 
 
@@ -123,7 +123,7 @@ public:
         lost. The last argument is not used, it is just there to match with 
         the base class's form. Returns true if successful.
     */
-    bool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nBlockSize, AmbUInt nMisc);
+    bool Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, unsigned nMisc);
     /**
         Not implemented.
     */
@@ -143,55 +143,55 @@ public:
     /**
         Rotate B-Format stream.
     */
-    void Process(CBFormat* pBFSrcDst, AmbUInt nSamples);
+    void Process(CBFormat* pBFSrcDst, unsigned nSamples);
 
 private:
-    void ProcessOrder1_3D(CBFormat* pBFSrcDst, AmbUInt nSamples);
-    void ProcessOrder2_3D(CBFormat* pBFSrcDst, AmbUInt nSamples);
-    void ProcessOrder3_3D(CBFormat* pBFSrcDst, AmbUInt nSamples);
-    void ProcessOrder1_2D(CBFormat* pBFSrcDst, AmbUInt nSamples);
-    void ProcessOrder2_2D(CBFormat* pBFSrcDst, AmbUInt nSamples);
-    void ProcessOrder3_2D(CBFormat* pBFSrcDst, AmbUInt nSamples);
+    void ProcessOrder1_3D(CBFormat* pBFSrcDst, unsigned nSamples);
+    void ProcessOrder2_3D(CBFormat* pBFSrcDst, unsigned nSamples);
+    void ProcessOrder3_3D(CBFormat* pBFSrcDst, unsigned nSamples);
+    void ProcessOrder1_2D(CBFormat* pBFSrcDst, unsigned nSamples);
+    void ProcessOrder2_2D(CBFormat* pBFSrcDst, unsigned nSamples);
+    void ProcessOrder3_2D(CBFormat* pBFSrcDst, unsigned nSamples);
 
-    void ShelfFilterOrder(CBFormat* pBFSrcDst, AmbUInt nSamples);
+    void ShelfFilterOrder(CBFormat* pBFSrcDst, unsigned nSamples);
 
 protected:
     Orientation m_orientation;
-    AmbFloat* m_pfTempSample;
+    float* m_pfTempSample;
 
     kiss_fftr_cfg m_pFFT_psych_cfg;
     kiss_fftr_cfg m_pIFFT_psych_cfg;
 
-    AmbFloat* m_pfScratchBufferA;
-    AmbFloat** m_pfOverlap;
-    AmbUInt m_nFFTSize;
-    AmbUInt m_nBlockSize;
-    AmbUInt m_nTaps;
-    AmbUInt m_nOverlapLength;
-    AmbUInt m_nFFTBins;
-    AmbFloat m_fFFTScaler;
+    float* m_pfScratchBufferA;
+    float** m_pfOverlap;
+    unsigned m_nFFTSize;
+    unsigned m_nBlockSize;
+    unsigned m_nTaps;
+    unsigned m_nOverlapLength;
+    unsigned m_nFFTBins;
+    float m_fFFTScaler;
 
     kiss_fft_cpx** m_ppcpPsychFilters;
     kiss_fft_cpx* m_pcpScratch;
 
-    AmbFloat m_fCosAlpha;
-    AmbFloat m_fSinAlpha;
-    AmbFloat m_fCosBeta;
-    AmbFloat m_fSinBeta;
-    AmbFloat m_fCosGamma;
-    AmbFloat m_fSinGamma;
-    AmbFloat m_fCos2Alpha;
-    AmbFloat m_fSin2Alpha;
-    AmbFloat m_fCos2Beta;
-    AmbFloat m_fSin2Beta;
-    AmbFloat m_fCos2Gamma;
-    AmbFloat m_fSin2Gamma;
-    AmbFloat m_fCos3Alpha;
-    AmbFloat m_fSin3Alpha;
-    AmbFloat m_fCos3Beta;
-    AmbFloat m_fSin3Beta;
-    AmbFloat m_fCos3Gamma;
-    AmbFloat m_fSin3Gamma;
+    float m_fCosAlpha;
+    float m_fSinAlpha;
+    float m_fCosBeta;
+    float m_fSinBeta;
+    float m_fCosGamma;
+    float m_fSinGamma;
+    float m_fCos2Alpha;
+    float m_fSin2Alpha;
+    float m_fCos2Beta;
+    float m_fSin2Beta;
+    float m_fCos2Gamma;
+    float m_fSin2Gamma;
+    float m_fCos3Alpha;
+    float m_fSin3Alpha;
+    float m_fCos3Beta;
+    float m_fSin3Beta;
+    float m_fCos3Gamma;
+    float m_fSin3Gamma;
 };
 
 #endif // _AMBISONIC_PROCESSOR_H

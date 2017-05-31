@@ -35,7 +35,7 @@ public:
         lost. The last argument is not used, it is just there to match with
         the base class's form. Returns true if successful.
     */
-    virtual bool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
+    virtual bool Configure(unsigned nOrder, bool b3D, unsigned nMisc);
     /**
         Not implemented.
     */
@@ -55,39 +55,39 @@ public:
     /**
         Sets the weight [0,1] for the spherical harmonics of the given order.
     */
-    virtual void SetOrderWeight(AmbUInt nOrder, AmbFloat fWeight);
+    virtual void SetOrderWeight(unsigned nOrder, float fWeight);
     /**
         Sets the weight [0,1] for the spherical harmonics of all orders.
     */
-    virtual void SetOrderWeightAll(AmbFloat fWeight);
+    virtual void SetOrderWeightAll(float fWeight);
     /**
         Sets the spherical harmonic coefficient for a given component
         Can be used for preset decoders to non-regular arrays where a Sampling decoder is sub-optimal
     */
-    virtual void SetCoefficient(AmbUInt nChannel, AmbFloat fCoeff);
+    virtual void SetCoefficient(unsigned nChannel, float fCoeff);
     /**
         Gets the weight [0,1] for the spherical harmonics of the given order.
     */
-    virtual AmbFloat GetOrderWeight(AmbUInt nOrder);
+    virtual float GetOrderWeight(unsigned nOrder);
     /**
         Gets the coefficient of the specified channel/component. Useful for the
         Binauralizer.
     */
-    virtual AmbFloat GetCoefficient(AmbUInt nChannel);
+    virtual float GetCoefficient(unsigned nChannel);
     /**
         Sets the source's gain.
     */
-    virtual void SetGain(AmbFloat fGain);
+    virtual void SetGain(float fGain);
     /**
         Gets the source's gain.
     */
-    virtual AmbFloat GetGain();
+    virtual float GetGain();
 
 protected:
-    AmbFloat* m_pfCoeff;
-    AmbFloat* m_pfOrderWeights;
+    float* m_pfCoeff;
+    float* m_pfOrderWeights;
     PolarPoint m_polPosition;
-    AmbFloat m_fGain;
+    float m_fGain;
 };
 
 #endif // _AMBISONIC_SOURCE_H

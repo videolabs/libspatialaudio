@@ -31,22 +31,22 @@ public:
     /**
         Gets the order of the current Ambisonic configuration.
     */
-    AmbUInt GetOrder();
+    unsigned GetOrder();
     /**
         Gets true or false depending on whether the current Ambisonic
         configuration has height(3D).
     */
-    AmbUInt GetHeight();
+    unsigned GetHeight();
     /**
         Gets the number of B-Format channels in the current Ambisonic
         configuration.
     */
-    AmbUInt GetChannelCount();
+    unsigned GetChannelCount();
     /**
         Re-create the object for the given configuration. Previous data is
         lost.
     */
-    virtual AmbBool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
+    virtual bool Configure(unsigned nOrder, bool b3D, unsigned nMisc);
     /**
         Not implemented.
     */
@@ -57,10 +57,10 @@ public:
     virtual void Refresh() = 0;
 
 protected:
-    AmbUInt m_nOrder;
-    AmbBool m_b3D;
-    AmbUInt m_nChannelCount;
-    AmbBool m_bOpt;
+    unsigned m_nOrder;
+    bool m_b3D;
+    unsigned m_nChannelCount;
+    bool m_bOpt;
 };
 
 #endif //_AMBISONIC_BASE_H

@@ -38,16 +38,16 @@ CAmbisonicEncoderDist::~CAmbisonicEncoderDist()
         delete [] m_pfDelayBuffer;
 }
 
-bool CAmbisonicEncoderDist::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleRate)
+bool CAmbisonicEncoderDist::Configure(unsigned nOrder, bool b3D, unsigned nSampleRate)
 {
     bool success = CAmbisonicEncoder::Configure(nOrder, b3D, 0);
     if(!success)
         return false;
     m_nSampleRate = nSampleRate;
-    m_nDelayBufferLength = (AmbUInt)((AmbFloat)knMaxDistance / knSpeedOfSound * m_nSampleRate + 0.5f);
+    m_nDelayBufferLength = (unsigned)((float)knMaxDistance / knSpeedOfSound * m_nSampleRate + 0.5f);
     if(m_pfDelayBuffer)
         delete [] m_pfDelayBuffer;
-    m_pfDelayBuffer = new AmbFloat[m_nDelayBufferLength];
+    m_pfDelayBuffer = new float[m_nDelayBufferLength];
     Reset();
     
     return true;
@@ -55,9 +55,9 @@ bool CAmbisonicEncoderDist::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nSamp
 
 void CAmbisonicEncoderDist::Reset()
 {
-    memset(m_pfDelayBuffer, 0, m_nDelayBufferLength * sizeof(AmbFloat));
+    memset(m_pfDelayBuffer, 0, m_nDelayBufferLength * sizeof(float));
     m_fDelay = m_polPosition.fDistance / knSpeedOfSound * m_nSampleRate + 0.5f;
-    m_nDelay = (AmbInt)m_fDelay;
+    m_nDelay = (int)m_fDelay;
     m_fDelay -= m_nDelay;
     m_nIn = 0;
     m_nOutA = (m_nIn - m_nDelay + m_nDelayBufferLength) % m_nDelayBufferLength;
@@ -68,8 +68,8 @@ void CAmbisonicEncoderDist::Refresh()
 {
     CAmbisonicEncoder::Refresh();
 
-    m_fDelay = fabs(m_polPosition.fDistance) / knSpeedOfSound * m_nSampleRate; //TODO abs() sees AmbFloat as int!
-    m_nDelay = (AmbInt)m_fDelay;
+    m_fDelay = fabs(m_polPosition.fDistance) / knSpeedOfSound * m_nSampleRate; //TODO abs() sees float as int!
+    m_nDelay = (int)m_fDelay;
     m_fDelay -= m_nDelay;
     m_nOutA = (m_nIn - m_nDelay + m_nDelayBufferLength) % m_nDelayBufferLength;
     m_nOutB = (m_nOutA + 1) % m_nDelayBufferLength;
@@ -87,11 +87,11 @@ void CAmbisonicEncoderDist::Refresh()
     }
 }
 
-void CAmbisonicEncoderDist::Process(AmbFloat* pfSrc, AmbUInt nSamples, CBFormat* pfDst)
+void CAmbisonicEncoderDist::Process(float* pfSrc, unsigned nSamples, CBFormat* pfDst)
 {
-    AmbUInt niChannel = 0;
-    AmbUInt niSample = 0;
-    AmbFloat fSrcSample = 0;
+    unsigned niChannel = 0;
+    unsigned niSample = 0;
+    float fSrcSample = 0;
 
     for(niSample = 0; niSample < nSamples; niSample++)
     {
@@ -115,12 +115,12 @@ void CAmbisonicEncoderDist::Process(AmbFloat* pfSrc, AmbUInt nSamples, CBFormat*
     }
 }
 
-void CAmbisonicEncoderDist::SetRoomRadius(AmbFloat fRoomRadius)
+void CAmbisonicEncoderDist::SetRoomRadius(float fRoomRadius)
 {
     m_fRoomRadius = fRoomRadius;
 }
 
-AmbFloat CAmbisonicEncoderDist::GetRoomRadius()
+float CAmbisonicEncoderDist::GetRoomRadius()
 {
     return m_fRoomRadius;
 }

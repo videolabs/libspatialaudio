@@ -33,7 +33,7 @@ public:
         lost. The last argument is not used, it is just there to match with 
         the base class's form. Returns true if successful.
     */
-    virtual bool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
+    virtual bool Configure(unsigned nOrder, bool b3D, unsigned nMisc);
     /**
         Recalculate coefficients, and apply normalisation factors.
     */
@@ -41,7 +41,7 @@ public:
     /**
         Decode B-Format to speaker feed.
     */
-    void Process(CBFormat* pBFSrc, AmbUInt nSamples, AmbFloat* pfDst);
+    void Process(CBFormat* pBFSrc, unsigned nSamples, float* pfDst);
 };
 
 #endif // _AMBISONIC_SPEAKER_H

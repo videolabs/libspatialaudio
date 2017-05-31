@@ -23,7 +23,7 @@ CAmbisonicSpeaker::CAmbisonicSpeaker()
 CAmbisonicSpeaker::~CAmbisonicSpeaker()
 { }
 
-bool CAmbisonicSpeaker::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
+bool CAmbisonicSpeaker::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
 {
     bool success = CAmbisonicSource::Configure(nOrder, b3D, nMisc);
     if(!success)
@@ -37,11 +37,11 @@ void CAmbisonicSpeaker::Refresh()
     CAmbisonicSource::Refresh();
 }
 
-void CAmbisonicSpeaker::Process(CBFormat* pBFSrc, AmbUInt nSamples, AmbFloat* pfDst)
+void CAmbisonicSpeaker::Process(CBFormat* pBFSrc, unsigned nSamples, float* pfDst)
 {
-    AmbUInt niChannel = 0;
-    AmbUInt niSample = 0;
-    memset(pfDst, 0, nSamples * sizeof(AmbFloat));
+    unsigned niChannel = 0;
+    unsigned niSample = 0;
+    memset(pfDst, 0, nSamples * sizeof(float));
     for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
     {
         if(m_b3D){ /* Decode to a 3D loudspeaker array */

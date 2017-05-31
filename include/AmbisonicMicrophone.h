@@ -36,18 +36,18 @@ public:
     /**
         Decode B-Format to speaker feed.
     */
-    void Process(CBFormat* pBFSrc, AmbUInt nSamples, AmbFloat* pfDst);
+    void Process(CBFormat* pBFSrc, unsigned nSamples, float* pfDst);
     /**
         Set the microphone's directivity.
     */
-    void SetDirectivity(AmbFloat fDirectivity);
+    void SetDirectivity(float fDirectivity);
     /**
         Get the microphone's directivity.
     */
-    AmbFloat GetDirectivity();
+    float GetDirectivity();
 
 protected:
-    AmbFloat m_fDirectivity;
+    float m_fDirectivity;
 };
 
 #endif // _AMBISONIC_MICROPHONE_H

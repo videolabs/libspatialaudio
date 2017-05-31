@@ -14,29 +14,29 @@
 
 #include "AmbisonicCommons.h"
 
-AmbFloat DegreesToRadians(AmbFloat fDegrees)
+float DegreesToRadians(float fDegrees)
 {
-    return fDegrees * (AmbFloat)M_PI / 180.f;
+    return fDegrees * (float)M_PI / 180.f;
 }
 
-AmbFloat RadiansToDegrees(AmbFloat fRadians)
+float RadiansToDegrees(float fRadians)
 {
-    return fRadians * 180.f / (AmbFloat)M_PI;
+    return fRadians * 180.f / (float)M_PI;
 }
 
-AmbUInt OrderToComponents(AmbUInt nOrder, AmbBool b3D)
+unsigned OrderToComponents(unsigned nOrder, bool b3D)
 {
     if(b3D)
-        return (AmbUInt) powf(nOrder + 1.f, 2.f);
+        return (unsigned) powf(nOrder + 1.f, 2.f);
     else
         return nOrder * 2 + 1;
 }
 
-AmbUInt OrderToComponentPosition(AmbUInt nOrder, AmbBool b3D)
+unsigned OrderToComponentPosition(unsigned nOrder, bool b3D)
 {
 
 
-    AmbUInt nIndex = 0;
+    unsigned nIndex = 0;
 
     if(b3D)
     {
@@ -62,7 +62,7 @@ AmbUInt OrderToComponentPosition(AmbUInt nOrder, AmbBool b3D)
     return nIndex;
 }
 
-AmbUInt OrderToSpeakers(AmbUInt nOrder, AmbBool b3D)
+unsigned OrderToSpeakers(unsigned nOrder, bool b3D)
 {
 
     if(b3D)
@@ -71,7 +71,7 @@ AmbUInt OrderToSpeakers(AmbUInt nOrder, AmbBool b3D)
         return nOrder * 2 + 2;
 }
 
-char ComponentToChannelLabel(AmbUInt nComponent, AmbBool b3D)
+char ComponentToChannelLabel(unsigned nComponent, bool b3D)
 {
 
     char cLabel = ' ';

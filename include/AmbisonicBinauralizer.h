@@ -41,11 +41,11 @@ public:
         used for the processing, and this can be used to offset the delay 
         this causes. The function returns true if the call is successful.
     */
-    virtual AmbBool Configure(AmbUInt nOrder,
-                           AmbBool b3D,
-                           AmbUInt nSampleRate,
-                           AmbUInt nBlockSize,
-                           AmbUInt& tailLength,
+    virtual bool Configure(unsigned nOrder,
+                           bool b3D,
+                           unsigned nSampleRate,
+                           unsigned nBlockSize,
+                           unsigned& tailLength,
                            std::string HRTFPath = "");
     /**
         Resets members.
@@ -62,29 +62,29 @@ public:
         program using this library to handle the blocks of the signal by FIFO
         buffers or other means.
     */
-    void Process(CBFormat* pBFSrc, AmbFloat** ppfDst);
+    void Process(CBFormat* pBFSrc, float** ppfDst);
 
 protected:
     CAmbisonicDecoder m_AmbDecoder;
 
-    AmbUInt m_nBlockSize;
-    AmbUInt m_nTaps;
-    AmbUInt m_nFFTSize;
-    AmbUInt m_nFFTBins;
-    AmbFloat m_fFFTScaler;
-    AmbUInt m_nOverlapLength;
+    unsigned m_nBlockSize;
+    unsigned m_nTaps;
+    unsigned m_nFFTSize;
+    unsigned m_nFFTBins;
+    float m_fFFTScaler;
+    unsigned m_nOverlapLength;
 
     kiss_fftr_cfg m_pFFT_cfg;
     kiss_fftr_cfg m_pIFFT_cfg;
     kiss_fft_cpx** m_ppcpFilters[2];
     kiss_fft_cpx* m_pcpScratch;
 
-    AmbFloat* m_pfScratchBufferA;
-    AmbFloat* m_pfScratchBufferB;
-    AmbFloat* m_pfScratchBufferC;
-    AmbFloat* m_pfOverlap[2];
+    float* m_pfScratchBufferA;
+    float* m_pfScratchBufferB;
+    float* m_pfScratchBufferC;
+    float* m_pfOverlap[2];
 
-    HRTF *getHRTF(AmbUInt nSampleRate, std::string HRTFPath);
+    HRTF *getHRTF(unsigned nSampleRate, std::string HRTFPath);
     virtual void ArrangeSpeakers();
     virtual void AllocateBuffers();
     virtual void DeallocateBuffers();

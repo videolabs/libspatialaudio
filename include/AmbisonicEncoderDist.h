@@ -18,8 +18,8 @@
 
 #include "AmbisonicEncoder.h"
 
-const AmbUInt knSpeedOfSound = 344;
-const AmbUInt knMaxDistance = 150;
+const unsigned knSpeedOfSound = 344;
+const unsigned knMaxDistance = 150;
 
 /// Ambisonic encoder with distance cues.
 
@@ -37,7 +37,7 @@ public:
         Re-create the object for the given configuration. Previous data is
         lost. Returns true if successful.
     */
-    virtual bool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleRate);
+    virtual bool Configure(unsigned nOrder, bool b3D, unsigned nSampleRate);
     /**
         Resets members such as delay lines.
     */
@@ -49,30 +49,30 @@ public:
     /**
         Encode mono stream to B-Format.
     */
-    void Process(AmbFloat* pfSrc, AmbUInt nSamples, CBFormat* pBFDst);
+    void Process(float* pfSrc, unsigned nSamples, CBFormat* pBFDst);
     /**
         Set the radius of the intended playback speaker setup which is used for
         the interior effect (W-Panning).
     */
-    void SetRoomRadius(AmbFloat fRoomRadius);
+    void SetRoomRadius(float fRoomRadius);
     /**
         Returns the radius of the intended playback speaker setup, which is
         used for the interior effect (W-Panning).
     */
-    AmbFloat GetRoomRadius();
+    float GetRoomRadius();
 
 protected:
-    AmbUInt m_nSampleRate;
-    AmbFloat m_fDelay;
-    AmbInt m_nDelay;
-    AmbUInt m_nDelayBufferLength;
-    AmbFloat* m_pfDelayBuffer;
-    AmbInt m_nIn;
-    AmbInt m_nOutA;
-    AmbInt m_nOutB;
-    AmbFloat m_fRoomRadius;
-    AmbFloat m_fInteriorGain;
-    AmbFloat m_fExteriorGain;
+    unsigned m_nSampleRate;
+    float m_fDelay;
+    int m_nDelay;
+    unsigned m_nDelayBufferLength;
+    float* m_pfDelayBuffer;
+    int m_nIn;
+    int m_nOutA;
+    int m_nOutB;
+    float m_fRoomRadius;
+    float m_fInteriorGain;
+    float m_fExteriorGain;
 };
 
 #endif // _AMBISONIC_ENCODER_DIST_H
