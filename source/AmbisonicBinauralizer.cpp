@@ -49,7 +49,6 @@ AmbBool CAmbisonicBinauralizer::Create(AmbUInt nOrder,
                                        AmbBool b3D,
                                        AmbUInt nSampleRate,
                                        AmbUInt nBlockSize,
-                                       AmbBool bDiffused,
                                        AmbUInt& tailLength,
                                        std::string HRTFPath)
 {    
@@ -80,7 +79,7 @@ AmbBool CAmbisonicBinauralizer::Create(AmbUInt nOrder,
     //Deallocate any buffers with previous settings
     DeallocateBuffers();
 
-    CAmbisonicBase::Create(nOrder, b3D, bDiffused);
+    CAmbisonicBase::Create(nOrder, b3D, 0);
     //Position speakers and recalculate coefficients
     ArrangeSpeakers();
 
@@ -350,13 +349,14 @@ HRTF *CAmbisonicBinauralizer::getHRTF(AmbUInt nSampleRate, std::string HRTFPath)
 
 #ifdef HAVE_MYSOFA
     if (HRTFPath == "")
-        p_hrtf = new MIT_HRTF(nSampleRate, false);
+        p_hrtf = new MIT_HRTF(nSampleRate);
     else
         p_hrtf = new SOFA_HRTF(HRTFPath, nSampleRate);
 #else
     if (HRTFPath != "")
         return false;
     p_hrtf = new MIT_HRTF(nSampleRate, bDiffused);
+    p_hrtf = new MIT_HRTF(nSampleRate);
 #endif
 
     if (p_hrtf == NULL)
