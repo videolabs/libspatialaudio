@@ -16,50 +16,22 @@
 #include "SpeakersBinauralizer.h"
 
 
-SpeakersBinauralizer::SpeakersBinauralizer()
-{
-    m_nBlockSize = 0;
-    m_nTaps = 0;
-    m_nFFTSize = 0;
-    m_nFFTBins = 0;
-    m_fFFTScaler = 0.f;
-    m_nOverlapLength = 0;
-    m_nSpeakers = 0;
-
-    m_pfScratchBufferA = nullptr;
-    m_pfScratchBufferB = nullptr;
-    m_pfOverlap[0] = nullptr;
-    m_pfOverlap[1] = nullptr;
-
-    m_pFFT_cfg = nullptr; //TODO: Remove all the NULL dependencies
-    m_pIFFT_cfg = nullptr;
-    m_ppcpFilters[0] = nullptr;
-    m_ppcpFilters[1] = nullptr;
-    m_pcpScratch = nullptr;
-}
-
-SpeakersBinauralizer::~SpeakersBinauralizer()
-{
-    DeallocateBuffers();
-}
-
 AmbBool SpeakersBinauralizer::Create(AmbUInt nSampleRate,
                              AmbUInt nBlockSize,
-                             AmbBool bDiffused,
                              CAmbisonicSpeaker *speakers,
                              AmbUInt nSpeakers,
-                             AmbUInt& tailLength)
+                             AmbUInt& tailLength,
+                             std::string HRTFPath)
 {
         //Iterators
         AmbUInt niEar = 0;
         AmbUInt niTap = 0;
 
-        //How many taps will there be in the HRTFs
-        tailLength = mit_hrtf_availability(0, 0, nSampleRate, bDiffused);
-        if(!tailLength)
-                return false;
+        HRTF *p_hrtf = getHRTF(nSampleRate, HRTFPath);
+        if (p_hrtf == NULL)
+            return false;
 
-        m_nTaps = tailLength;
+        m_nTaps = tailLength = p_hrtf->getHRTFLen();
         m_nBlockSize = nBlockSize;
 
         //What will the overlap size be?
@@ -83,13 +55,9 @@ AmbBool SpeakersBinauralizer::Create(AmbUInt nSampleRate,
         AllocateBuffers();
 
         //Allocate temporary buffers for retrieving taps from mit_hrtf_lib
-        short* psHRTF[2];
         AmbFloat* pfHRTF[2];
         for(niEar = 0; niEar < 2; niEar++)
-        {
-            psHRTF[niEar] = new short[m_nTaps];
             pfHRTF[niEar] = new AmbFloat[m_nTaps];
-        }
 
         //Allocate buffers for HRTF accumulators
         AmbFloat** ppfAccumulator[2];
@@ -105,22 +73,15 @@ AmbBool SpeakersBinauralizer::Create(AmbUInt nSampleRate,
 
         for(AmbUInt niChannel = 0; niChannel < nSpeakers; niChannel++)
         {
-            //What is the position of the current speaker
             PolarPoint position = speakers[niChannel].GetPosition();
-            AmbInt nAzimuth = (AmbInt)RadiansToDegrees(-position.fAzimuth);
-            if(nAzimuth > 180)
-                nAzimuth -= 360;
-            AmbInt nElevation = (AmbInt)RadiansToDegrees(position.fElevation);
-            //Get HRTFs for given position
-            AmbUInt nResult = mit_hrtf_get(&nAzimuth, &nElevation, nSampleRate, bDiffused, psHRTF[0], psHRTF[1]);
-            if(!nResult)
-                nResult = nResult;
-            //Convert from short to float representation
-            for(niTap = 0; niTap < m_nTaps; niTap++)
+
+            bool b_found = p_hrtf->get(position.fAzimuth, position.fElevation, pfHRTF);
+            if (!b_found)
             {
-                pfHRTF[0][niTap] = psHRTF[0][niTap] / 32767.f;
-                pfHRTF[1][niTap] = psHRTF[1][niTap] / 32767.f;
+                DeallocateBuffers();
+                return false;
             }
+
             //Accumulate channel/component HRTF
             for(niTap = 0; niTap < m_nTaps; niTap++)
             {
@@ -170,10 +131,7 @@ AmbBool SpeakersBinauralizer::Create(AmbUInt nSampleRate,
         }
 
         for(niEar = 0; niEar < 2; niEar++)
-        {
-            delete [] psHRTF[niEar];
             delete [] pfHRTF[niEar];
-        }
 
         for(niEar = 0; niEar < 2; niEar++)
         {
@@ -183,12 +141,6 @@ AmbBool SpeakersBinauralizer::Create(AmbUInt nSampleRate,
         }
 
     return true;
-}
-
-void SpeakersBinauralizer::Reset()
-{
-    memset(m_pfOverlap[0], 0, m_nOverlapLength * sizeof(AmbFloat));
-    memset(m_pfOverlap[1], 0, m_nOverlapLength * sizeof(AmbFloat));
 }
 
 
