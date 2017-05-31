@@ -3,7 +3,7 @@
 
 #include "config.h"
 
-#if HAVE_MYSOFA
+#ifdef HAVE_MYSOFA
 
 #include <string>
 
