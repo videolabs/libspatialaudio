@@ -22,6 +22,9 @@
 #include "AmbisonicEncoder.h"
 #include "kiss_fftr.h"
 
+#include "mit_hrtf.h"
+#include "sofa_hrtf.h"
+
 /// Ambisonic binauralizer
 
 /** B-Format to binaural decoder. */
@@ -81,9 +84,10 @@ protected:
     AmbFloat* m_pfScratchBufferC;
     AmbFloat* m_pfOverlap[2];
 
-    void ArrangeSpeakers();
-    void AllocateBuffers();
-    void DeallocateBuffers();
+    HRTF *getHRTF(AmbUInt nSampleRate, std::string HRTFPath);
+    virtual void ArrangeSpeakers();
+    virtual void AllocateBuffers();
+    virtual void DeallocateBuffers();
 };
 
 #endif // _AMBISONIC_BINAURALIZER_H

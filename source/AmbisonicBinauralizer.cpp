@@ -12,12 +12,9 @@
 /*#                                                                          #*/
 /*############################################################################*/
 
-#include "AmbisonicBinauralizer.h"
 #include <iostream>
 
-#include <mit_hrtf.h>
-#include <sofa_hrtf.h>
-#include <config.h>
+#include "AmbisonicBinauralizer.h"
 
 
 CAmbisonicBinauralizer::CAmbisonicBinauralizer()
@@ -61,25 +58,11 @@ AmbBool CAmbisonicBinauralizer::Create(AmbUInt nOrder,
     AmbUInt niSpeaker = 0;
     AmbUInt niTap = 0;
 
-    HRTF *p_hrtf;
-
-#ifdef HAVE_MYSOFA
-    if (HRTFPath == "")
-        p_hrtf = new MIT_HRTF(nSampleRate, bDiffused);
-    else
-        p_hrtf = new SOFA_HRTF(HRTFPath, nSampleRate);
-#else
-    if (HRTFPath != "")
-        return false;
-    p_hrtf = new MIT_HRTF(nSampleRate, bDiffused);
-#endif
-
-    if (p_hrtf == NULL || !p_hrtf->isLoaded())
+    HRTF *p_hrtf = getHRTF(nSampleRate, HRTFPath);
+    if (p_hrtf == NULL)
         return false;
 
     tailLength = m_nTaps = p_hrtf->getHRTFLen();
-
-
     m_nBlockSize = nBlockSize;
 
     //What will the overlap size be?
@@ -358,6 +341,35 @@ void CAmbisonicBinauralizer::ArrangeSpeakers()
     //Calculate all the speaker coefficients
     m_AmbDecoder.Refresh();
 }
+
+
+HRTF *CAmbisonicBinauralizer::getHRTF(AmbUInt nSampleRate, std::string HRTFPath)
+{
+    HRTF *p_hrtf;
+
+#ifdef HAVE_MYSOFA
+    if (HRTFPath == "")
+        p_hrtf = new MIT_HRTF(nSampleRate, false);
+    else
+        p_hrtf = new SOFA_HRTF(HRTFPath, nSampleRate);
+#else
+    if (HRTFPath != "")
+        return false;
+    p_hrtf = new MIT_HRTF(nSampleRate, bDiffused);
+#endif
+
+    if (p_hrtf == NULL)
+        return NULL;
+
+    if (!p_hrtf->isLoaded())
+    {
+        delete p_hrtf;
+        return NULL;
+    }
+
+    return p_hrtf;
+}
+
 
 void CAmbisonicBinauralizer::AllocateBuffers()
 {
