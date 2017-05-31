@@ -36,7 +36,7 @@ public:
         Gets true or false depending on whether the current Ambisonic
         configuration has height(3D).
     */
-    unsigned GetHeight();
+    bool GetHeight();
     /**
         Gets the number of B-Format channels in the current Ambisonic
         configuration.
