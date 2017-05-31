@@ -23,9 +23,9 @@ CAmbisonicSpeaker::CAmbisonicSpeaker()
 CAmbisonicSpeaker::~CAmbisonicSpeaker()
 { }
 
-bool CAmbisonicSpeaker::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
+bool CAmbisonicSpeaker::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 {
-    bool success = CAmbisonicSource::Create(nOrder, b3D, nMisc);
+    bool success = CAmbisonicSource::Configure(nOrder, b3D, nMisc);
     if(!success)
         return false;
     

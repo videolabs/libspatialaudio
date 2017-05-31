@@ -37,7 +37,7 @@ public:
         Re-create the buffers needed for the given configuration. Previous
         buffer contents are lost.
     */
-    bool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleCount);
+    bool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleCount);
     /**
         Fill the buffer with zeros.
     */

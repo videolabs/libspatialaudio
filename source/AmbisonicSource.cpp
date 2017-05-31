@@ -39,9 +39,9 @@ CAmbisonicSource::~CAmbisonicSource()
         delete [] m_pfOrderWeights;
 }
 
-bool CAmbisonicSource::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
+bool CAmbisonicSource::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc)
 {
-    bool success = CAmbisonicBase::Create(nOrder, b3D, nMisc);
+    bool success = CAmbisonicBase::Configure(nOrder, b3D, nMisc);
     if(!success)
         return false;
     

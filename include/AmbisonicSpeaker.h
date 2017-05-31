@@ -33,7 +33,7 @@ public:
         lost. The last argument is not used, it is just there to match with 
         the base class's form. Returns true if successful.
     */
-    virtual bool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
+    virtual bool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
     /**
         Recalculate coefficients, and apply normalisation factors.
     */

@@ -36,9 +36,9 @@ AmbUInt CBFormat::GetSampleCount()
     return m_nSamples;
 }
 
-bool CBFormat::Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleCount)
+bool CBFormat::Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nSampleCount)
 {
-    bool success = CAmbisonicBase::Create(nOrder, b3D, nSampleCount);
+    bool success = CAmbisonicBase::Configure(nOrder, b3D, nSampleCount);
     if(!success)
         return false;
 

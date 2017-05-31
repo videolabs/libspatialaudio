@@ -41,7 +41,7 @@ public:
         used for the processing, and this can be used to offset the delay 
         this causes. The function returns true if the call is successful.
     */
-    virtual AmbBool Create(AmbUInt nOrder,
+    virtual AmbBool Configure(AmbUInt nOrder,
                            AmbBool b3D,
                            AmbUInt nSampleRate,
                            AmbUInt nBlockSize,
@@ -58,7 +58,7 @@ public:
     /**
         Decode B-Format to binaural feeds. There is no arguement for the number
         of samples to process, as this is determined by the nBlockSize argument
-        in the constructor and Create() function. It is the responsibility of
+        in the constructor and Configure() function. It is the responsibility of
         program using this library to handle the blocks of the signal by FIFO
         buffers or other means.
     */

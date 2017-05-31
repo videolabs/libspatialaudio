@@ -14,7 +14,7 @@
 class SpeakersBinauralizer : public CAmbisonicBinauralizer
 {
 public:
-    AmbBool Create(AmbUInt nSampleRate,
+    AmbBool Configure(AmbUInt nSampleRate,
                    AmbUInt nBlockSize,
                    CAmbisonicSpeaker *speakers,
                    AmbUInt nSpeakers,

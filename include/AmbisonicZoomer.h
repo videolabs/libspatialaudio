@@ -35,7 +35,7 @@ public:
         lost. The last argument is not used, it is just there to match with
         the base class's form. Returns true if successful.
     */
-    virtual AmbBool Create(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
+    virtual AmbBool Configure(AmbUInt nOrder, AmbBool b3D, AmbUInt nMisc);
     /**
         Not implemented.
     */

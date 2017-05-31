@@ -16,7 +16,7 @@
 #include "SpeakersBinauralizer.h"
 
 
-AmbBool SpeakersBinauralizer::Create(AmbUInt nSampleRate,
+AmbBool SpeakersBinauralizer::Configure(AmbUInt nSampleRate,
                              AmbUInt nBlockSize,
                              CAmbisonicSpeaker *speakers,
                              AmbUInt nSpeakers,
