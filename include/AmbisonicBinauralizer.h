@@ -44,7 +44,6 @@ public:
                            AmbBool b3D,
                            AmbUInt nSampleRate,
                            AmbUInt nBlockSize,
-                           AmbBool bDiffused,
                            AmbUInt& tailLength,
                            std::string HRTFPath = "");
     /**

@@ -15,13 +15,9 @@
 
 #include "../include/mit_hrtf_lib.h"
 #include "normal/mit_hrtf_normal_44100.h"
-#include "diffuse/mit_hrtf_diffuse_44100.h"
 #include "normal/mit_hrtf_normal_48000.h"
-#include "diffuse/mit_hrtf_diffuse_48000.h"
 #include "normal/mit_hrtf_normal_88200.h"
-#include "diffuse/mit_hrtf_diffuse_88200.h"
 #include "normal/mit_hrtf_normal_96000.h"
-#include "diffuse/mit_hrtf_diffuse_96000.h"
 
 
 
@@ -32,15 +28,12 @@ int mit_hrtf_findIndexFor40Elev(int azimuth);
 
 
 
-unsigned int mit_hrtf_availability(int azimuth, int elevation, unsigned int samplerate, unsigned int diffused)
+unsigned int mit_hrtf_availability(int azimuth, int elevation, unsigned int samplerate)
 {
     if(elevation > 90 || elevation < -40)
         return 0;
 
     if(azimuth > 180 || azimuth < -180)
-        return 0;
-    
-    if(diffused > 1)
         return 0;
 
     if(samplerate == 44100)
@@ -57,7 +50,7 @@ unsigned int mit_hrtf_availability(int azimuth, int elevation, unsigned int samp
 
 
 
-unsigned int mit_hrtf_get(int* pAzimuth, int* pElevation, unsigned int samplerate, unsigned int diffused, short* psLeft, short* psRight)
+unsigned int mit_hrtf_get(int* pAzimuth, int* pElevation, unsigned int samplerate, short* psLeft, short* psRight)
 {
     int nInternalElevation = 0;
     float fAzimuthIncrement = 0;
@@ -75,7 +68,7 @@ unsigned int mit_hrtf_get(int* pAzimuth, int* pElevation, unsigned int samplerat
     unsigned int niTap = 0;
 
     //Check if the requested HRTF exists
-    if(!mit_hrtf_availability(*pAzimuth, *pElevation, samplerate, diffused))
+    if(!mit_hrtf_availability(*pAzimuth, *pElevation, samplerate))
         return 0;
 
     //Snap elevation to the nearest available elevation in the filter set
@@ -148,14 +141,11 @@ unsigned int mit_hrtf_get(int* pAzimuth, int* pElevation, unsigned int samplerat
         nAzimuthIndex = mit_hrtf_findIndexFor40Elev(nInternalAzimuth);
     }
 
-    //Assign pointer to appropriate array depending on saple rate, normal or diffused filters, elevation, and azimuth index.
+    //Assign pointer to appropriate array depending on saple rate, normal filters, elevation, and azimuth index.
     switch(samplerate)
     {
     case 44100:
-        if(diffused)
-            pFilter44 = &diffuse_44;
-        else
-            pFilter44 = &normal_44;
+        pFilter44 = &normal_44;
 
         switch(nInternalElevation)
         {
@@ -193,10 +183,7 @@ unsigned int mit_hrtf_get(int* pAzimuth, int* pElevation, unsigned int samplerat
         nTotalTaps = MIT_HRTF_44_TAPS;
         break;
     case 48000:
-        if(diffused)
-            pFilter48 = &diffuse_48;
-        else
-            pFilter48 = &normal_48;
+        pFilter48 = &normal_48;
 
         switch(nInternalElevation)
         {
@@ -234,10 +221,7 @@ unsigned int mit_hrtf_get(int* pAzimuth, int* pElevation, unsigned int samplerat
         nTotalTaps = MIT_HRTF_48_TAPS;
         break;
     case 88200:
-        if(diffused)
-            pFilter88 = &diffuse_88;
-        else
-            pFilter88 = &normal_88;
+        pFilter88 = &normal_88;
 
         switch(nInternalElevation)
         {
@@ -275,10 +259,7 @@ unsigned int mit_hrtf_get(int* pAzimuth, int* pElevation, unsigned int samplerat
         nTotalTaps = MIT_HRTF_88_TAPS;
         break;
     case 96000:
-        if(diffused)
-            pFilter96 = &diffuse_96;
-        else
-            pFilter96 = &normal_96;
+        pFilter96 = &normal_96;
 
         switch(nInternalElevation)
         {

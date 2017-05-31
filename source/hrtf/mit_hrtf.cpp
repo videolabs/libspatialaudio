@@ -5,10 +5,10 @@
 #include <mit_hrtf_lib.h>
 
 
-MIT_HRTF::MIT_HRTF(unsigned i_sampleRate, bool b_diffused)
-    : HRTF(i_sampleRate), b_diffused(b_diffused)
+MIT_HRTF::MIT_HRTF(unsigned i_sampleRate)
+    : HRTF(i_sampleRate)
 {
-    i_len = mit_hrtf_availability(0, 0, i_sampleRate, b_diffused);
+    i_len = mit_hrtf_availability(0, 0, i_sampleRate);
 }
 
 
@@ -20,7 +20,7 @@ bool MIT_HRTF::get(float f_azimuth, float f_elevation, float** pfHRTF)
     int nElevation = (int)RadiansToDegrees(f_elevation);
     //Get HRTFs for given position
     short psHRTF[2][i_len];
-    unsigned ret = mit_hrtf_get(&nAzimuth, &nElevation, i_sampleRate, b_diffused, psHRTF[0], psHRTF[1]);
+    unsigned ret = mit_hrtf_get(&nAzimuth, &nElevation, i_sampleRate, psHRTF[0], psHRTF[1]);
     if (ret == 0)
         return false;
 
