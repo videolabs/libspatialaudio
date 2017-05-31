@@ -38,7 +38,6 @@ find_package_handle_standard_args(MySofa DEFAULT_MSG
 )
 
 mark_as_advanced(
-    MYSOFA_ROOT_DIR
     MYSOFA_LIBRARIES
     MYSOFA_INCLUDE_DIRS
 )
