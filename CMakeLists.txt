@@ -8,13 +8,20 @@ file(GLOB_RECURSE sources LIST_DIRECTORIES false *.h *.cpp *.c)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-find_package(MySofa)
+find_package(MySofa QUIET)
+set(HAVE_MYSOFA ${MYSOFA_FOUND})
 
-include_directories(include include/hrtf source source/kiss_fft ${PROJECT_BINARY_DIR} ${MYSOFA_INCLUDE_DIRS})
+include_directories(include include/hrtf source source/kiss_fft ${PROJECT_BINARY_DIR})
+
+if(${MYSOFA_FOUND})
+    include_directories(${MYSOFA_INCLUDE_DIRS})
+endif(${MYSOFA_FOUND})
 
 add_library(ambisonic STATIC ${sources})
 
-target_link_libraries(ambisonic ${MYSOFA_LIBRARIES})
+if(${MYSOFA_FOUND})
+    target_link_libraries(ambisonic ${MYSOFA_LIBRARIES})
+endif(${MYSOFA_FOUND})
 
 set(HAVE_MYSOFA ${MYSOFA_FOUND})
 configure_file(

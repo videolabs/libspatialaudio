@@ -353,8 +353,7 @@ HRTF *CAmbisonicBinauralizer::getHRTF(AmbUInt nSampleRate, std::string HRTFPath)
         p_hrtf = new SOFA_HRTF(HRTFPath, nSampleRate);
 #else
     if (HRTFPath != "")
-        return false;
-    p_hrtf = new MIT_HRTF(nSampleRate, bDiffused);
+        return NULL;
     p_hrtf = new MIT_HRTF(nSampleRate);
 #endif
 

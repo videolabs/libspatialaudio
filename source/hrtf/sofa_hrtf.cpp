@@ -3,7 +3,7 @@
 
 #include <sofa_hrtf.h>
 
-#if HAVE_MYSOFA
+#ifdef HAVE_MYSOFA
 
 #include <AmbisonicCommons.h>
 
