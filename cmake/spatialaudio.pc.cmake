@@ -1,5 +1,4 @@
 prefix=@CMAKE_INSTALL_PREFIX@
-prefix_libmysofa=@MYSOFA_ROOT_DIR@
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
