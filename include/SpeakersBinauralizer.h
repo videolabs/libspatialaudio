@@ -25,7 +25,6 @@ public:
     void Process(float** pBFSrc, float** ppfDst);
 
 protected:
-    CAmbisonicSpeaker *m_speakers;
     unsigned m_nSpeakers;
 
     virtual void AllocateBuffers();

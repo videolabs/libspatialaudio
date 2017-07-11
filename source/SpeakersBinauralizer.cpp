@@ -53,7 +53,6 @@ bool SpeakersBinauralizer::Configure(unsigned nSampleRate,
         //Deallocate any buffers with previous settings
         DeallocateBuffers();
 
-        m_speakers = speakers;
         m_nSpeakers = nSpeakers;
 
         //Allocate buffers with new settings
