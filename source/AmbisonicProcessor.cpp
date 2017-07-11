@@ -99,10 +99,10 @@ bool CAmbisonicProcessor::Configure(unsigned nOrder, bool b3D, unsigned nBlockSi
     m_pcpScratch = new kiss_fft_cpx[m_nFFTBins];
 
     //Allocate temporary buffers for retrieving taps of psychoacoustic opimisation filters
-    float* pfPsychIR[m_nOrder+1];
+    std::unique_ptr<float[]> pfPsychIR[m_nOrder+1];
     for(unsigned i = 0; i <= m_nOrder; i++)
     {
-        pfPsychIR[i] = new float[m_nTaps];
+        pfPsychIR[i].reset(new float[m_nTaps]);
     }
 
     Reset();
@@ -130,11 +130,11 @@ bool CAmbisonicProcessor::Configure(unsigned nOrder, bool b3D, unsigned nBlockSi
                 }
             }
         // Convert the impulse responses to the frequency domain
-        memcpy(m_pfScratchBufferA, pfPsychIR[i_m], m_nTaps * sizeof(float));
+        memcpy(m_pfScratchBufferA, pfPsychIR[i_m].get(), m_nTaps * sizeof(float));
         memset(&m_pfScratchBufferA[m_nTaps], 0, (m_nFFTSize - m_nTaps) * sizeof(float));
         kiss_fftr(m_pFFT_psych_cfg, m_pfScratchBufferA, m_ppcpPsychFilters[i_m]);
     }
-    
+
     return true;
 }
 
