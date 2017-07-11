@@ -221,14 +221,9 @@ void SpeakersBinauralizer::DeallocateBuffers()
     for(unsigned niEar = 0; niEar < 2; niEar++)
     {
         for(unsigned niChannel = 0; niChannel < m_nSpeakers; niChannel++)
-        {
-            if(m_ppcpFilters[niEar][niChannel])
-                delete [] m_ppcpFilters[niEar][niChannel];
-        }
-        if(m_ppcpFilters[niEar])
-            delete [] m_ppcpFilters[niEar];
+            delete [] m_ppcpFilters[niEar][niChannel];
+        delete [] m_ppcpFilters[niEar];
     }
 
-    if(m_pcpScratch)
-        delete [] m_pcpScratch;
+    delete [] m_pcpScratch;
 }
