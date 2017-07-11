@@ -22,11 +22,6 @@ CAmbisonicZoomer::CAmbisonicZoomer()
     m_fZoom = 0;
 }
 
-CAmbisonicZoomer::~CAmbisonicZoomer()
-{
-
-}
-
 bool CAmbisonicZoomer::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
 {
     bool success = CAmbisonicBase::Configure(nOrder, b3D, nMisc);
