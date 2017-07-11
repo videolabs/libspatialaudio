@@ -20,6 +20,8 @@
 #include "AmbisonicDecoder.h"
 #include "BFormat.h"
 
+#include <memory>
+
 /// Ambisonic zoomer.
 
 /** This object is used to apply a zoom effect into BFormat soundfields. */
@@ -63,9 +65,9 @@ public:
 protected:
     CAmbisonicDecoder m_AmbDecoderFront;
 
-    float* m_AmbEncoderFront;
-    float* m_AmbEncoderFront_weighted;
-    float* a_m;
+    std::unique_ptr<float[]> m_AmbEncoderFront;
+    std::unique_ptr<float[]> m_AmbEncoderFront_weighted;
+    std::unique_ptr<float[]> a_m;
 
     float m_fZoom;
     float m_fZoomRed;
