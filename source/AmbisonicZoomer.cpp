@@ -41,9 +41,9 @@ bool CAmbisonicZoomer::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
 
     m_fZoomRed = 0.f;
 
-    m_AmbEncoderFront = new float[m_nChannelCount];
-    m_AmbEncoderFront_weighted = new float[m_nChannelCount];
-    a_m = new float[m_nOrder];
+    m_AmbEncoderFront.reset(new float[m_nChannelCount]);
+    m_AmbEncoderFront_weighted.reset(new float[m_nChannelCount]);
+    a_m.reset(new float[m_nOrder]);
 
     // These weights a_m are applied to the channels of a corresponding order within the Ambisonics signals.
     // When applied to the encoded channels and decoded to a particular loudspeaker direction they will create a
@@ -61,7 +61,7 @@ bool CAmbisonicZoomer::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
         // Normalisation factor
         m_AmbFrontMic += m_AmbEncoderFront[iChannel] * m_AmbEncoderFront_weighted[iChannel];
     }
-    
+
     return true;
 }
 
