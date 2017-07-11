@@ -51,7 +51,7 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
                                        unsigned nBlockSize,
                                        unsigned& tailLength,
                                        std::string HRTFPath)
-{    
+{
     //Iterators
     unsigned niEar = 0;
     unsigned niChannel = 0;
@@ -213,7 +213,7 @@ void CAmbisonicBinauralizer::Refresh()
 
 }
 
-void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc, 
+void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
                                      float** ppfDst)
 {
     unsigned niEar = 0;

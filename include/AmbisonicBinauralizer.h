@@ -38,7 +38,7 @@ public:
     /**
         Re-create the object for the given configuration. Previous data is
         lost. The tailLength variable it updated with the number of taps
-        used for the processing, and this can be used to offset the delay 
+        used for the processing, and this can be used to offset the delay
         this causes. The function returns true if the call is successful.
     */
     virtual bool Configure(unsigned nOrder,
