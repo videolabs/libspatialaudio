@@ -19,16 +19,6 @@ CBFormat::CBFormat()
 {
     m_nSamples = 0;
     m_nDataLength = 0;
-    m_pfData = nullptr;
-    m_ppfChannels = nullptr;
-}
-
-CBFormat::~CBFormat()
-{
-    if(m_pfData)
-        delete [] m_pfData;
-    if(m_ppfChannels)
-        delete [] m_ppfChannels;
 }
 
 unsigned CBFormat::GetSampleCount()
@@ -42,17 +32,12 @@ bool CBFormat::Configure(unsigned nOrder, bool b3D, unsigned nSampleCount)
     if(!success)
         return false;
 
-    if(m_pfData)
-        delete [] m_pfData;
-    if(m_ppfChannels)
-        delete [] m_ppfChannels;
-
     m_nSamples = nSampleCount;
     m_nDataLength = m_nSamples * m_nChannelCount;
 
-    m_pfData = new float[m_nDataLength];
-    memset(m_pfData, 0, m_nDataLength * sizeof(float));
-    m_ppfChannels = new float*[m_nChannelCount];
+    m_pfData.resize(m_nDataLength);
+    memset(m_pfData.data(), 0, m_nDataLength * sizeof(float));
+    m_ppfChannels.reset(new float*[m_nChannelCount]);
 
     for(unsigned niChannel = 0; niChannel < m_nChannelCount; niChannel++)
     {
@@ -64,7 +49,7 @@ bool CBFormat::Configure(unsigned nOrder, bool b3D, unsigned nSampleCount)
 
 void CBFormat::Reset()
 {
-    memset(m_pfData, 0, m_nDataLength * sizeof(float));
+    memset(m_pfData.data(), 0, m_nDataLength * sizeof(float));
 }
 
 void CBFormat::Refresh()
@@ -84,7 +69,7 @@ void CBFormat::ExtractStream(float* pfData, unsigned nChannel, unsigned nSamples
 
 void CBFormat::operator = (const CBFormat &bf)
 {
-    memcpy(m_pfData, bf.m_pfData, m_nDataLength * sizeof(float));
+    memcpy(m_pfData.data(), bf.m_pfData.data(), m_nDataLength * sizeof(float));
 }
 
 bool CBFormat::operator == (const CBFormat &bf)

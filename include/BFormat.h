@@ -17,10 +17,12 @@
 #define _BFORMAT_H
 
 #include "AmbisonicBase.h"
+#include <memory>
+#include <vector>
 
 /// Storage for BFormat signals.
 
-/** This object is used to store and transfer BFormat signals. Memory is 
+/** This object is used to store and transfer BFormat signals. Memory is
     allocated for the number of channels needed for the given Ambisonic
     configuration (order and 2D/3D) and the number of samples. */
 
@@ -28,7 +30,6 @@ class CBFormat : public CAmbisonicBase
 {
 public:
     CBFormat();
-    ~CBFormat();
     /**
         Returns the number of samples.
     */
@@ -80,8 +81,8 @@ public:
 protected:
     unsigned m_nSamples;
     unsigned m_nDataLength;
-    float* m_pfData;
-    float** m_ppfChannels;
+    std::vector<float> m_pfData;
+    std::unique_ptr<float*[]> m_ppfChannels;
 
     //friend classes cannot be pure abstract type,
     //so must list each friend class manually
