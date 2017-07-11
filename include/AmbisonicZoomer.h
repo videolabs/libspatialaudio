@@ -31,7 +31,7 @@ class CAmbisonicZoomer : public CAmbisonicBase
 {
 public:
     CAmbisonicZoomer();
-    ~CAmbisonicZoomer();
+    virtual ~CAmbisonicZoomer() = default;
     /**
         Re-create the object for the given configuration. Previous data is
         lost. The last argument is not used, it is just there to match with
