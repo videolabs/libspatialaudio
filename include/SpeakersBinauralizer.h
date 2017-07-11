@@ -14,6 +14,7 @@
 class SpeakersBinauralizer : public CAmbisonicBinauralizer
 {
 public:
+    SpeakersBinauralizer();
     bool Configure(unsigned nSampleRate,
                    unsigned nBlockSize,
                    CAmbisonicSpeaker *speakers,

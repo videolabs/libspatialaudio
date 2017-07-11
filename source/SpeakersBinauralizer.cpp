@@ -16,6 +16,11 @@
 #include "SpeakersBinauralizer.h"
 
 
+SpeakersBinauralizer::SpeakersBinauralizer()
+    : m_nSpeakers(0)
+{
+}
+
 bool SpeakersBinauralizer::Configure(unsigned nSampleRate,
                              unsigned nBlockSize,
                              CAmbisonicSpeaker *speakers,
