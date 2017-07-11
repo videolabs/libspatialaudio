@@ -192,6 +192,7 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
             delete [] ppfAccumulator[niEar][niChannel];
         delete [] ppfAccumulator[niEar];
     }
+    delete[] pfLeftEar90;
 
     return true;
 }
