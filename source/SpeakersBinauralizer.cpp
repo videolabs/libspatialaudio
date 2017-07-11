@@ -94,6 +94,7 @@ bool SpeakersBinauralizer::Configure(unsigned nSampleRate,
                 ppfAccumulator[1][niChannel][niTap] += pfHRTF[1][niTap];
             }
         }
+        delete p_hrtf;
 
         //Find the maximum tap
         float fMax = 0;
