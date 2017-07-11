@@ -124,9 +124,9 @@ bool SpeakersBinauralizer::Configure(unsigned nSampleRate,
         {
             for (unsigned niChannel = 0; niChannel < nSpeakers; niChannel++)
             {
-                memcpy(m_pfScratchBufferA, ppfAccumulator[niEar][niChannel], m_nTaps * sizeof(float));
+                memcpy(m_pfScratchBufferA.data(), ppfAccumulator[niEar][niChannel], m_nTaps * sizeof(float));
                 memset(&m_pfScratchBufferA[m_nTaps], 0, (m_nFFTSize - m_nTaps) * sizeof(float));
-                kiss_fftr(m_pFFT_cfg, m_pfScratchBufferA, m_ppcpFilters[niEar][niChannel]);
+                kiss_fftr(m_pFFT_cfg, m_pfScratchBufferA.data(), m_ppcpFilters[niEar][niChannel]);
             }
         }
 
@@ -150,12 +150,12 @@ void SpeakersBinauralizer::Process(float** pBFSrc, float** ppfDst)
 
     for (unsigned niEar = 0; niEar < 2; niEar++)
     {
-        memset(m_pfScratchBufferA, 0, m_nFFTSize * sizeof(float));
+        memset(m_pfScratchBufferA.data(), 0, m_nFFTSize * sizeof(float));
         for (unsigned niChannel = 0; niChannel < m_nSpeakers; niChannel++)
         {
-            memcpy(m_pfScratchBufferB, pBFSrc[niChannel], m_nBlockSize * sizeof(float));
+            memcpy(m_pfScratchBufferB.data(), pBFSrc[niChannel], m_nBlockSize * sizeof(float));
             memset(&m_pfScratchBufferB[m_nBlockSize], 0, (m_nFFTSize - m_nBlockSize) * sizeof(float));
-            kiss_fftr(m_pFFT_cfg, m_pfScratchBufferB, m_pcpScratch);
+            kiss_fftr(m_pFFT_cfg, m_pfScratchBufferB.data(), m_pcpScratch);
             for(unsigned ni = 0; ni < m_nFFTBins; ni++)
             {
                 cpTemp.r = m_pcpScratch[ni].r * m_ppcpFilters[niEar][niChannel][ni].r
@@ -164,17 +164,17 @@ void SpeakersBinauralizer::Process(float** pBFSrc, float** ppfDst)
                     + m_pcpScratch[ni].i * m_ppcpFilters[niEar][niChannel][ni].r;
                 m_pcpScratch[ni] = cpTemp;
             }
-            kiss_fftri(m_pIFFT_cfg, m_pcpScratch, m_pfScratchBufferB);
+            kiss_fftri(m_pIFFT_cfg, m_pcpScratch, m_pfScratchBufferB.data());
             for (unsigned ni = 0; ni < m_nFFTSize; ni++)
                 m_pfScratchBufferA[ni] += m_pfScratchBufferB[ni];
         }
 
         for (unsigned ni = 0; ni < m_nFFTSize; ni++)
             m_pfScratchBufferA[ni] *= m_fFFTScaler;
-        memcpy(ppfDst[niEar], m_pfScratchBufferA, m_nBlockSize * sizeof(float));
+        memcpy(ppfDst[niEar], m_pfScratchBufferA.data(), m_nBlockSize * sizeof(float));
         for (unsigned ni = 0; ni < m_nOverlapLength; ni++)
             ppfDst[niEar][ni] += m_pfOverlap[niEar][ni];
-        memcpy(m_pfOverlap[niEar], &m_pfScratchBufferA[m_nBlockSize], m_nOverlapLength * sizeof(float));
+        memcpy(m_pfOverlap[niEar].data(), &m_pfScratchBufferA[m_nBlockSize], m_nOverlapLength * sizeof(float));
     }
 }
 
@@ -182,12 +182,12 @@ void SpeakersBinauralizer::Process(float** pBFSrc, float** ppfDst)
 void SpeakersBinauralizer::AllocateBuffers()
 {
     //Allocate scratch buffers
-    m_pfScratchBufferA = new float[m_nFFTSize];
-    m_pfScratchBufferB = new float[m_nFFTSize];
+    m_pfScratchBufferA.resize(m_nFFTSize);
+    m_pfScratchBufferB.resize(m_nFFTSize);
 
     //Allocate overlap-add buffers
-    m_pfOverlap[0] = new float[m_nOverlapLength];
-    m_pfOverlap[1] = new float[m_nOverlapLength];
+    m_pfOverlap[0].resize(m_nOverlapLength);
+    m_pfOverlap[1].resize(m_nOverlapLength);
 
     //Allocate FFT and iFFT for new size
     m_pFFT_cfg = kiss_fftr_alloc(m_nFFTSize, 0, 0, 0);
@@ -207,16 +207,6 @@ void SpeakersBinauralizer::AllocateBuffers()
 
 void SpeakersBinauralizer::DeallocateBuffers()
 {
-    if(m_pfScratchBufferA)
-        delete [] m_pfScratchBufferA;
-    if(m_pfScratchBufferB)
-        delete [] m_pfScratchBufferB;
-
-    if(m_pfOverlap[0])
-        delete [] m_pfOverlap[0];
-    if(m_pfOverlap[1])
-        delete [] m_pfOverlap[1];
-
     if(m_pFFT_cfg)
         kiss_fftr_free(m_pFFT_cfg);
     if(m_pIFFT_cfg)

@@ -17,6 +17,7 @@
 #define _AMBISONIC_BINAURALIZER_H
 
 #include <string>
+#include <vector>
 
 #include "AmbisonicDecoder.h"
 #include "AmbisonicEncoder.h"
@@ -78,10 +79,10 @@ protected:
     kiss_fft_cpx** m_ppcpFilters[2];
     kiss_fft_cpx* m_pcpScratch;
 
-    float* m_pfScratchBufferA;
-    float* m_pfScratchBufferB;
-    float* m_pfScratchBufferC;
-    float* m_pfOverlap[2];
+    std::vector<float> m_pfScratchBufferA;
+    std::vector<float> m_pfScratchBufferB;
+    std::vector<float> m_pfScratchBufferC;
+    std::vector<float> m_pfOverlap[2];
 
     HRTF *getHRTF(unsigned nSampleRate, std::string HRTFPath);
     virtual void ArrangeSpeakers();
