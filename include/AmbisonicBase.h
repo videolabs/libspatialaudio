@@ -20,14 +20,14 @@
 
 /// Ambisonic base class.
 
-/** This is the base class for most if not all of the classes that make up this 
+/** This is the base class for most if not all of the classes that make up this
     library. */
 
 class CAmbisonicBase
 {
 public:
     CAmbisonicBase();
-    virtual ~CAmbisonicBase();
+    virtual ~CAmbisonicBase() = default;
     /**
         Gets the order of the current Ambisonic configuration.
     */

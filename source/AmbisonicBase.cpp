@@ -16,14 +16,10 @@
 #include "AmbisonicBase.h"
 
 CAmbisonicBase::CAmbisonicBase()
-{
-    m_nOrder = 0;
-    m_b3D = 0;
-    m_nChannelCount = 0;
-    m_bOpt = 0;
-}
-
-CAmbisonicBase::~CAmbisonicBase()
+    : m_nOrder(0)
+    , m_b3D(0)
+    , m_nChannelCount(0)
+    , m_bOpt(0)
 {
 }
 
@@ -47,6 +43,6 @@ bool CAmbisonicBase::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
     m_nOrder = nOrder;
     m_b3D = b3D;
     m_nChannelCount = OrderToComponents(m_nOrder, m_b3D);
-    
+
     return true;
 }
