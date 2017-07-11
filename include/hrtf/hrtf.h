@@ -8,6 +8,7 @@ public:
     HRTF(unsigned i_sampleRate)
         : i_sampleRate(i_sampleRate), i_len(0)
     { }
+    virtual ~HRTF() = default;
 
     virtual bool get(float f_azimuth, float f_elevation, float** pfHRTF) = 0;
 
