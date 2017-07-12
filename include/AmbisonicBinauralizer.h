@@ -78,7 +78,7 @@ protected:
     kiss_fftr_cfg m_pFFT_cfg;
     kiss_fftr_cfg m_pIFFT_cfg;
     std::vector<std::unique_ptr<kiss_fft_cpx[]>> m_ppcpFilters[2];
-    kiss_fft_cpx* m_pcpScratch;
+    std::unique_ptr<kiss_fft_cpx[]> m_pcpScratch;
 
     std::vector<float> m_pfScratchBufferA;
     std::vector<float> m_pfScratchBufferB;

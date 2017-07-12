@@ -29,7 +29,6 @@ CAmbisonicBinauralizer::CAmbisonicBinauralizer()
 
     m_pFFT_cfg = nullptr;
     m_pIFFT_cfg = nullptr;
-    m_pcpScratch = nullptr;
 }
 
 CAmbisonicBinauralizer::~CAmbisonicBinauralizer()
@@ -239,7 +238,7 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
         {
             memcpy(m_pfScratchBufferB.data(), pBFSrc->m_ppfChannels[niChannel], m_nBlockSize * sizeof(float));
             memset(&m_pfScratchBufferB[m_nBlockSize], 0, (m_nFFTSize - m_nBlockSize) * sizeof(float));
-            kiss_fftr(m_pFFT_cfg, m_pfScratchBufferB.data(), m_pcpScratch);
+            kiss_fftr(m_pFFT_cfg, m_pfScratchBufferB.data(), m_pcpScratch.get());
             for(ni = 0; ni < m_nFFTBins; ni++)
             {
                 cpTemp.r = m_pcpScratch[ni].r * m_ppcpFilters[niEar][niChannel][ni].r
@@ -248,7 +247,7 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
                             + m_pcpScratch[ni].i * m_ppcpFilters[niEar][niChannel][ni].r;
                 m_pcpScratch[ni] = cpTemp;
             }
-            kiss_fftri(m_pIFFT_cfg, m_pcpScratch, m_pfScratchBufferB.data());
+            kiss_fftri(m_pIFFT_cfg, m_pcpScratch.get(), m_pfScratchBufferB.data());
             for(ni = 0; ni < m_nFFTSize; ni++)
                 m_pfScratchBufferA[ni] += m_pfScratchBufferB[ni];
 
@@ -288,7 +287,7 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
             {
                 memcpy(m_pfScratchBufferB.data(), pBFSrc->m_ppfChannels[niChannel], m_nBlockSize * sizeof(float));
                 memset(&m_pfScratchBufferB[m_nBlockSize], 0, (m_nFFTSize - m_nBlockSize) * sizeof(float));
-                kiss_fftr(m_pFFT_cfg, m_pfScratchBufferB.data(), m_pcpScratch);
+                kiss_fftr(m_pFFT_cfg, m_pfScratchBufferB.data(), m_pcpScratch.get());
                 for(ni = 0; ni < m_nFFTBins; ni++)
                 {
                     cpTemp.r = m_pcpScratch[ni].r * m_ppcpFilters[niEar][niChannel][ni].r
@@ -297,7 +296,7 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
                                 + m_pcpScratch[ni].i * m_ppcpFilters[niEar][niChannel][ni].r;
                     m_pcpScratch[ni] = cpTemp;
                 }
-                kiss_fftri(m_pIFFT_cfg, m_pcpScratch, m_pfScratchBufferB.data());
+                kiss_fftri(m_pIFFT_cfg, m_pcpScratch.get(), m_pfScratchBufferB.data());
                 for(ni = 0; ni < m_nFFTSize; ni++)
                     m_pfScratchBufferA[ni] += m_pfScratchBufferB[ni];
             }
@@ -387,7 +386,7 @@ void CAmbisonicBinauralizer::AllocateBuffers()
             m_ppcpFilters[niEar][niChannel].reset(new kiss_fft_cpx[m_nFFTBins]);
     }
 
-    m_pcpScratch = new kiss_fft_cpx[m_nFFTBins];
+    m_pcpScratch.reset(new kiss_fft_cpx[m_nFFTBins]);
 }
 
 void CAmbisonicBinauralizer::DeallocateBuffers()
@@ -402,11 +401,5 @@ void CAmbisonicBinauralizer::DeallocateBuffers()
     {
         kiss_fftr_free(m_pIFFT_cfg);
         m_pIFFT_cfg = nullptr;
-    }
-
-    if(m_pcpScratch)
-    {
-        delete [] m_pcpScratch;
-        m_pcpScratch = nullptr;
     }
 }
