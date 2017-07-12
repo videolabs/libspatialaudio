@@ -75,8 +75,8 @@ protected:
     float m_fFFTScaler;
     unsigned m_nOverlapLength;
 
-    kiss_fftr_cfg m_pFFT_cfg;
-    kiss_fftr_cfg m_pIFFT_cfg;
+    std::unique_ptr<struct kiss_fftr_state, decltype(&kiss_fftr_free)> m_pFFT_cfg;
+    std::unique_ptr<struct kiss_fftr_state, decltype(&kiss_fftr_free)> m_pIFFT_cfg;
     std::vector<std::unique_ptr<kiss_fft_cpx[]>> m_ppcpFilters[2];
     std::unique_ptr<kiss_fft_cpx[]> m_pcpScratch;
 
