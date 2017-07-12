@@ -35,7 +35,6 @@ class CAmbisonicBinauralizer : public CAmbisonicBase
 {
 public:
     CAmbisonicBinauralizer();
-    ~CAmbisonicBinauralizer();
     /**
         Re-create the object for the given configuration. Previous data is
         lost. The tailLength variable it updated with the number of taps
@@ -88,7 +87,6 @@ protected:
     HRTF *getHRTF(unsigned nSampleRate, std::string HRTFPath);
     virtual void ArrangeSpeakers();
     virtual void AllocateBuffers();
-    virtual void DeallocateBuffers();
 };
 
 #endif // _AMBISONIC_BINAURALIZER_H

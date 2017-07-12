@@ -30,11 +30,6 @@ CAmbisonicBinauralizer::CAmbisonicBinauralizer()
     m_nOverlapLength = 0;
 }
 
-CAmbisonicBinauralizer::~CAmbisonicBinauralizer()
-{
-    DeallocateBuffers();
-}
-
 bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
                                        bool b3D,
                                        unsigned nSampleRate,
@@ -65,9 +60,6 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
     m_nFFTBins = m_nFFTSize / 2 + 1;
     //What do we need to scale the result of the iFFT by
     m_fFFTScaler = 1.f / m_nFFTSize;
-
-    //Deallocate any buffers with previous settings
-    DeallocateBuffers();
 
     CAmbisonicBase::Configure(nOrder, b3D, 0);
     //Position speakers and recalculate coefficients
@@ -101,10 +93,7 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
 
             bool b_found = p_hrtf->get(position.fAzimuth, position.fElevation, pfHRTF);
             if (!b_found)
-            {
-                DeallocateBuffers();
                 return false;
-            }
 
             //Scale the HRTFs by the coefficient of the current channel/component
             // The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
@@ -386,8 +375,4 @@ void CAmbisonicBinauralizer::AllocateBuffers()
     }
 
     m_pcpScratch.reset(new kiss_fft_cpx[m_nFFTBins]);
-}
-
-void CAmbisonicBinauralizer::DeallocateBuffers()
-{
 }

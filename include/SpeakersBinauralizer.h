@@ -28,7 +28,6 @@ protected:
     unsigned m_nSpeakers;
 
     virtual void AllocateBuffers();
-    virtual void DeallocateBuffers();
 };
 
 #endif // BINAURALIZER_H

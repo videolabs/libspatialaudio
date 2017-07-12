@@ -50,9 +50,6 @@ bool SpeakersBinauralizer::Configure(unsigned nSampleRate,
         //What do we need to scale the result of the iFFT by
         m_fFFTScaler = 1.f / m_nFFTSize;
 
-        //Deallocate any buffers with previous settings
-        DeallocateBuffers();
-
         m_nSpeakers = nSpeakers;
 
         //Allocate buffers with new settings
@@ -81,10 +78,7 @@ bool SpeakersBinauralizer::Configure(unsigned nSampleRate,
 
             bool b_found = p_hrtf->get(position.fAzimuth, position.fElevation, pfHRTF);
             if (!b_found)
-            {
-                DeallocateBuffers();
                 return false;
-            }
 
             //Accumulate channel/component HRTF
             for(niTap = 0; niTap < m_nTaps; niTap++)
@@ -195,9 +189,4 @@ void SpeakersBinauralizer::AllocateBuffers()
         for(unsigned niChannel = 0; niChannel < m_nSpeakers; niChannel++)
             m_ppcpFilters[niEar][niChannel].reset(new kiss_fft_cpx[m_nFFTBins]);
     }
-}
-
-
-void SpeakersBinauralizer::DeallocateBuffers()
-{
 }
