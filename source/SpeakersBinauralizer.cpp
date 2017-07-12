@@ -186,17 +186,7 @@ void SpeakersBinauralizer::Process(float** pBFSrc, float** ppfDst)
 
 void SpeakersBinauralizer::AllocateBuffers()
 {
-    //Allocate scratch buffers
-    m_pfScratchBufferA.resize(m_nFFTSize);
-    m_pfScratchBufferB.resize(m_nFFTSize);
-
-    //Allocate overlap-add buffers
-    m_pfOverlap[0].resize(m_nOverlapLength);
-    m_pfOverlap[1].resize(m_nOverlapLength);
-
-    //Allocate FFT and iFFT for new size
-    m_pFFT_cfg = kiss_fftr_alloc(m_nFFTSize, 0, 0, 0);
-    m_pIFFT_cfg = kiss_fftr_alloc(m_nFFTSize, 1, 0, 0);
+    CAmbisonicBinauralizer::AllocateBuffers();
 
     //Allocate the FFTBins for each channel, for each ear
     for(unsigned niEar = 0; niEar < 2; niEar++)
@@ -205,8 +195,6 @@ void SpeakersBinauralizer::AllocateBuffers()
         for(unsigned niChannel = 0; niChannel < m_nSpeakers; niChannel++)
             m_ppcpFilters[niEar][niChannel].reset(new kiss_fft_cpx[m_nFFTBins]);
     }
-
-    m_pcpScratch = new kiss_fft_cpx[m_nFFTBins];
 }
 
 
