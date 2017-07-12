@@ -131,7 +131,7 @@ bool SpeakersBinauralizer::Configure(unsigned nSampleRate,
             {
                 memcpy(m_pfScratchBufferA.data(), ppfAccumulator[niEar][niChannel], m_nTaps * sizeof(float));
                 memset(&m_pfScratchBufferA[m_nTaps], 0, (m_nFFTSize - m_nTaps) * sizeof(float));
-                kiss_fftr(m_pFFT_cfg, m_pfScratchBufferA.data(), m_ppcpFilters[niEar][niChannel]);
+                kiss_fftr(m_pFFT_cfg, m_pfScratchBufferA.data(), m_ppcpFilters[niEar][niChannel].get());
             }
         }
 
@@ -201,9 +201,9 @@ void SpeakersBinauralizer::AllocateBuffers()
     //Allocate the FFTBins for each channel, for each ear
     for(unsigned niEar = 0; niEar < 2; niEar++)
     {
-        m_ppcpFilters[niEar] = new kiss_fft_cpx*[m_nSpeakers];
+        m_ppcpFilters[niEar].resize(m_nSpeakers);
         for(unsigned niChannel = 0; niChannel < m_nSpeakers; niChannel++)
-            m_ppcpFilters[niEar][niChannel] = new kiss_fft_cpx[m_nFFTBins];
+            m_ppcpFilters[niEar][niChannel].reset(new kiss_fft_cpx[m_nFFTBins]);
     }
 
     m_pcpScratch = new kiss_fft_cpx[m_nFFTBins];
@@ -216,13 +216,6 @@ void SpeakersBinauralizer::DeallocateBuffers()
         kiss_fftr_free(m_pFFT_cfg);
     if(m_pIFFT_cfg)
         kiss_fftr_free(m_pIFFT_cfg);
-
-    for(unsigned niEar = 0; niEar < 2; niEar++)
-    {
-        for(unsigned niChannel = 0; niChannel < m_nSpeakers; niChannel++)
-            delete [] m_ppcpFilters[niEar][niChannel];
-        delete [] m_ppcpFilters[niEar];
-    }
 
     delete [] m_pcpScratch;
 }

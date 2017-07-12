@@ -29,8 +29,6 @@ CAmbisonicBinauralizer::CAmbisonicBinauralizer()
 
     m_pFFT_cfg = nullptr;
     m_pIFFT_cfg = nullptr;
-    m_ppcpFilters[0] = nullptr;
-    m_ppcpFilters[1] = nullptr;
     m_pcpScratch = nullptr;
 }
 
@@ -179,7 +177,7 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
         {
             memcpy(m_pfScratchBufferA.data(), ppfAccumulator[niEar][niChannel], m_nTaps * sizeof(float));
             memset(&m_pfScratchBufferA[m_nTaps], 0, (m_nFFTSize - m_nTaps) * sizeof(float));
-            kiss_fftr(m_pFFT_cfg, m_pfScratchBufferA.data(), m_ppcpFilters[niEar][niChannel]);
+            kiss_fftr(m_pFFT_cfg, m_pfScratchBufferA.data(), m_ppcpFilters[niEar][niChannel].get());
         }
     }
 
@@ -384,9 +382,9 @@ void CAmbisonicBinauralizer::AllocateBuffers()
     //Allocate the FFTBins for each channel, for each ear
     for(unsigned niEar = 0; niEar < 2; niEar++)
     {
-        m_ppcpFilters[niEar] = new kiss_fft_cpx*[m_nChannelCount];
+        m_ppcpFilters[niEar].resize(m_nChannelCount);
         for(unsigned niChannel = 0; niChannel < m_nChannelCount; niChannel++)
-            m_ppcpFilters[niEar][niChannel] = new kiss_fft_cpx[m_nFFTBins];
+            m_ppcpFilters[niEar][niChannel].reset(new kiss_fft_cpx[m_nFFTBins]);
     }
 
     m_pcpScratch = new kiss_fft_cpx[m_nFFTBins];
@@ -404,20 +402,6 @@ void CAmbisonicBinauralizer::DeallocateBuffers()
     {
         kiss_fftr_free(m_pIFFT_cfg);
         m_pIFFT_cfg = nullptr;
-    }
-
-    for(unsigned niEar = 0; niEar < 2; niEar++)
-    {
-        if(m_ppcpFilters[niEar])
-        {
-            for(unsigned niChannel = 0; niChannel < m_nChannelCount; niChannel++)
-            {
-                if(m_ppcpFilters[niEar][niChannel])
-                    delete [] m_ppcpFilters[niEar][niChannel];
-            }
-            delete [] m_ppcpFilters[niEar];
-            m_ppcpFilters[niEar] = nullptr;
-        }
     }
 
     if(m_pcpScratch)
