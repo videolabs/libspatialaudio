@@ -99,10 +99,10 @@ bool CAmbisonicProcessor::Configure(unsigned nOrder, bool b3D, unsigned nBlockSi
     m_pcpScratch = new kiss_fft_cpx[m_nFFTBins];
 
     //Allocate temporary buffers for retrieving taps of psychoacoustic opimisation filters
-    std::unique_ptr<float[]> pfPsychIR[m_nOrder+1];
+    std::vector<std::unique_ptr<float[]>> pfPsychIR;
     for(unsigned i = 0; i <= m_nOrder; i++)
     {
-        pfPsychIR[i].reset(new float[m_nTaps]);
+        pfPsychIR.emplace_back(new float[m_nTaps]);
     }
 
     Reset();
