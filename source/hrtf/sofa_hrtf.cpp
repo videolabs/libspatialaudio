@@ -5,6 +5,7 @@
 
 #ifdef HAVE_MYSOFA
 
+#include <cmath>
 #include <AmbisonicCommons.h>
 
 
