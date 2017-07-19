@@ -4,8 +4,55 @@ project(spatialaudio VERSION 0.2.0)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-file(GLOB_RECURSE headers LIST_DIRECTORIES false *.h)
-file(GLOB_RECURSE sources LIST_DIRECTORIES false *.h *.cpp *.c)
+list(APPEND headers
+    include/AmbisonicBase.h
+    include/AmbisonicDecoderPresets.h
+    include/AmbisonicProcessor.h
+    include/AmbisonicSpeaker.h
+    include/AmbisonicBinauralizer.h
+    include/AmbisonicEncoderDist.h
+    include/AmbisonicPsychoacousticFilters.h
+    include/AmbisonicTypesDefinesCommons.h
+    include/SpeakersBinauralizer.h
+    include/AmbisonicCommons.h
+    include/AmbisonicEncoder.h
+    include/Ambisonics.h
+    include/AmbisonicZoomer.h
+    include/mit_hrtf_filter.h
+    include/AmbisonicDecoder.h
+    include/AmbisonicMicrophone.h
+    include/AmbisonicSource.h
+    include/BFormat.h
+    include/mit_hrtf_lib.h
+    include/hrtf/hrtf.h
+    include/hrtf/mit_hrtf.h
+    include/hrtf/sofa_hrtf.h
+    include/normal/mit_hrtf_normal_44100.h
+    include/normal/mit_hrtf_normal_48000.h
+    include/normal/mit_hrtf_normal_88200.h
+    include/normal/mit_hrtf_normal_96000.h
+)
+
+list(APPEND sources
+    source/AmbisonicEncoder.cpp
+    source/AmbisonicMicrophone.cpp
+    source/AmbisonicCommons.cpp
+    source/mit_hrtf_lib.c
+    source/AmbisonicProcessor.cpp
+    source/AmbisonicDecoder.cpp
+    source/AmbisonicBinauralizer.cpp
+    source/AmbisonicSource.cpp
+    source/hrtf/mit_hrtf.cpp
+    source/hrtf/sofa_hrtf.cpp
+    source/BFormat.cpp
+    source/SpeakersBinauralizer.cpp
+    source/kiss_fft/kiss_fftr.c
+    source/kiss_fft/kiss_fft.c
+    source/AmbisonicBase.cpp
+    source/AmbisonicSpeaker.cpp
+    source/AmbisonicEncoderDist.cpp
+    source/AmbisonicZoomer.cpp
+)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
