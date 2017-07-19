@@ -31,6 +31,8 @@ list(APPEND headers
     include/normal/mit_hrtf_normal_48000.h
     include/normal/mit_hrtf_normal_88200.h
     include/normal/mit_hrtf_normal_96000.h
+    source/kiss_fft/kiss_fftr.h
+    source/kiss_fft/kiss_fft.h
 )
 
 list(APPEND sources
