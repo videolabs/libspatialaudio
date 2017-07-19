@@ -19,6 +19,8 @@
 
 #include "AmbisonicBase.h"
 
+#include <vector>
+
 /// Base class for encoder and speaker
 
 /** This acts as a base class for single point 3D objects such as encoding a
@@ -29,7 +31,6 @@ class CAmbisonicSource : public CAmbisonicBase
 {
 public:
     CAmbisonicSource();
-    ~CAmbisonicSource();
     /**
         Re-create the object for the given configuration. Previous data is
         lost. The last argument is not used, it is just there to match with
@@ -84,8 +85,8 @@ public:
     virtual float GetGain();
 
 protected:
-    float* m_pfCoeff;
-    float* m_pfOrderWeights;
+    std::vector<float> m_pfCoeff;
+    std::vector<float> m_pfOrderWeights;
     PolarPoint m_polPosition;
     float m_fGain;
 };

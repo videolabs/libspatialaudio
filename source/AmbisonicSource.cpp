@@ -23,20 +23,10 @@
 
 CAmbisonicSource::CAmbisonicSource()
 {
-    m_pfCoeff = nullptr;
-    m_pfOrderWeights = nullptr;
     m_polPosition.fAzimuth = 0.f;
     m_polPosition.fElevation = 0.f;
     m_polPosition.fDistance = 1.f;
     m_fGain = 1.f;
-}
-
-CAmbisonicSource::~CAmbisonicSource()
-{
-    if(m_pfCoeff)
-        delete [] m_pfCoeff;
-    if(m_pfOrderWeights)
-        delete [] m_pfOrderWeights;
 }
 
 bool CAmbisonicSource::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
@@ -44,18 +34,11 @@ bool CAmbisonicSource::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
     bool success = CAmbisonicBase::Configure(nOrder, b3D, nMisc);
     if(!success)
         return false;
-    
-    if(m_pfCoeff)
-        delete [] m_pfCoeff;
-    if(m_pfOrderWeights)
-        delete [] m_pfOrderWeights;
-    m_pfCoeff = new float[m_nChannelCount];
-    memset(m_pfCoeff, 0, m_nChannelCount * sizeof(float));
-    m_pfOrderWeights = new float[m_nOrder + 1];
 
+    m_pfCoeff.resize( m_nChannelCount, 0 );
     // for a Basic Ambisonics decoder all of the gains are set to 1.f
-    SetOrderWeightAll(1.f);
-    
+    m_pfOrderWeights.resize( m_nOrder + 1, 1.f );
+
     return true;
 }
 
