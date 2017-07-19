@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(spatialaudio)
 
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 file(GLOB_RECURSE headers LIST_DIRECTORIES false *.h)
