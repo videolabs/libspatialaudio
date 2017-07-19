@@ -31,7 +31,7 @@ configure_file(
 )
 
 if(${HAVE_MYSOFA})
-    set(MYSOFA_LIB "-L${MYSOFA_ROOT_DIR}/lib -l:libmysofa.a")
+    set(MYSOFA_LIB "-L${MYSOFA_ROOT_DIR}/lib -lmysofa")
     set(MYSOFA_INCLUDE "-I${MYSOFA_ROOT_DIR}/include")
 endif(${HAVE_MYSOFA})
 
