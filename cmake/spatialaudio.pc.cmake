@@ -4,6 +4,6 @@ includedir=${prefix}/include
 
 Name: libspatialaudio
 Description: Spatial audio rendering library
-Version: 0.2.0
+Version: 0.3.0
 Libs: -L${libdir} -lspatialaudio @MYSOFA_LIB@ -lm -lz
 Cflags: -I${includedir} @MYSOFA_INCLUDE@
