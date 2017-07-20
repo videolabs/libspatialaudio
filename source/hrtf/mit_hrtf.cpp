@@ -1,3 +1,6 @@
+#include "config.h"
+
+#ifdef HAVE_MIT_HRTF
 
 #include <AmbisonicCommons.h>
 
@@ -34,3 +37,4 @@ bool MIT_HRTF::get(float f_azimuth, float f_elevation, float** pfHRTF)
     return true;
 }
 
+#endif

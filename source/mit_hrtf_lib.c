@@ -12,6 +12,9 @@
 /*#                                                                          #*/
 /*############################################################################*/
 
+#include "config.h"
+
+#ifdef HAVE_MIT_HRTF
 
 #include "../include/mit_hrtf_lib.h"
 #include "normal/mit_hrtf_normal_44100.h"
@@ -447,3 +450,5 @@ int mit_hrtf_findIndexFor40Elev(int azimuth)
     else
         return 28;
 }
+
+#endif
