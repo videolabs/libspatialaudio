@@ -17,6 +17,7 @@
 #include "AmbisonicZoomer.h"
 
 #include <iostream>
+#include <algorithm>
 
 CAmbisonicZoomer::CAmbisonicZoomer()
 {
