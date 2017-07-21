@@ -75,7 +75,6 @@ endif(${MYSOFA_FOUND})
 
 option(HAVE_MIT_HRTF "Should MIT HRTF be built-in" ON)
 
-set(HAVE_MYSOFA ${MYSOFA_FOUND})
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
