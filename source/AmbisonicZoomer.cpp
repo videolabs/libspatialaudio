@@ -39,13 +39,13 @@ bool CAmbisonicZoomer::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
 
     m_AmbEncoderFront.reset(new float[m_nChannelCount]);
     m_AmbEncoderFront_weighted.reset(new float[m_nChannelCount]);
-    a_m.reset(new float[m_nOrder]);
+    a_m.reset(new float[m_nOrder + 1]);
 
     // These weights a_m are applied to the channels of a corresponding order within the Ambisonics signals.
     // When applied to the encoded channels and decoded to a particular loudspeaker direction they will create a
     // virtual microphone pattern with no rear lobes.
     // When used for decoding this is known as in-phase decoding.
-    for(unsigned iOrder = 0; iOrder<=m_nOrder; iOrder++)
+    for(unsigned iOrder = 0; iOrder < m_nOrder + 1; iOrder++)
         a_m[iOrder] = (2*iOrder+1)*factorial(m_nOrder)*factorial(m_nOrder+1) / (factorial(m_nOrder+iOrder+1)*factorial(m_nOrder-iOrder));
 
     unsigned iDegree=0;
