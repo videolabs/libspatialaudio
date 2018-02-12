@@ -1,5 +1,5 @@
 prefix=@CMAKE_INSTALL_PREFIX@
-libdir=${prefix}/lib
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
 includedir=${prefix}/include
 
 Name: libspatialaudio

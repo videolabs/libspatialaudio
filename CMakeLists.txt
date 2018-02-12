@@ -11,6 +11,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 option(BUILD_SHARED_LIBS "Build shared library" ON)
 option(BUILD_STATIC_LIBS "Build static library" ON)
 
+include(GNUInstallDirs)
+
 list(APPEND headers
     include/AmbisonicBase.h
     include/AmbisonicDecoderPresets.h
@@ -80,7 +82,7 @@ if(BUILD_STATIC_LIBS)
         target_link_libraries(spatialaudio-static ${MYSOFA_LIBRARIES})
     endif(${MYSOFA_FOUND})
     SET_TARGET_PROPERTIES(spatialaudio-static PROPERTIES OUTPUT_NAME spatialaudio CLEAN_DIRECT_OUTPUT 1 POSITION_INDEPENDENT_CODE ON)
-    install(TARGETS spatialaudio-static ARCHIVE DESTINATION lib)
+    install(TARGETS spatialaudio-static ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif(BUILD_STATIC_LIBS)
 
 if(BUILD_SHARED_LIBS)
@@ -92,7 +94,7 @@ if(BUILD_SHARED_LIBS)
     set_property(TARGET spatialaudio-shared PROPERTY VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
     set_property(TARGET spatialaudio-shared PROPERTY SOVERSION ${PACKAGE_VERSION_MAJOR} )
     set_property(TARGET spatialaudio-shared PROPERTY C_VISIBILITY_PRESET hidden)
-    install(TARGETS spatialaudio-shared LIBRARY DESTINATION lib)
+    install(TARGETS spatialaudio-shared LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif(BUILD_SHARED_LIBS)
 
 option(HAVE_MIT_HRTF "Should MIT HRTF be built-in" ON)
@@ -103,7 +105,7 @@ configure_file(
 )
 
 if(${HAVE_MYSOFA})
-    set(MYSOFA_LIB "-L${MYSOFA_ROOT_DIR}/lib -lmysofa")
+    set(MYSOFA_LIB "-L${MYSOFA_ROOT_DIR}/${CMAKE_INSTALL_LIBDIR} -lmysofa")
     set(MYSOFA_INCLUDE "-I${MYSOFA_ROOT_DIR}/include")
 endif(${HAVE_MYSOFA})
 
@@ -114,7 +116,7 @@ configure_file(
 )
 
 install(FILES ${headers} DESTINATION include/spatialaudio)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION lib/pkgconfig)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 install(FILES ${PROJECT_BINARY_DIR}/config.h DESTINATION include/spatialaudio)
 
 #Tarballs generation
