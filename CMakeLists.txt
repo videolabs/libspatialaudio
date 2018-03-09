@@ -94,6 +94,7 @@ if(BUILD_SHARED_LIBS)
     set_property(TARGET spatialaudio-shared PROPERTY VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
     set_property(TARGET spatialaudio-shared PROPERTY SOVERSION ${PACKAGE_VERSION_MAJOR} )
     set_property(TARGET spatialaudio-shared PROPERTY C_VISIBILITY_PRESET hidden)
+    set_property(TARGET spatialaudio-shared PROPERTY CXX_VISIBILITY_PRESET hidden)
     install(TARGETS spatialaudio-shared LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif(BUILD_SHARED_LIBS)
 
