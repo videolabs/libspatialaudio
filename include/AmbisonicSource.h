@@ -2,7 +2,7 @@
 /*#                                                                          #*/
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicSource - Ambisonic Source                                     #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#  Copyright © 2017 Videolabs                                              #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicSource.h                                        #*/

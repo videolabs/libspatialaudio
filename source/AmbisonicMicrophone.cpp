@@ -2,7 +2,7 @@
 /*#                                                                          #*/
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicMicrophone - Ambisonic Microphone                             #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicMicrophone.cpp                                  #*/
 /*#  Version:       0.1                                                      #*/

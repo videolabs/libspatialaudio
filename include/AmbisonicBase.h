@@ -2,7 +2,7 @@
 /*#                                                                          #*/
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicBase - Ambisonic Base                                         #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicBase.h                                          #*/
 /*#  Version:       0.1                                                      #*/

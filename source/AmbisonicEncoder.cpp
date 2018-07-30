@@ -2,7 +2,7 @@
 /*#                                                                          #*/
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CAmbisonicEncoder - Ambisonic Encoder                                   #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#                                                                          #*/
 /*#  Filename:      AmbisonicEncoder.cpp                                     #*/
 /*#  Version:       0.1                                                      #*/

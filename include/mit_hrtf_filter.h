@@ -1,7 +1,7 @@
 /*############################################################################*/
 /*#                                                                          #*/
 /*#  MIT HRTF C Library                                                      #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#                                                                          #*/
 /*#  Filename:  mit_hrtf_filter.h                                            #*/
 /*#  Version:   0.1                                                          #*/

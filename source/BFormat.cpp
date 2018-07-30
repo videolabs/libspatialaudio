@@ -2,7 +2,7 @@
 /*#                                                                          #*/
 /*#  Ambisonic C++ Library                                                   #*/
 /*#  CBFormat - Ambisonic BFormat                                            #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#                                                                          #*/
 /*#  Filename:      BFormat.cpp                                              #*/
 /*#  Version:       0.1                                                      #*/
