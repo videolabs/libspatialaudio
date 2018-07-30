@@ -2,7 +2,7 @@
 /*#                                                                          #*/
 /*#  MIT HRTF C Library                                                      #*/
 /*#  Filter table for normal set at 96000Hz                                  #*/
-/*#  Copyright � 2007 Aristotel Digenis                                      #*/
+/*#  Copyright © 2007 Aristotel Digenis                                      #*/
 /*#                                                                          #*/
 /*#  Filename:  mit_hrtf_normal_96000.h                                      #*/
 /*#  Version:   0.1                                                          #*/
