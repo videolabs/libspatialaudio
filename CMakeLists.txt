@@ -90,9 +90,9 @@ if(${HAVE_MYSOFA})
 endif(${HAVE_MYSOFA})
 
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/spatialaudio.pc.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
-  @ONLY
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/spatialaudio.pc.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+    @ONLY
 )
 
 install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib)
