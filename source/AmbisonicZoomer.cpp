@@ -16,6 +16,8 @@
 
 #include "AmbisonicZoomer.h"
 
+#include <cstdlib>
+#include <cmath>
 #include <iostream>
 #include <algorithm>
 
@@ -96,12 +98,12 @@ void CAmbisonicZoomer::Process(CBFormat* pBFSrcDst, unsigned nSamples)
         }
         for(unsigned iChannel=0; iChannel<m_nChannelCount; iChannel++)
         {
-            if(abs(m_AmbEncoderFront[iChannel])>1e-6)
+            if(std::abs(m_AmbEncoderFront[iChannel])>1e-6)
             {
                 // Blend original channel with the virtual microphone pointed directly to the front
                 // Only do this for Ambisonics components that aren't zero for an encoded frontal source
                 pBFSrcDst->m_ppfChannels[iChannel][niSample] = (m_fZoomBlend * pBFSrcDst->m_ppfChannels[iChannel][niSample]
-                    + m_AmbEncoderFront[iChannel]*m_fZoom*fMic) / (m_fZoomBlend + fabs(m_fZoom)*m_AmbFrontMic);
+                    + m_AmbEncoderFront[iChannel]*m_fZoom*fMic) / (m_fZoomBlend + std::fabs(m_fZoom)*m_AmbFrontMic);
             }
             else{
                 // reduce the level of the Ambisonic components that are zero for a frontal source
