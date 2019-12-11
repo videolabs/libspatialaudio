@@ -7,6 +7,7 @@
 #include <mit_hrtf.h>
 #include <mit_hrtf_lib.h>
 
+#include <vector>
 
 MIT_HRTF::MIT_HRTF(unsigned i_sampleRate)
     : HRTF(i_sampleRate)
@@ -22,8 +23,8 @@ bool MIT_HRTF::get(float f_azimuth, float f_elevation, float** pfHRTF)
         nAzimuth -= 360;
     int nElevation = (int)RadiansToDegrees(f_elevation);
     //Get HRTFs for given position
-    short psHRTF[2][i_len];
-    unsigned ret = mit_hrtf_get(&nAzimuth, &nElevation, i_sampleRate, psHRTF[0], psHRTF[1]);
+    std::vector<short> psHRTF[2] = {std::vector<short>(i_len), std::vector<short>(i_len)};
+    unsigned ret = mit_hrtf_get(&nAzimuth, &nElevation, i_sampleRate, psHRTF[0].data(), psHRTF[1].data());
     if (ret == 0)
         return false;
 
