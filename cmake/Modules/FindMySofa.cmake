@@ -17,19 +17,23 @@
 #  MYSOFA_LIBRARIES           The libMySofa library.
 #  MYSOFA_INCLUDE_DIRS        The location of libMySofa headers.
 
-find_path(MYSOFA_ROOT_DIR
-    NAMES include/mysofa.h
-)
+find_package(PkgConfig QUIET)
 
-find_library(MYSOFA_LIBRARIES
-    NAMES libmysofa.a mysofa
-    HINTS ${MYSOFA_ROOT_DIR}/lib
-)
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(MYSOFA libmysofa)
+endif(PKG_CONFIG_FOUND)
 
-find_path(MYSOFA_INCLUDE_DIRS
-    NAMES mysofa.h
-    HINTS ${MYSOFA_ROOT_DIR}/include
-)
+if(NOT MYSOFA_LIBRARIES)
+    find_library(MYSOFA_LIBRARIES
+        NAMES mysofa
+    )
+endif(NOT MYSOFA_LIBRARIES)
+
+if(NOT MYSOFA_INCLUDE_DIRS)
+    find_path(MYSOFA_INCLUDE_DIRS
+        NAMES mysofa.h
+    )
+endif(NOT MYSOFA_INCLUDE_DIRS)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MySofa DEFAULT_MSG
