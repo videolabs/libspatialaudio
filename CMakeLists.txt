@@ -72,24 +72,24 @@ set(HAVE_MYSOFA ${MYSOFA_FOUND})
 
 include_directories(include include/hrtf source source/kiss_fft ${PROJECT_BINARY_DIR})
 
-if(${MYSOFA_FOUND})
+if(MYSOFA_FOUND)
     include_directories(${MYSOFA_INCLUDE_DIRS})
-endif(${MYSOFA_FOUND})
+endif(MYSOFA_FOUND)
 
 if(BUILD_STATIC_LIBS)
     add_library(spatialaudio-static STATIC ${sources})
-    if(${MYSOFA_FOUND})
+    if(MYSOFA_FOUND)
         target_link_libraries(spatialaudio-static ${MYSOFA_LIBRARIES})
-    endif(${MYSOFA_FOUND})
+    endif(MYSOFA_FOUND)
     SET_TARGET_PROPERTIES(spatialaudio-static PROPERTIES OUTPUT_NAME spatialaudio CLEAN_DIRECT_OUTPUT 1 POSITION_INDEPENDENT_CODE ON)
     install(TARGETS spatialaudio-static ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif(BUILD_STATIC_LIBS)
 
 if(BUILD_SHARED_LIBS)
     add_library(spatialaudio-shared SHARED ${sources})
-    if(${MYSOFA_FOUND})
+    if(MYSOFA_FOUND)
         target_link_libraries(spatialaudio-shared ${MYSOFA_LIBRARIES})
-    endif(${MYSOFA_FOUND})
+    endif(MYSOFA_FOUND)
     SET_TARGET_PROPERTIES(spatialaudio-shared PROPERTIES OUTPUT_NAME spatialaudio CLEAN_DIRECT_OUTPUT 1)
     set_property(TARGET spatialaudio-shared PROPERTY VERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}")
     set_property(TARGET spatialaudio-shared PROPERTY SOVERSION ${PACKAGE_VERSION_MAJOR} )
@@ -104,10 +104,11 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
 
-if(${HAVE_MYSOFA})
-    set(MYSOFA_LIB "-L${MYSOFA_ROOT_DIR}/${CMAKE_INSTALL_LIBDIR} -lmysofa")
-    set(MYSOFA_INCLUDE "-I${MYSOFA_ROOT_DIR}/include")
-endif(${HAVE_MYSOFA})
+if(MYSOFA_FOUND)
+    get_filename_component(MYSOFA_LIB_DIR "${MYSOFA_LIBRARIES}" DIRECTORY)
+    set(MYSOFA_LIB "-L${MYSOFA_LIB_DIR} -lmysofa")
+    set(MYSOFA_INCLUDE "-I${MYSOFA_INCLUDE_DIRS}")
+endif(MYSOFA_FOUND)
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/spatialaudio.pc.cmake"
