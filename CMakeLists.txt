@@ -116,9 +116,9 @@ configure_file(
     @ONLY
 )
 
-install(FILES ${headers} DESTINATION include/spatialaudio)
+install(FILES ${headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/spatialaudio)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-install(FILES ${PROJECT_BINARY_DIR}/config.h DESTINATION include/spatialaudio)
+install(FILES ${PROJECT_BINARY_DIR}/config.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/spatialaudio)
 
 #Tarballs generation
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
