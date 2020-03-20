@@ -177,12 +177,12 @@ Orientation CAmbisonicProcessor::GetOrientation()
     return m_orientation;
 }
 
-void CAmbisonicProcessor::Process(CBFormat* pBFSrcDst, unsigned nSamples)
+void CAmbisonicProcessor::Process(CBFormat* pBFSrcDst, unsigned nSamples, bool bIncludeFiltering)
 {
 
     /* Rotate the sound scene based on the rotation angle from the 360 video*/
     /* Before the rotation we apply the psychoacoustic optimisation filters */
-    if(m_bOpt)
+    if(bIncludeFiltering)
     {
         ShelfFilterOrder(pBFSrcDst, nSamples);
     }

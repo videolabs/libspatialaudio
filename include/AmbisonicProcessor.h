@@ -143,7 +143,7 @@ public:
     /**
         Rotate B-Format stream.
     */
-    void Process(CBFormat* pBFSrcDst, unsigned nSamples);
+    void Process(CBFormat* pBFSrcDst, unsigned nSamples, bool bIncludeFiltering = true);
 
 private:
     void ProcessOrder1_3D(CBFormat* pBFSrcDst, unsigned nSamples);
