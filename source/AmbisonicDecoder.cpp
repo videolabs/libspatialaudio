@@ -15,6 +15,7 @@
 
 
 #include "AmbisonicDecoder.h"
+#include "AmbisonicDecoderPresets.h"
 #include <iostream>
 
 CAmbisonicDecoder::CAmbisonicDecoder()
@@ -22,6 +23,7 @@ CAmbisonicDecoder::CAmbisonicDecoder()
     m_nSpeakerSetUp = 0;
     m_nSpeakers = 0;
     m_pAmbSpeakers = nullptr;
+    m_bPresetLoaded = false;
 }
 
 CAmbisonicDecoder::~CAmbisonicDecoder()
@@ -37,7 +39,7 @@ bool CAmbisonicDecoder::Configure(unsigned nOrder, bool b3D, int nSpeakerSetUp, 
         return false;
     SpeakerSetUp(nSpeakerSetUp, nSpeakers);
     Refresh();
-    
+
     return true;
 }
 
@@ -51,6 +53,14 @@ void CAmbisonicDecoder::Refresh()
 {
     for(unsigned niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         m_pAmbSpeakers[niSpeaker].Refresh();
+
+    // Assume that we need the psychoacoustic optimisation filters
+    m_bOpt = true;
+
+    // Check if the speaker setup is one which has a preset
+    CheckSpeakerSetUp();
+    // Load the preset
+    LoadDecoderPreset();
 }
 
 void CAmbisonicDecoder::Process(CBFormat* pBFSrc, unsigned nSamples, float** ppfDst)
@@ -101,6 +111,11 @@ void CAmbisonicDecoder::SetCoefficient(unsigned nSpeaker, unsigned nChannel, flo
     m_pAmbSpeakers[nSpeaker].SetCoefficient(nChannel, fCoeff);
 }
 
+bool CAmbisonicDecoder::GetPresetLoaded()
+{
+    return m_bPresetLoaded;
+}
+
 void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
 {
     m_nSpeakerSetUp = nSpeakerSetUp;
@@ -111,6 +126,8 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
     PolarPoint polPosition = {0.f, 0.f, 1.f};
     unsigned niSpeaker = 0;
     float fSpeakerGain = 0.f;
+
+    m_bPresetLoaded = false;
 
     switch(m_nSpeakerSetUp)
     {
@@ -176,15 +193,90 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
         polPosition.fAzimuth = DegreesToRadians(-30.f);
         m_pAmbSpeakers[1].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[1].SetPosition(polPosition);
-        polPosition.fAzimuth = DegreesToRadians(0.f);
+        polPosition.fAzimuth = DegreesToRadians(110.f);
         m_pAmbSpeakers[2].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[2].SetPosition(polPosition);
-        polPosition.fAzimuth = DegreesToRadians(110.f);
+        polPosition.fAzimuth = DegreesToRadians(-110.f);
         m_pAmbSpeakers[3].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[3].SetPosition(polPosition);
-        polPosition.fAzimuth = DegreesToRadians(-110.f);
+        polPosition.fAzimuth = DegreesToRadians(0.f);
         m_pAmbSpeakers[4].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[4].SetPosition(polPosition);
+        break;
+    case kAmblib_70:
+        m_nSpeakers = 7;
+        m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
+        polPosition.fAzimuth = DegreesToRadians(30.f);
+        m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[0].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(-30.f);
+        m_pAmbSpeakers[1].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[1].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(110.f);
+        m_pAmbSpeakers[2].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[2].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(-110.f);
+        m_pAmbSpeakers[3].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[3].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(145.f);
+        m_pAmbSpeakers[4].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[4].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(-145.f);
+        m_pAmbSpeakers[5].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[5].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(0.f);
+        m_pAmbSpeakers[6].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[6].SetPosition(polPosition);
+        break;
+    case kAmblib_51:
+        m_nSpeakers = 6;
+        m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
+        polPosition.fAzimuth = DegreesToRadians(30.f);
+        m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[0].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(-30.f);
+        m_pAmbSpeakers[1].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[1].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(110.f);
+        m_pAmbSpeakers[2].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[2].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(-110.f);
+        m_pAmbSpeakers[3].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[3].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(0.f);
+        m_pAmbSpeakers[4].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[4].SetPosition(polPosition);
+        // LFE channel
+        m_pAmbSpeakers[5].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[5].SetPosition(polPosition);
+        break;
+    case kAmblib_71:
+        m_nSpeakers = 8;
+        m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
+        polPosition.fAzimuth = DegreesToRadians(30.f);
+        m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[0].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(-30.f);
+        m_pAmbSpeakers[1].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[1].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(110.f);
+        m_pAmbSpeakers[2].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[2].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(-110.f);
+        m_pAmbSpeakers[3].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[3].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(145.f);
+        m_pAmbSpeakers[4].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[4].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(-145.f);
+        m_pAmbSpeakers[5].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[5].SetPosition(polPosition);
+        polPosition.fAzimuth = DegreesToRadians(0.f);
+        m_pAmbSpeakers[6].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[6].SetPosition(polPosition);
+        // LFE channel
+        m_pAmbSpeakers[7].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[7].SetPosition(polPosition);
         break;
     case kAmblib_Pentagon:
         m_nSpeakers = 5;
@@ -406,4 +498,159 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
     fSpeakerGain = 1.f / sqrtf((float)m_nSpeakers);
     for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         m_pAmbSpeakers[niSpeaker].SetGain(fSpeakerGain);
+}
+
+void CAmbisonicDecoder::CheckSpeakerSetUp()
+{
+    // If the speaker set up is defined as a custom layout then check if it matches
+    // one with a preset
+    if (m_nSpeakerSetUp == kAmblib_CustomSpeakerSetUp)
+    {
+        int speakerMatchCount = 0;
+        float azimuthStereo[] = { 30.f, -30.f };
+        float azimuth50[] = { 30.f, -30.f, 110.f, -110.f, 0.f };
+        float azimuth51[] = { 30.f, -30.f, 110.f, -110.f, 0.f, 0.f };
+        float azimuth70[] = { 30.f, -30.f, 110.f, -110.f, 145.f, -145.f, 0.f };
+        float azimuth71[] = { 30.f, -30.f, 110.f, -110.f, 145.f, -145.f, 0.f, 0.f };
+
+        switch (GetSpeakerCount())
+        {
+        case 2:
+            for (int iSpeaker = 0; iSpeaker < 2; ++iSpeaker)
+            {
+                PolarPoint speakerPos = m_pAmbSpeakers[iSpeaker].GetPosition();
+                if (speakerPos.fElevation == 0.f)
+                    if (fabsf(speakerPos.fAzimuth - DegreesToRadians(azimuthStereo[iSpeaker])) < 1e-6)
+                        speakerMatchCount++;
+            }
+            if (speakerMatchCount == 2)
+                m_nSpeakerSetUp = kAmblib_Stereo;
+            break;
+        case 5: // 5.0
+            for (int iSpeaker = 0; iSpeaker < 5; ++iSpeaker)
+            {
+                PolarPoint speakerPos = m_pAmbSpeakers[iSpeaker].GetPosition();
+                if (speakerPos.fElevation == 0.f)
+                    if (fabsf(speakerPos.fAzimuth - DegreesToRadians(azimuth50[iSpeaker])) < 1e-6)
+                        speakerMatchCount++;
+            }
+            if (speakerMatchCount == 5)
+                m_nSpeakerSetUp = kAmblib_50;
+            break;
+        case 6: // 5.1
+            for (int iSpeaker = 0; iSpeaker < 6; ++iSpeaker)
+            {
+                PolarPoint speakerPos = m_pAmbSpeakers[iSpeaker].GetPosition();
+                if (speakerPos.fElevation == 0.f)
+                    if (fabsf(speakerPos.fAzimuth - DegreesToRadians(azimuth51[iSpeaker])) < 1e-6)
+                        speakerMatchCount++;
+            }
+            if (speakerMatchCount == 6)
+                m_nSpeakerSetUp = kAmblib_51;
+            break;
+        case 7:
+            for (int iSpeaker = 0; iSpeaker < 7; ++iSpeaker)
+            {
+                PolarPoint speakerPos = m_pAmbSpeakers[iSpeaker].GetPosition();
+                if (speakerPos.fElevation == 0.f)
+                    if (fabsf(speakerPos.fAzimuth - DegreesToRadians(azimuth70[iSpeaker])) < 1e-6)
+                        speakerMatchCount++;
+            }
+            if (speakerMatchCount == 7)
+                m_nSpeakerSetUp = kAmblib_70;
+            break;
+        case 8:
+            for (int iSpeaker = 0; iSpeaker < 8; ++iSpeaker)
+            {
+                PolarPoint speakerPos = m_pAmbSpeakers[iSpeaker].GetPosition();
+                if (speakerPos.fElevation == 0.f)
+                    if (fabsf(speakerPos.fAzimuth - DegreesToRadians(azimuth71[iSpeaker])) < 1e-6)
+                        speakerMatchCount++;
+            }
+            if (speakerMatchCount == 8)
+                m_nSpeakerSetUp = kAmblib_71;
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void CAmbisonicDecoder::LoadDecoderPreset()
+{
+    // If one of the layouts with a preset available has been selected then load it
+    int nAmbiComponents = OrderToComponents(m_nOrder, m_b3D);
+    switch (m_nSpeakerSetUp)
+    {
+    case kAmblib_Stereo:
+        // Load the stereo decoder preset
+        for (int iSpeaker = 0; iSpeaker < 2; ++iSpeaker)
+            for (int iCoeff = 0; iCoeff < nAmbiComponents; ++iCoeff)
+            {
+                m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_stereo[iSpeaker][iCoeff]);
+            }
+        // Preset loaded
+        m_bPresetLoaded = true;
+        break;
+    case kAmblib_50:
+        // Load the 5.0 decoder preset
+        for (int iSpeaker = 0; iSpeaker < 5; ++iSpeaker)
+            for (int iCoeff = 0; iCoeff < nAmbiComponents; ++iCoeff)
+            {
+                if (m_nOrder == 1)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_first_5_1[iSpeaker][iCoeff]);
+                else if (m_nOrder == 2)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_second_5_1[iSpeaker][iCoeff]);
+                else if (m_nOrder == 3)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_third_5_1[iSpeaker][iCoeff]);
+            }
+        // Preset loaded
+        m_bPresetLoaded = true;
+        break;
+    case kAmblib_70:
+        // Load the 7.0 decoder preset
+        for (int iSpeaker = 0; iSpeaker < 7; ++iSpeaker)
+            for (int iCoeff = 0; iCoeff < nAmbiComponents; ++iCoeff)
+            {
+                if (m_nOrder == 1)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_first_7_1[iSpeaker][iCoeff]);
+                else if (m_nOrder == 2)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_second_7_1[iSpeaker][iCoeff]);
+                else if (m_nOrder == 3)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_third_7_1[iSpeaker][iCoeff]);
+            }
+        // Preset loaded
+        m_bPresetLoaded = true;
+        break;
+    case kAmblib_51:
+        // Load the 5.1 decoder preset
+        for (int iSpeaker = 0; iSpeaker < 6; ++iSpeaker)
+            for (int iCoeff = 0; iCoeff < nAmbiComponents; ++iCoeff)
+            {
+                if (m_nOrder == 1)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_first_5_1[iSpeaker][iCoeff]);
+                else if (m_nOrder == 2)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_second_5_1[iSpeaker][iCoeff]);
+                else if (m_nOrder == 3)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_third_5_1[iSpeaker][iCoeff]);
+            }
+        // Preset loaded
+        m_bPresetLoaded = true;
+        break;
+    case kAmblib_71:
+        // Load the 7.1 decoder preset
+        for (int iSpeaker = 0; iSpeaker < 8; ++iSpeaker)
+            for (int iCoeff = 0; iCoeff < nAmbiComponents; ++iCoeff)
+            {
+                if (m_nOrder == 1)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_first_7_1[iSpeaker][iCoeff]);
+                else if (m_nOrder == 2)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_second_7_1[iSpeaker][iCoeff]);
+                else if (m_nOrder == 3)
+                    m_pAmbSpeakers[iSpeaker].SetCoefficient(iCoeff, decoder_coefficient_third_7_1[iSpeaker][iCoeff]);
+            }
+        // Preset loaded
+        m_bPresetLoaded = true;
+        break;
+    }
 }
