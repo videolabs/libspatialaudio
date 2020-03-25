@@ -118,5 +118,5 @@ float CAmbisonicZoomer::factorial(unsigned M)
     unsigned ret = 1;
     for(unsigned int i = 1; i <= M; ++i)
         ret *= i;
-    return ret;
+    return (float)ret;
 }

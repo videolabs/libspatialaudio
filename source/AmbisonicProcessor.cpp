@@ -130,7 +130,7 @@ void CAmbisonicProcessor::ProcessOrder1_3D(CBFormat* pBFSrcDst, unsigned nSample
 
 void CAmbisonicProcessor::ProcessOrder2_3D(CBFormat* pBFSrcDst, unsigned nSamples)
 {
-    float fSqrt3 = sqrt(3.f);
+    float fSqrt3 = sqrtf(3.f);
 
     for(unsigned niSample = 0; niSample < nSamples; niSample++)
     {
@@ -151,14 +151,14 @@ void CAmbisonicProcessor::ProcessOrder2_3D(CBFormat* pBFSrcDst, unsigned nSample
         pBFSrcDst->m_ppfChannels[kT][niSample] = -m_fCosBeta * m_pfTempSample[kT]
                                         + m_fSinBeta * m_pfTempSample[kV];
         pBFSrcDst->m_ppfChannels[kR][niSample] = (0.75f * m_fCos2Beta + 0.25f) * m_pfTempSample[kR]
-                            + (0.5 * fSqrt3 * pow(m_fSinBeta,2.0) ) * m_pfTempSample[kU]
+                            + (0.5f * fSqrt3 * powf(m_fSinBeta,2.0f) ) * m_pfTempSample[kU]
                             + (fSqrt3 * m_fSinBeta * m_fCosBeta) * m_pfTempSample[kS];
         pBFSrcDst->m_ppfChannels[kS][niSample] = m_fCos2Beta * m_pfTempSample[kS]
                             - fSqrt3 * m_fCosBeta * m_fSinBeta * m_pfTempSample[kR]
                             + m_fCosBeta * m_fSinBeta * m_pfTempSample[kU];
         pBFSrcDst->m_ppfChannels[kU][niSample] = (0.25f * m_fCos2Beta + 0.75f) * m_pfTempSample[kU]
                             - m_fCosBeta * m_fSinBeta * m_pfTempSample[kS]
-                            +0.5 * fSqrt3 * pow(m_fSinBeta,2.0) * m_pfTempSample[kR];
+                            +0.5f * fSqrt3 * powf(m_fSinBeta,2.0f) * m_pfTempSample[kR];
 
         // Gamma rotation
         m_pfTempSample[kV] = - pBFSrcDst->m_ppfChannels[kU][niSample] * m_fSin2Gamma
@@ -183,9 +183,9 @@ void CAmbisonicProcessor::ProcessOrder2_3D(CBFormat* pBFSrcDst, unsigned nSample
 void CAmbisonicProcessor::ProcessOrder3_3D(CBFormat* pBFSrcDst, unsigned nSamples)
 {
         /* (should move these somewhere that does recompute each time) */
-        float fSqrt3_2 = sqrt(3.f/2.f);
-        float fSqrt15 = sqrt(15.f);
-        float fSqrt5_2 = sqrt(5.f/2.f);
+        float fSqrt3_2 = sqrtf(3.f/2.f);
+        float fSqrt15 = sqrtf(15.f);
+        float fSqrt5_2 = sqrtf(5.f/2.f);
 
     for(unsigned niSample = 0; niSample < nSamples; niSample++)
     {
@@ -207,29 +207,29 @@ void CAmbisonicProcessor::ProcessOrder3_3D(CBFormat* pBFSrcDst, unsigned nSample
         // Beta rotation
         pBFSrcDst->m_ppfChannels[kQ][niSample] = 0.125f * m_pfTempSample[kQ] * (5.f + 3.f*m_fCos2Beta)
                     - fSqrt3_2 * m_pfTempSample[kO] *m_fCosBeta * m_fSinBeta
-                    + 0.25f * fSqrt15 * m_pfTempSample[kM] * pow(m_fSinBeta,2.0f);
+                    + 0.25f * fSqrt15 * m_pfTempSample[kM] * powf(m_fSinBeta,2.0f);
         pBFSrcDst->m_ppfChannels[kO][niSample] = m_pfTempSample[kO] * m_fCos2Beta
                     - fSqrt5_2 * m_pfTempSample[kM] * m_fCosBeta * m_fSinBeta
                     + fSqrt3_2 * m_pfTempSample[kQ] * m_fCosBeta * m_fSinBeta;
         pBFSrcDst->m_ppfChannels[kM][niSample] = 0.125f * m_pfTempSample[kM] * (3.f + 5.f*m_fCos2Beta)
                     - fSqrt5_2 * m_pfTempSample[kO] *m_fCosBeta * m_fSinBeta
-                    + 0.25f * fSqrt15 * m_pfTempSample[kQ] * pow(m_fSinBeta,2.0f);
+                    + 0.25f * fSqrt15 * m_pfTempSample[kQ] * powf(m_fSinBeta,2.0f);
         pBFSrcDst->m_ppfChannels[kK][niSample] = 0.25f * m_pfTempSample[kK] * m_fCosBeta * (-1.f + 15.f*m_fCos2Beta)
-                    + 0.5f * fSqrt15 * m_pfTempSample[kN] * m_fCosBeta * pow(m_fSinBeta,2.f)
-                    + 0.5f * fSqrt5_2 * m_pfTempSample[kP] * pow(m_fSinBeta,3.f)
+                    + 0.5f * fSqrt15 * m_pfTempSample[kN] * m_fCosBeta * powf(m_fSinBeta,2.f)
+                    + 0.5f * fSqrt5_2 * m_pfTempSample[kP] * powf(m_fSinBeta,3.f)
                     + 0.125f * fSqrt3_2 * m_pfTempSample[kL] * (m_fSinBeta + 5.f * m_fSin3Beta);
         pBFSrcDst->m_ppfChannels[kL][niSample] = 0.0625f * m_pfTempSample[kL] * (m_fCosBeta + 15.f * m_fCos3Beta)
                     + 0.25f * fSqrt5_2 * m_pfTempSample[kN] * (1.f + 3.f * m_fCos2Beta) * m_fSinBeta
-                    + 0.25f * fSqrt15 * m_pfTempSample[kP] * m_fCosBeta * pow(m_fSinBeta,2.f)
-                    - 0.125 * fSqrt3_2 * m_pfTempSample[kK] * (m_fSinBeta + 5.f * m_fSin3Beta);
+                    + 0.25f * fSqrt15 * m_pfTempSample[kP] * m_fCosBeta * powf(m_fSinBeta,2.f)
+                    - 0.125f * fSqrt3_2 * m_pfTempSample[kK] * (m_fSinBeta + 5.f * m_fSin3Beta);
         pBFSrcDst->m_ppfChannels[kN][niSample] = 0.125f * m_pfTempSample[kN] * (5.f * m_fCosBeta + 3.f * m_fCos3Beta)
                     + 0.25f * fSqrt3_2 * m_pfTempSample[kP] * (3.f + m_fCos2Beta) * m_fSinBeta
-                    + 0.5f * fSqrt15 * m_pfTempSample[kK] * m_fCosBeta * pow(m_fSinBeta,2.f)
-                    + 0.125 * fSqrt5_2 * m_pfTempSample[kL] * (m_fSinBeta - 3.f * m_fSin3Beta);
+                    + 0.5f * fSqrt15 * m_pfTempSample[kK] * m_fCosBeta * powf(m_fSinBeta,2.f)
+                    + 0.125f * fSqrt5_2 * m_pfTempSample[kL] * (m_fSinBeta - 3.f * m_fSin3Beta);
         pBFSrcDst->m_ppfChannels[kP][niSample] = 0.0625f * m_pfTempSample[kP] * (15.f * m_fCosBeta + m_fCos3Beta)
                     - 0.25f * fSqrt3_2 * m_pfTempSample[kN] * (3.f + m_fCos2Beta) * m_fSinBeta
-                    + 0.25f * fSqrt15 * m_pfTempSample[kL] * m_fCosBeta * pow(m_fSinBeta,2.f)
-                    - 0.5 * fSqrt5_2 * m_pfTempSample[kK] * pow(m_fSinBeta,3.f);
+                    + 0.25f * fSqrt15 * m_pfTempSample[kL] * m_fCosBeta * powf(m_fSinBeta,2.f)
+                    - 0.5f * fSqrt5_2 * m_pfTempSample[kK] * powf(m_fSinBeta,3.f);
 
         // Gamma rotation
         m_pfTempSample[kQ] = - pBFSrcDst->m_ppfChannels[kP][niSample] * m_fSin3Gamma
@@ -255,50 +255,3 @@ void CAmbisonicProcessor::ProcessOrder3_3D(CBFormat* pBFSrcDst, unsigned nSample
         pBFSrcDst->m_ppfChannels[kP][niSample] = m_pfTempSample[kP];
     }
 }
-
-// ACN/SN3D is generally only ever produced for 3D Ambisonics.
-// If 2D Ambisonics is required then these equations need to be modified (they can be found in the 3D code for the first Z-rotation).
-// Generally, 2D-only rotations do not make sense for use with 360 degree videos.
-/*
-void CAmbisonicProcessor::ProcessOrder1_2D(CBFormat* pBFSrcDst, unsigned nSamples)
-{
-    for(unsigned niSample = 0; niSample < nSamples; niSample++)
-    {
-        //Yaw
-        m_pfTempSample[kX] = pBFSrcDst->m_ppfChannels[kX][niSample] * m_fCosYaw
-                            - pBFSrcDst->m_ppfChannels[kY][niSample] * m_fSinYaw;
-        m_pfTempSample[kY] = pBFSrcDst->m_ppfChannels[kX][niSample] * m_fSinYaw
-                            + pBFSrcDst->m_ppfChannels[kY][niSample] * m_fCosYaw;
-
-        pBFSrcDst->m_ppfChannels[kX][niSample] = m_pfTempSample[kX];
-        pBFSrcDst->m_ppfChannels[kY][niSample] = m_pfTempSample[kY];
-    }
-}
-
-void CAmbisonicProcessor::ProcessOrder2_2D(CBFormat* pBFSrcDst, unsigned nSamples)
-{
-    for(unsigned niSample = 0; niSample < nSamples; niSample++)
-    {
-        //Yaw
-        m_pfTempSample[kS] = pBFSrcDst->m_ppfChannels[kS][niSample] * m_fCosYaw
-                            - pBFSrcDst->m_ppfChannels[kT][niSample] * m_fSinYaw;
-        m_pfTempSample[kT] = pBFSrcDst->m_ppfChannels[kS][niSample] * m_fSinYaw
-                            + pBFSrcDst->m_ppfChannels[kT][niSample] * m_fCosYaw;
-        m_pfTempSample[kU] = pBFSrcDst->m_ppfChannels[kU][niSample] * m_fCos2Yaw
-                            - pBFSrcDst->m_ppfChannels[kV][niSample] * m_fSin2Yaw;
-        m_pfTempSample[kV] = pBFSrcDst->m_ppfChannels[kU][niSample] * m_fSin2Yaw
-                            + pBFSrcDst->m_ppfChannels[kV][niSample] * m_fCos2Yaw;
-
-        pBFSrcDst->m_ppfChannels[kS][niSample] = m_pfTempSample[kS];
-        pBFSrcDst->m_ppfChannels[kT][niSample] = m_pfTempSample[kT];
-        pBFSrcDst->m_ppfChannels[kU][niSample] = m_pfTempSample[kU];
-        pBFSrcDst->m_ppfChannels[kV][niSample] = m_pfTempSample[kV];
-    }
-}
-
-void CAmbisonicProcessor::ProcessOrder3_2D(CBFormat* pBFSrcDst, unsigned nSamples)
-{
-    //TODO
-}
-*/
-

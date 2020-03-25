@@ -103,7 +103,7 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
             //Scale the HRTFs by the coefficient of the current channel/component
             // The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
             // for SN3D normalised Ambisonic inputs.
-            float fCoefficient = m_AmbDecoder.GetCoefficient(niSpeaker, niChannel) * (2*floor(sqrt(niChannel)) + 1);
+            float fCoefficient = m_AmbDecoder.GetCoefficient(niSpeaker, niChannel) * (2.f*floorf(sqrtf((float)niChannel)) + 1.f);
             for(niTap = 0; niTap < m_nTaps; niTap++)
             {
                 pfHRTF[0][niTap] *= fCoefficient;
