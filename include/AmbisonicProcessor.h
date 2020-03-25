@@ -19,8 +19,6 @@
 
 #include "AmbisonicBase.h"
 #include "BFormat.h"
-#include "kiss_fftr.h"
-#include "AmbisonicPsychoacousticFilters.h"
 #include "AmbisonicZoomer.h"
 
 enum ProcessorDOR
@@ -143,7 +141,7 @@ public:
     /**
         Rotate B-Format stream.
     */
-    void Process(CBFormat* pBFSrcDst, unsigned nSamples, bool bIncludeFiltering = true);
+    void Process(CBFormat* pBFSrcDst, unsigned nSamples);
 
 private:
     void ProcessOrder1_3D(CBFormat* pBFSrcDst, unsigned nSamples);
@@ -158,21 +156,6 @@ private:
 protected:
     Orientation m_orientation;
     float* m_pfTempSample;
-
-    kiss_fftr_cfg m_pFFT_psych_cfg;
-    kiss_fftr_cfg m_pIFFT_psych_cfg;
-
-    float* m_pfScratchBufferA;
-    float** m_pfOverlap;
-    unsigned m_nFFTSize;
-    unsigned m_nBlockSize;
-    unsigned m_nTaps;
-    unsigned m_nOverlapLength;
-    unsigned m_nFFTBins;
-    float m_fFFTScaler;
-
-    kiss_fft_cpx** m_ppcpPsychFilters;
-    kiss_fft_cpx* m_pcpScratch;
 
     float m_fCosAlpha;
     float m_fSinAlpha;
