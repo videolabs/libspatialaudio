@@ -20,6 +20,7 @@
 #include "AmbisonicBase.h"
 #include "BFormat.h"
 #include "AmbisonicSpeaker.h"
+#include "AmbisonicShelfFilters.h"
 
 enum Amblib_SpeakerSetUps
 {
@@ -54,7 +55,7 @@ public:
         Else, if using one of the default configurations, nSpeakers does not
         need to be specified. Function returns true if successful.
     */
-    bool Configure(unsigned nOrder, bool b3D, int nSpeakerSetUp, unsigned nSpeakers = 0);
+    bool Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, int nSpeakerSetUp, unsigned nSpeakers = 0);
     /**
         Resets all the speakers.
     */
@@ -133,6 +134,9 @@ protected:
     unsigned m_nSpeakers;
     CAmbisonicSpeaker* m_pAmbSpeakers;
     bool m_bPresetLoaded;
+
+private:
+    CAmbisonicShelfFilters shelfFilters;
 };
 
 #endif // _AMBISONIC_DECODER_H

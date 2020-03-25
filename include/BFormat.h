@@ -94,6 +94,7 @@ protected:
     friend class CAmbisonicProcessor;
     friend class CAmbisonicBinauralizer;
     friend class CAmbisonicZoomer;
+    friend class CAmbisonicShelfFilters;
 };
 
 #endif //_BFORMAT_H

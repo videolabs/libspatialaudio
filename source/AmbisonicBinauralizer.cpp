@@ -40,6 +40,8 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
                                        unsigned& tailLength,
                                        std::string HRTFPath)
 {
+    shelfFilters.Configure(nOrder, b3D, nBlockSize, 0);
+
     //Iterators
     unsigned niEar = 0;
     unsigned niChannel = 0;
@@ -189,11 +191,13 @@ void CAmbisonicBinauralizer::Reset()
 {
     memset(m_pfOverlap[0].data(), 0, m_nOverlapLength * sizeof(float));
     memset(m_pfOverlap[1].data(), 0, m_nOverlapLength * sizeof(float));
+
+    shelfFilters.Refresh();
 }
 
 void CAmbisonicBinauralizer::Refresh()
 {
-
+    shelfFilters.Refresh();
 }
 
 void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
@@ -204,6 +208,8 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
     unsigned ni = 0;
     kiss_fft_cpx cpTemp;
 
+    // Apply psychoacoustic optimisation filters
+    shelfFilters.Process(pBFSrc);
 
     /* If CPU load needs to be reduced then perform the convolution for each of the Ambisonics/spherical harmonic
     decompositions of the loudspeakers HRTFs for the left ear. For the left ear the results of these convolutions

@@ -60,7 +60,6 @@ protected:
     unsigned m_nOrder;
     bool m_b3D;
     unsigned m_nChannelCount;
-    bool m_bOpt;
 };
 
 #endif //_AMBISONIC_BASE_H

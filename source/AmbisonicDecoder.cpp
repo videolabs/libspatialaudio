@@ -32,11 +32,14 @@ CAmbisonicDecoder::~CAmbisonicDecoder()
         delete [] m_pAmbSpeakers;
 }
 
-bool CAmbisonicDecoder::Configure(unsigned nOrder, bool b3D, int nSpeakerSetUp, unsigned nSpeakers)
+bool CAmbisonicDecoder::Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, int nSpeakerSetUp, unsigned nSpeakers)
 {
     bool success = CAmbisonicBase::Configure(nOrder, b3D, nSpeakerSetUp);
     if(!success)
         return false;
+    // Set up the ambisonic shelf filters
+    shelfFilters.Configure(nOrder, b3D, nBlockSize, 0);
+
     SpeakerSetUp(nSpeakerSetUp, nSpeakers);
     Refresh();
 
@@ -47,6 +50,7 @@ void CAmbisonicDecoder::Reset()
 {
     for(unsigned niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         m_pAmbSpeakers[niSpeaker].Reset();
+    shelfFilters.Reset();
 }
 
 void CAmbisonicDecoder::Refresh()
@@ -54,17 +58,20 @@ void CAmbisonicDecoder::Refresh()
     for(unsigned niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         m_pAmbSpeakers[niSpeaker].Refresh();
 
-    // Assume that we need the psychoacoustic optimisation filters
-    m_bOpt = true;
-
     // Check if the speaker setup is one which has a preset
     CheckSpeakerSetUp();
     // Load the preset
     LoadDecoderPreset();
+
+    shelfFilters.Refresh();
 }
 
 void CAmbisonicDecoder::Process(CBFormat* pBFSrc, unsigned nSamples, float** ppfDst)
 {
+    // If a preset is not loaded then use optimisation shelf filters
+    if (!m_bPresetLoaded)
+        shelfFilters.Process(pBFSrc);
+
     for(unsigned niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
     {
         m_pAmbSpeakers[niSpeaker].Process(pBFSrc, nSamples, ppfDst[niSpeaker]);

@@ -19,7 +19,6 @@ CAmbisonicBase::CAmbisonicBase()
     : m_nOrder(0)
     , m_b3D(0)
     , m_nChannelCount(0)
-    , m_bOpt(0)
 {
 }
 
