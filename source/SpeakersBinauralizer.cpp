@@ -97,8 +97,8 @@ bool SpeakersBinauralizer::Configure(unsigned nSampleRate,
             {
                 for(niTap = 0; niTap < m_nTaps; niTap++)
                 {
-                    fMax = fabs(ppfAccumulator[niEar][niChannel][niTap]) > fMax ?
-                                fabs(ppfAccumulator[niEar][niChannel][niTap]) : fMax;
+                    fMax = fabsf(ppfAccumulator[niEar][niChannel][niTap]) > fMax ?
+                                fabsf(ppfAccumulator[niEar][niChannel][niTap]) : fMax;
                 }
             }
         }

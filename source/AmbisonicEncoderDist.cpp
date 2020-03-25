@@ -56,7 +56,7 @@ bool CAmbisonicEncoderDist::Configure(unsigned nOrder, bool b3D, unsigned nSampl
 void CAmbisonicEncoderDist::Reset()
 {
     memset(m_pfDelayBuffer, 0, m_nDelayBufferLength * sizeof(float));
-    m_fDelay = m_polPosition.fDistance / knSpeedOfSound * m_nSampleRate + 0.5f;
+    m_fDelay = m_polPosition.fDistance / knSpeedOfSound * (float)m_nSampleRate + 0.5f;
     m_nDelay = (int)m_fDelay;
     m_fDelay -= m_nDelay;
     m_nIn = 0;
@@ -68,7 +68,7 @@ void CAmbisonicEncoderDist::Refresh()
 {
     CAmbisonicEncoder::Refresh();
 
-    m_fDelay = fabs(m_polPosition.fDistance) / knSpeedOfSound * m_nSampleRate; //TODO abs() sees float as int!
+    m_fDelay = fabsf(m_polPosition.fDistance) / knSpeedOfSound * (float)m_nSampleRate; //TODO abs() sees float as int!
     m_nDelay = (int)m_fDelay;
     m_fDelay -= m_nDelay;
     m_nOutA = (m_nIn - m_nDelay + m_nDelayBufferLength) % m_nDelayBufferLength;
@@ -77,13 +77,13 @@ void CAmbisonicEncoderDist::Refresh()
     //Source is outside speaker array
     if(fabs(m_polPosition.fDistance) >= m_fRoomRadius)
     {
-        m_fInteriorGain    = (m_fRoomRadius / fabs(m_polPosition.fDistance)) / 2.f;
+        m_fInteriorGain    = (m_fRoomRadius / fabsf(m_polPosition.fDistance)) / 2.f;
         m_fExteriorGain    = m_fInteriorGain;
     }
     else
     {
-        m_fInteriorGain = (2.f - fabs(m_polPosition.fDistance) / m_fRoomRadius) / 2.f;
-        m_fExteriorGain = (fabs(m_polPosition.fDistance) / m_fRoomRadius) / 2.f;
+        m_fInteriorGain = (2.f - fabsf(m_polPosition.fDistance) / m_fRoomRadius) / 2.f;
+        m_fExteriorGain = (fabsf(m_polPosition.fDistance) / m_fRoomRadius) / 2.f;
     }
 }
 

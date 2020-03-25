@@ -16,10 +16,10 @@
 
 #include "AmbisonicSource.h"
 
-#define fSqrt32 sqrt(3.f)/2.f
-#define fSqrt58 sqrt(5.f/8.f)
-#define fSqrt152 sqrt(15.f)/2.f
-#define fSqrt38 sqrt(3.f/8.f)
+#define fSqrt32 sqrtf(3.f)/2.f
+#define fSqrt58 sqrtf(5.f/8.f)
+#define fSqrt152 sqrtf(15.f)/2.f
+#define fSqrt38 sqrtf(3.f/8.f)
 
 CAmbisonicSource::CAmbisonicSource()
 {
@@ -73,11 +73,11 @@ void CAmbisonicSource::Refresh()
         }
         if(m_nOrder >= 2)
         {
-            m_pfCoeff[4] = fSqrt32*(fSin2Azim * powf(fCosElev, 2)) * m_pfOrderWeights[2]; // V
+            m_pfCoeff[4] = fSqrt32*(fSin2Azim * powf(fCosElev, 2.f)) * m_pfOrderWeights[2]; // V
             m_pfCoeff[5] = fSqrt32*(fSinAzim * fSin2Elev) * m_pfOrderWeights[2]; // T
             m_pfCoeff[6] = (1.5f * powf(fSinElev, 2.f) - 0.5f) * m_pfOrderWeights[2]; // R
             m_pfCoeff[7] = fSqrt32*(fCosAzim * fSin2Elev) * m_pfOrderWeights[2]; // S
-            m_pfCoeff[8] = fSqrt32*(fCos2Azim * powf(fCosElev, 2)) * m_pfOrderWeights[2]; // U
+            m_pfCoeff[8] = fSqrt32*(fCos2Azim * powf(fCosElev, 2.f)) * m_pfOrderWeights[2]; // U
         }
         if(m_nOrder >= 3)
         {
