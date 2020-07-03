@@ -9,7 +9,7 @@ set(LIBRARY_SOVERSION_MAJOR "1")
 set(LIBRARY_SOVERSION_MINOR "0")
 set(LIBRARY_SOVERSION_PATCH "0")
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 option(BUILD_SHARED_LIBS "Build shared library" ON)
@@ -36,6 +36,12 @@ list(APPEND headers
     include/AmbisonicDecoder.h
     include/AmbisonicMicrophone.h
     include/AmbisonicSource.h
+    include/AdmDecorrelate.h
+    include/AdmLayouts.h
+    include/AdmMetadata.h
+    include/AdmPointSourcePanner.h
+    include/AdmRenderer.h
+    include/AdmUtils.h
     include/BFormat.h
     include/mit_hrtf_lib.h
     include/hrtf/hrtf.h
@@ -47,6 +53,8 @@ list(APPEND headers
     include/normal/mit_hrtf_normal_96000.h
     source/kiss_fft/kiss_fftr.h
     source/kiss_fft/kiss_fft.h
+    source/libear/kissfft/kissfft.hh
+    source/libear/src/direct_speakers/mapping_rules.hpp
 )
 
 list(APPEND sources
@@ -69,6 +77,12 @@ list(APPEND sources
     source/AmbisonicSpeaker.cpp
     source/AmbisonicEncoderDist.cpp
     source/AmbisonicZoomer.cpp
+    source/AdmDecorrelate.cpp
+    source/AdmPointSourcePanner.cpp
+    source/AdmRenderer.cpp
+    source/libear/decorrelate.cpp
+    source/libear/decorrelate.hpp
+    source/libear/src/direct_speakers/mapping_rules.cpp
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -76,7 +90,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 find_package(MySofa QUIET)
 set(HAVE_MYSOFA ${MYSOFA_FOUND})
 
-include_directories(include include/hrtf source source/kiss_fft ${PROJECT_BINARY_DIR})
+include_directories(include include/hrtf source source/kiss_fft source/libear ${PROJECT_BINARY_DIR})
 
 if(MYSOFA_FOUND)
     include_directories(${MYSOFA_INCLUDE_DIRS})

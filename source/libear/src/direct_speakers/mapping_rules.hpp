@@ -3,6 +3,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <algorithm>
 #include "AdmLayouts.h"
 // This file contains code take from libear (Apache 2.0 license) and adapted to work with libspatialaudio's ADM renderer
 
