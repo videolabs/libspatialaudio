@@ -51,6 +51,10 @@ public:
         Encode mono stream to B-Format.
     */
     void Process(float* pfSrc, unsigned nSamples, CBFormat* pBFDst);
+    /**
+    Encode mono stream to B-Format and adds it to the pBFDst buffer
+    */
+    void ProcessAccumul(float* pfSrc, unsigned nSamples, CBFormat* pBFDst);
 
 private:
     // The last set HOA coefficients
