@@ -36,6 +36,16 @@ list(APPEND headers
     include/AmbisonicDecoder.h
     include/AmbisonicMicrophone.h
     include/AmbisonicSource.h
+    include/AdmDecorrelate.h
+    include/AdmDirectSpeakerGainCalc.h
+    include/AdmLayouts.h
+    include/AdmMappingRules.h
+    include/AdmMetadata.h
+    include/AdmPointSourcePanner.h
+    include/AdmPointSourcePannerGainCalc.h
+    include/AdmRegionHandlers.h
+    include/AdmRenderer.h
+    include/AdmUtils.h
     include/BFormat.h
     include/mit_hrtf_lib.h
     include/hrtf/hrtf.h
@@ -69,6 +79,12 @@ list(APPEND sources
     source/AmbisonicSpeaker.cpp
     source/AmbisonicEncoderDist.cpp
     source/AmbisonicZoomer.cpp
+    source/AdmDecorrelate.cpp
+    source/AdmDirectSpeakerGainCalc.cpp
+    source/AdmPointSourcePanner.cpp
+    source/AdmPointSourcePannerGainCalc.cpp
+    source/AdmRegionHandlers.cpp
+    source/AdmRenderer.cpp
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
