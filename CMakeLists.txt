@@ -53,8 +53,6 @@ list(APPEND headers
     include/normal/mit_hrtf_normal_96000.h
     source/kiss_fft/kiss_fftr.h
     source/kiss_fft/kiss_fft.h
-    source/libear/kissfft/kissfft.hh
-    source/libear/src/direct_speakers/mapping_rules.hpp
 )
 
 list(APPEND sources
@@ -80,9 +78,6 @@ list(APPEND sources
     source/AdmDecorrelate.cpp
     source/AdmPointSourcePanner.cpp
     source/AdmRenderer.cpp
-    source/libear/decorrelate.cpp
-    source/libear/decorrelate.hpp
-    source/libear/src/direct_speakers/mapping_rules.cpp
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
