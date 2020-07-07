@@ -12,9 +12,7 @@
 /*#                                                                          #*/
 /*############################################################################*/
 
-
-#ifndef _ADM_POINT_SOURCE_PANNER_H
-#define    _ADM_POINT_SOURCE_PANNER_H
+#pragma once
 
 #include "AdmMetadata.h"
 #include "AdmLayouts.h"
@@ -476,5 +474,3 @@ namespace admrender {
 		std::pair<std::vector<PolarPosition>, std::vector<double>> divergedPositionsAndGains(ObjectDivergence divergence, PolarPosition polarDirection);
 	};
 }
-
-#endif //_ADM_POINT_SOURCE_PANNER_H

@@ -12,9 +12,7 @@
 /*#                                                                          #*/
 /*############################################################################*/
 
-
-#ifndef _ADM_MAPPING_RULES_H
-#define    _ADM_MAPPING_RULES_H
+#pragma once
 
 namespace admrender {
 
@@ -166,4 +164,3 @@ namespace admrender {
     };
 
 }
-#endif //_ADM_MAPPING_RULES_H

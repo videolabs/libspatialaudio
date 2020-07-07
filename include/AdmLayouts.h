@@ -13,8 +13,7 @@
 /*############################################################################*/
 
 
-#ifndef _ADM_LAYOUTS_H
-#define    _ADM_LAYOUTS_H
+#pragma once
 
 #include "AdmMetadata.h"
 
@@ -161,4 +160,3 @@ namespace admrender {
 	{13, 12, 5, 6}, {11, 4, 13, 6}, {18, 20, 4, 6}, {19, 20, 5, 6},
 	};
 }
-#endif //_ADM_LAYOUTS_H

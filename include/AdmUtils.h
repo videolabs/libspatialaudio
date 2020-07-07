@@ -13,8 +13,6 @@
 /*############################################################################*/
 
 #pragma once
-#ifndef _ADM_UTILS_H
-#define    _ADM_UTILS_H
 
 #include "AdmMetadata.h"
 #include "AdmLayouts.h"
@@ -281,4 +279,3 @@ namespace admrender {
 		return x;
 	}
 }
-#endif //_ADM_LAYOUTS_H

@@ -12,9 +12,7 @@
 /*#                                                                          #*/
 /*############################################################################*/
 
-
-#ifndef _ADM_METADATA_H
-#define    _ADM_METADATA_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -233,4 +231,3 @@ namespace admrender {
 	};
 
 }
-#endif //_ADM_METADATA_H

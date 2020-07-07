@@ -12,9 +12,7 @@
 /*#                                                                          #*/
 /*############################################################################*/
 
-
-#ifndef _ADM_RENDERER_H
-#define    _ADM_RENDERER_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -151,5 +149,3 @@ namespace admrender {
 	};
 
 }
-
-#endif //_ADM_RENDERER_H

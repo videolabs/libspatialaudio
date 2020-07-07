@@ -12,9 +12,7 @@
 /*#                                                                          #*/
 /*############################################################################*/
 
-
-#ifndef _ADM_DECORRELATE_H
-#define    _ADM_DECORRELATE_H
+#pragma once
 
 #include "AdmLayouts.h"
 #include "AdmUtils.h"
@@ -103,5 +101,3 @@ namespace admrender {
 	};
 
 }
-
-#endif //_ADM_DECORRELATE_H
