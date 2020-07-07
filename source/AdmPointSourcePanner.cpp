@@ -15,7 +15,6 @@
 #include "AdmPointSourcePanner.h"
 #include<string>
 #include <map>
-#include "src/direct_speakers/mapping_rules.hpp"
 
 namespace admrender {
 
@@ -300,7 +299,7 @@ namespace admrender {
 	ChannelLockHandler::ChannelLockHandler(Layout layout)
 	{
 		m_layout = layout;
-		m_nCh = layout.channels.size();
+		m_nCh = (unsigned int)layout.channels.size();
 	}
 
 	ChannelLockHandler::~ChannelLockHandler()
@@ -338,7 +337,7 @@ namespace admrender {
 				l2norm.push_back(differenceNorm);
 			}
 		}
-		unsigned int nSpeakersInRange = closestSpeakersInd.size();
+		unsigned int nSpeakersInRange = (unsigned int)closestSpeakersInd.size();
 		// If no speakers are in range then return the original direction
 		if (nSpeakersInRange == 0)
 			return polarDirection;
@@ -374,13 +373,16 @@ namespace admrender {
 						return m_layout.channels[equalDistanceSpeakers[iTuple]].polarPosition;
 			}
 		}
+
+		// Final fallback, return original position
+		return polarDirection;
 	}
 
 	//===================================================================================================================================
 	ZoneExclusionHandler::ZoneExclusionHandler(Layout layout)
 	{
 		m_layout = getLayoutWithoutLFE(layout);
-		m_nCh = m_layout.channels.size();
+		m_nCh = (unsigned int)m_layout.channels.size();
 
 		// Get the cartesian coordinates of all nominal positions
 		std::vector<CartesianPosition> cartesianPositions;
@@ -469,16 +471,16 @@ namespace admrender {
 			}
 		}
 
-		if (nCountExcluded == m_nCh || nCountExcluded == 0)
+		if (nCountExcluded == (int)m_nCh || nCountExcluded == 0)
 		{
 			// If all or none of the speakers are exlcuded then set the downmix matrix to the identity matrix
-			for (int i = 0; i < m_nCh; ++i)
+			for (int i = 0; i < (int)m_nCh; ++i)
 				D[i][i] = 1.;
 		}
 		else
 		{
 			// Go through all the speakers and find the first set that contains non-exlcuded speakers
-			for (int iSpk = 0; iSpk < m_nCh; ++iSpk)
+			for (int iSpk = 0; iSpk < (int)m_nCh; ++iSpk)
 			{
 				// Find the first set with non-excluded speakers
 				for (int iSet = 0; iSet < m_downmixMapping[iSpk].size(); ++iSet)
@@ -488,7 +490,7 @@ namespace admrender {
 					for (int i = 0; i < setElements.size(); ++i)
 						if (!isExcluded[setElements[i]])
 							notExcludedElements.push_back(setElements[i]);
-					unsigned int numNotExcluded = notExcludedElements.size();
+					int numNotExcluded = (int)notExcludedElements.size();
 					if (numNotExcluded > 0)
 					{
 						// Fill the downmix matrix D
@@ -502,7 +504,7 @@ namespace admrender {
 
 		// Calculate the downmixed output gain vector
 		std::vector<double> outGains(m_nCh, 0.);
-		for (int i = 0; i < m_nCh; ++i)
+		for (int i = 0; i < (int)m_nCh; ++i)
 		{
 			double g_tmp = 0.;
 			for (unsigned int j = 0; j < m_nCh; ++j)
@@ -518,10 +520,7 @@ namespace admrender {
 		: m_pointSourcePannerGainCalc(getLayoutWithoutLFE(layoutWithLFE))
 	{
 		m_layout = layoutWithLFE;
-		m_nCh = m_layout.channels.size();
-
-		m_LfeSubstitutions = std::map<std::string, std::string>{
-	{"LFE", "LFE1"}, {"LFEL", "LFE1"}, {"LFER", "LFE2"} };
+		m_nCh = (unsigned int) m_layout.channels.size();
 	}
 
 	CAdmDirectSpeakersGainCalc::~CAdmDirectSpeakersGainCalc()
@@ -535,7 +534,7 @@ namespace admrender {
 			if (metadata.channelFrequency.lowPass[0] <= 200.)
 				return true;
 
-		std::string nominalLabel = _nominalSpeakerLabel(metadata.speakerLabel);
+		std::string nominalLabel = GetNominalSpeakerLabel(metadata.speakerLabel);
 		if (nominalLabel == std::string("LFE1") ||
 			nominalLabel == std::string("LFE2"))
 		{
@@ -555,8 +554,8 @@ namespace admrender {
 		double d = direction.distance;
 
 		double minAz = az;
-		double minEl = el; 
-		double maxAz = az; 
+		double minEl = el;
+		double maxAz = az;
 		double maxEl = el;
 		double minDist = d;
 		double maxDist = d;
@@ -564,7 +563,7 @@ namespace admrender {
 		{
 			minAz = direction.bounds[0].minAzimuth;
 			minEl = direction.bounds[0].minElevation;
-			maxAz= direction.bounds[0].maxAzimuth;
+			maxAz = direction.bounds[0].maxAzimuth;
 			maxEl = direction.bounds[0].maxElevation;
 			minDist = direction.bounds[0].minDistance;
 			maxDist = direction.bounds[0].maxDistance;
@@ -582,7 +581,7 @@ namespace admrender {
 		}
 		if (withinBounds.size() == 0.)
 			return -1; // No speakers found
-		else if(withinBounds.size() == 1)
+		else if (withinBounds.size() == 1)
 			return withinBounds[0];
 		else if (withinBounds.size() > 1)
 		{
@@ -613,6 +612,9 @@ namespace admrender {
 			else if (closestSpeakers.size() > 1) // no unique answer
 				return -1;
 		}
+
+		// If nothing found by this point return -1
+		return -1;
 	}
 
 	std::vector<double> CAdmDirectSpeakersGainCalc::calculateGains(DirectSpeakerMetadata metadata)
@@ -622,19 +624,23 @@ namespace admrender {
 		// is the current channel an LFE
 		bool isLfeChannel = isLFE(metadata);
 
-		if (metadata.audioPackFormatID.size() > 0) 
-		{
-			auto itu_pack = ear::itu_packs.find(metadata.audioPackFormatID[0]);
-			if (itu_pack != ear::itu_packs.end()) {
-				const std::string& itu_layout_name = itu_pack->second;
-				std::string label = _nominalSpeakerLabel(metadata.speakerLabel);
+		std::string nominalSpeakerLabel = GetNominalSpeakerLabel(metadata.speakerLabel);
 
-				for (const ear::MappingRule& rule : ear::rules) {
-					if (ear::rule_applies(rule, itu_layout_name, label, m_layout)) {
-						for (auto& channel_gain : rule.gains) {
-							int idx = m_layout.getMatchingChannelIndex(channel_gain.first);
+		if (metadata.audioPackFormatID.size() > 0)
+		{
+			auto ituPack = ituPackNames.find(metadata.audioPackFormatID[0]);
+			if (ituPack != ituPackNames.end()) // if the audioPackFormat is in the list of ITU packs
+			{
+				std::string layoutName = ituPack->second;
+
+				for (const MappingRule& rule : mappingRules)
+				{
+					if (MappingRuleApplies(rule, layoutName, nominalSpeakerLabel, m_layout))
+					{
+						for (auto& gain : rule.gains) {
+							int idx = m_layout.getMatchingChannelIndex(gain.first);
 							if (idx >= 0)
-								gains[idx] = channel_gain.second;
+								gains[idx] = gain.second;
 						}
 						return gains;
 					}
@@ -643,7 +649,7 @@ namespace admrender {
 		}
 
 		// Check if there are any speakers with the same label and LFE type
-		std::string speakerLabel = _nominalSpeakerLabel(metadata.speakerLabel);
+		std::string speakerLabel = GetNominalSpeakerLabel(metadata.speakerLabel);
 		int idx = m_layout.getMatchingChannelIndex(speakerLabel);
 		if (idx >= 0 && (m_layout.channels[idx].isLFE == isLfeChannel))
 		{
@@ -684,6 +690,77 @@ namespace admrender {
 		}
 
 		return gains;
+	}
+
+	std::string CAdmDirectSpeakersGainCalc::GetNominalSpeakerLabel(const std::string& label)
+	{
+		std::string speakerLabel = label;
+
+		std::stringstream ss(speakerLabel);
+		std::string token;
+		std::vector<std::string> tokens;
+		while (std::getline(ss, token, ':'))
+		{
+			tokens.push_back(token);
+		}
+
+		if (tokens.size() == 7)
+			if (tokens[0] == "urn" && tokens[1] == "itu" && tokens[2] == "bs" && tokens[3] == "2051" &&
+				(std::stoi(tokens[4]) >= 0 || std::stoi(tokens[4]) < 10) && tokens[5] == "speaker")
+				speakerLabel = tokens[6];
+
+		// Rename the LFE channels, if requried.
+		// See Rec. ITU-R BS.2127-0 sec 8.3
+		if (speakerLabel.compare("LFE") || speakerLabel.compare("LFEL"))
+			speakerLabel = "LFE1";
+		else if (speakerLabel.compare("LFER"))
+			speakerLabel = "LFE2";
+
+		return speakerLabel;
+	}
+
+	bool CAdmDirectSpeakersGainCalc::MappingRuleApplies(const MappingRule& rule, const std::string& inputLayout, const std::string& speakerLabel, admrender::Layout& outputLayout)
+	{
+		// All conditions must be met for the rule to apply
+		// "rule.speakerLabel is equal to the first (and only) speakerLabel"
+		if (speakerLabel != rule.speakerLabel)
+			return false;
+
+		// "input_layout [...] is listed in rule.input_layouts, if this is listed."
+		bool containsLayout = false;
+		if (rule.inputLayouts.size() > 0)
+		{
+			for (auto& layout : rule.inputLayouts)
+				if (layout == inputLayout)
+					containsLayout = true;
+			if (!containsLayout)
+				return false;
+		}
+
+		// "The name of the output loudspeaker layout, layout.name, is listed in
+		// rule.output_layouts, if this is listed."
+		containsLayout = false;
+		if (rule.outputLayouts.size() > 0)
+		{
+			for (auto& layout : rule.outputLayouts)
+				if (layout == outputLayout.name)
+					containsLayout = true;
+			if (!containsLayout)
+				return false;
+		}
+
+		// All channel names listed in rule.gains exist in layout.channel_names
+		for (auto& gain : rule.gains)
+		{
+			bool containsChannelName = false;
+			for (auto& channelName : outputLayout.channelNames())
+				if (channelName == gain.first)
+					containsChannelName = true;
+			if (!containsChannelName)
+				return false;
+		}
+
+		return true;
 	}
 
 	//===================================================================================================================================
@@ -727,7 +804,7 @@ namespace admrender {
 		auto divergedData = divergedPositionsAndGains(metadata.objectDivergence,direction);
 		auto diverged_positions = divergedData.first;
 		auto diverged_gains = divergedData.second;
-		unsigned int nDivergedGains = diverged_gains.size();
+		unsigned int nDivergedGains = (unsigned int)diverged_gains.size();
 
 		// Calculate the new gains to be applied
 		std::vector<std::vector<double>> gains_for_each_pos(nDivergedGains);
@@ -736,7 +813,7 @@ namespace admrender {
 
 		// Power summation of the gains
 		std::vector<double> gains(m_nCh);
-		for (int i = 0; i < m_nCh; ++i)
+		for (int i = 0; i < (int)m_nCh; ++i)
 		{
 			double g_tmp = 0.;
 			for (unsigned int j = 0; j < nDivergedGains; ++j)

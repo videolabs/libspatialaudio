@@ -19,6 +19,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <map>
 
 namespace admrender {
 
@@ -214,6 +215,21 @@ namespace admrender {
 	{
 		std::vector<TypeDefinition> typeDefinition;
 		unsigned int nChannels;
+	};
+
+	// Rec. ITU-R BS.2127-0 Table 15
+	const std::map<std::string, std::string> ituPackNames = {{"AP_00010001", "0+1+0"},
+	{"AP_00010002", "0+2+0"},
+	{"AP_0001000c", "0+5+0"},
+	{"AP_00010003", "0+5+0"},
+	{"AP_00010004", "2+5+0"},
+	{"AP_00010005", "4+5+0"},
+	{"AP_00010010", "4+5+1"},
+	{"AP_00010007", "3+7+0"},
+	{"AP_00010008", "4+9+0"},
+	{"AP_00010009", "9+10+3"},
+	{"AP_0001000f", "0+7+0"},
+	{"AP_00010017", "4+7+0"},
 	};
 
 }

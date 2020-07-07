@@ -17,8 +17,8 @@
 #define    _ADM_DECORRELATE_H
 
 #include "AdmLayouts.h"
+#include "AdmUtils.h"
 #include "kiss_fftr.h"
-#include "decorrelate.hpp" // from libear
 
 namespace admrender {
 
@@ -49,16 +49,18 @@ namespace admrender {
 		/**
 			Filter otate B-Format stream.
 		*/
-		//void Process(CBFormat* pBFSrcDst);
 		void Process(std::vector<std::vector<float>> &ppInDirect, std::vector<std::vector<float>> &ppInDiffuse, unsigned int nSamples);
 
 	private:
 		// The time-domain decorrelation filters
 		std::vector<std::vector<float>> decorrelationFilters;
-		// The compensation delay to apply to the direct signals
-		int compensationDelay = ear::decorrelatorCompensationDelay();
+		// Output layout
+		Layout m_layout;
 		// The number of channels in the output array
 		unsigned int m_nCh;
+
+		// According to Rec. ITU-R BS.2127-0 sec. 7.4 the decorrelation filter length is 512 samples
+		const unsigned int m_nDecorrelationFilterSamples = 512;
 
 		kiss_fftr_cfg m_pFFT_decor_cfg;
 		kiss_fftr_cfg m_pIFFT_decor_cfg;
@@ -78,12 +80,26 @@ namespace admrender {
 		// Buffers to hold the delayed direct signals
 		float** m_ppfDirectDelay;
 		unsigned int m_nDelayLineLength;
-		int m_nDelay = 0;
+		int m_nDelay = (m_nDecorrelationFilterSamples - 1) / 2;
 		int m_nReadPos = 0;
 		int m_nWritePos = 0;
 
+		/**
+			Read and write data to delay lines
+		*/
 		void WriteToDelayLine(float* pDelayLine, float* pIn, int nWritePos, int nSamples);
 		void ReadFromDelayLine(float* pDelayLine, float* pOut, int nReadPos, int nSamples);
+
+		/**
+			Calculate decorrelation filters using the method described in Rec. ITU-R BS.2127-0 sec. 7.4
+			The filters depend on the layout set at construction
+		*/
+		std::vector<std::vector<float>> CalculateDecorrelationFilterBank();
+
+		/**
+			Calculate the time-domain decorrelation filter for the a particular channel index seed
+		*/
+		std::vector<float> CalculateDecorrelationFilter(unsigned int seedIndex);
 	};
 
 }

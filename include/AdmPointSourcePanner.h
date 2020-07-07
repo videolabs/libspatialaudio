@@ -19,6 +19,8 @@
 #include "AdmMetadata.h"
 #include "AdmLayouts.h"
 #include "AdmUtils.h"
+#include "AdmMappingRules.h"
+
 #include <assert.h>
 #include <set>
 #include <algorithm>
@@ -26,6 +28,8 @@
 #include <limits>
 #include <regex>
 #include <map>
+#include <sstream>
+#include <iostream>
 
 namespace admrender {
 
@@ -421,22 +425,17 @@ namespace admrender {
 		*/
 		int findClosestWithinBounds(DirectSpeakerPolarPosition direction, double tol);
 
-		std::map<std::string, std::string> m_LfeSubstitutions;
-		std::string _nominalSpeakerLabel(
-			const std::string& label) {
-			std::string ret = label;
-			std::smatch idMatch;
-			if (std::regex_search(label, idMatch, SPEAKER_URN_REGEX)) {
-				ret = idMatch[1].str();
-			}
-			if (m_LfeSubstitutions.count(label)) {
-				ret = m_LfeSubstitutions.at(label);
-			}
-			return ret;
-		}
+		/**
+			If the the speaker label is in the format "urn:itu:bs:2051:[0-9]:speaker:X+YYY then
+			return the X+YYY portion. Otherwise, returns the original input
+		*/
+		std::string GetNominalSpeakerLabel(const std::string& label);
 
-		const std::regex SPEAKER_URN_REGEX =
-			std::regex("^urn:itu:bs:2051:[0-9]+:speaker:(.*)$");
+		/**
+			Determine if a given mapping rule applies for input layout, speaker label and output layout.
+			See Rec. ITU-R BS.2127-0 sec 8.4
+		*/
+		bool MappingRuleApplies(const MappingRule& rule, const std::string& input_layout, const std::string& speakerLabel, admrender::Layout& output_layout);
 	};
 
 	/**

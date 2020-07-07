@@ -125,6 +125,7 @@ namespace admrender {
 
 	/**
 		Presets of supported output layouts - taken from https://github.com/ebu/libear/blob/master/src/common/facets.cpp
+		Apache 2.0 license
 	*/
 	const std::vector<std::vector<unsigned int>> HULL_0_5_0 = {
 	  {16, 13, 14},   {16, 11, 14}, {16, 10, 13},   {8, 5, 15},

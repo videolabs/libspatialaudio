@@ -1,10 +1,10 @@
 /*############################################################################*/
 /*#                                                                          #*/
-/*#  Loudspeaker layouts.		                                             #*/
+/*#  Helper functions for the ADM renderer.                                  #*/
 /*#								                                             #*/
 /*#  Copyright © 2020 Peter Stitt                                            #*/
 /*#                                                                          #*/
-/*#  Filename:      AdmLayout.h	                                             #*/
+/*#  Filename:      AdmUtils.h	                                             #*/
 /*#  Version:       0.1                                                      #*/
 /*#  Date:          23/06/2020                                               #*/
 /*#  Author(s):     Peter Stitt                                              #*/
@@ -257,10 +257,10 @@ namespace admrender {
 	{
 		double tol = 1e-5;
 		if (x > tol)
-			return 1.;
+			return 1;
 		else if (x < -tol)
-			return -1.;
-		return 0.;
+			return -1;
+		return 0;
 	}
 	/**
 		Returns true if x is in side the specified range
@@ -277,6 +277,8 @@ namespace admrender {
 			return x >= startAngle - tol && x <= endAngle + tol;
 		else if (startAngle > endAngle)
 			return  x >= startAngle - tol || x <= endAngle + tol;
+
+		return x;
 	}
 }
 #endif //_ADM_LAYOUTS_H

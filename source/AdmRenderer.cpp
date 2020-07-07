@@ -134,7 +134,7 @@ namespace admrender {
 
 		// A buffer of zeros to use to clear the HOA buffer
 		m_pZeros = std::make_unique<float[]>(nSamples);
-		memset(m_pZeros.get(), 0., m_nSamples * sizeof(float));
+		memset(m_pZeros.get(), 0, m_nSamples * sizeof(float));
 	}
 
 	CAdmRenderer::~CAdmRenderer()
@@ -174,7 +174,7 @@ namespace admrender {
 
 			// Set the interpolation duration based on the conditions on page 35 of Rec. ITU-R BS.2127-0
 			// If the flag is 
-			float interpDur = 0.f;
+			double interpDur = 0.;
 			if (metadata.jumpPosition.flag && !m_bFirstFrame)
 				interpDur = metadata.jumpPosition.interpolationLength;
 
@@ -225,18 +225,18 @@ namespace admrender {
 		{
 			// Get the gain vector to be applied to the DirectSpeaker channel
 			std::vector<double> gains = directSpeakerGainCalc->calculateGains(metadata);
-			for (int iSpk = 0; iSpk < m_nOutputChannels; ++iSpk)
+			for (int iSpk = 0; iSpk < (int)m_nOutputChannels; ++iSpk)
 				if (gains[iSpk] != 0.)
-					for (int iSample = 0; iSample < nSamples; ++iSample)
-						speakerOut[iSpk][iSample] += pDirSpkIn[iSample] * gains[iSpk];
+					for (int iSample = 0; iSample < (int)nSamples; ++iSample)
+						speakerOut[iSpk][iSample] += pDirSpkIn[iSample] * (float)gains[iSpk];
 		}
 	}
 
 	void CAdmRenderer::GetRenderedAudio(float** pRender, unsigned int nSamples)
 	{
 		// For now, clear the input buffers
-		for (int iCh = 0; iCh < m_nOutputChannels; ++iCh)
-			memset(pRender[iCh], 0.f, nSamples * sizeof(float));
+		for (int iCh = 0; iCh < (int)m_nOutputChannels; ++iCh)
+			memset(pRender[iCh], 0, nSamples * sizeof(float));
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
 			// For binaural, everything has been rendered to HOA since we don't have any real loudspeaker system to target

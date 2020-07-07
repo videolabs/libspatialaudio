@@ -14,6 +14,8 @@
 
 #include "AdmDecorrelate.h"
 
+#include<random>
+
 namespace admrender {
 
 	CAdmDecorrelate::CAdmDecorrelate()
@@ -59,21 +61,20 @@ namespace admrender {
 
     bool CAdmDecorrelate::Configure(Layout layout, unsigned int nBlockSize)
     {
-        decorrelationFilters = ear::designDecorrelators(layout);
+        m_layout = layout;
 
         // Set the number fo channels
-        m_nCh = layout.channels.size();
+        m_nCh = (unsigned int)layout.channels.size();
 
         // The decorrelation filters have the same length regardless of the input block size.
         // The length is 512 samples (Rec. ITU-R BS.2127-0, sec 7.4, pg 63)
-        m_nDelay = ear::decorrelatorCompensationDelay();
         unsigned nbTaps = m_nDelay * 2;
 
         m_nBlockSize = nBlockSize;
         m_nTaps = nbTaps;
 
         // Length of the delay lines used to compensate the direct signal
-        m_nDelayLineLength = ear::decorrelatorCompensationDelay() + m_nBlockSize;
+        m_nDelayLineLength = m_nDecorrelationFilterSamples + m_nBlockSize;
 
         //What will the overlap size be?
         m_nOverlapLength = m_nBlockSize < m_nTaps ? m_nBlockSize - 1 : m_nTaps - 1;
@@ -108,8 +109,9 @@ namespace admrender {
         m_pFFT_decor_cfg = kiss_fftr_alloc(m_nFFTSize, 0, 0, 0);
         m_pIFFT_decor_cfg = kiss_fftr_alloc(m_nFFTSize, 1, 0, 0);
 
-        // get impulse responses for psychoacoustic optimisation based on playback system (2D or 3D) and playback order (1 to 3)
-        //Convert from short to float representation
+        // Get the decorrelation filter bank
+        decorrelationFilters = CalculateDecorrelationFilterBank();
+
         for (unsigned i_m = 0; i_m < m_nCh; i_m++) {
             // Convert the impulse responses to the frequency domain
             memcpy(m_pfScratchBufferA, &decorrelationFilters[i_m][0], m_nTaps * sizeof(float));
@@ -173,8 +175,8 @@ namespace admrender {
         }
         // Advance the read/write positions
         m_nWritePos += nSamples;
-        if (m_nWritePos >= m_nDelayLineLength)
-            m_nWritePos -= m_nDelayLineLength;
+        if (m_nWritePos >= (int)m_nDelayLineLength)
+            m_nWritePos -= (int)m_nDelayLineLength;
     }
 
     void CAdmDecorrelate::WriteToDelayLine(float* pDelayLine, float* pIn, int nWritePos, int nSamples)
@@ -199,5 +201,55 @@ namespace admrender {
         else {
             memcpy(&pOut[0], &pDelayLine[nReadPos], nSamples*sizeof(float));
         }
+    }
+
+    std::vector<std::vector<float>> CAdmDecorrelate::CalculateDecorrelationFilterBank()
+    {
+        std::vector<std::vector<float>> decorrelationFilter;
+        // Get the index of the channel names in a sorted list of all channel names in the layout
+        std::vector<std::string> channelNames = m_layout.channelNames();
+        std::vector<std::string> channelNamesSorted = channelNames;
+        std::sort(channelNamesSorted.begin(), channelNamesSorted.end());
+        std::vector<unsigned int> chNameSortedInd;
+        for (unsigned int iName = 0; iName < m_nCh; ++iName)
+            for (unsigned int i = 0; i < m_nCh; ++i)
+                if (channelNames[iName] == channelNamesSorted[i])
+                    decorrelationFilter.push_back(CalculateDecorrelationFilter(i));
+
+        return decorrelationFilter;
+    }
+
+    std::vector<float> CAdmDecorrelate::CalculateDecorrelationFilter(unsigned int seedIndex)
+    {
+        int N = (int)m_nDecorrelationFilterSamples;
+
+        // Get random numbers generated using the MT19937 pseudorandom number generator
+        std::mt19937 randNumGen(seedIndex);
+        std::vector<double> r;
+        double randMax = (double)randNumGen.max();
+        for (int i = 0; i < N / 2 - 1; ++i)
+            r.push_back((double)randNumGen() / randMax);
+        
+
+        // Calculate the frequency domain data
+        std::vector<kiss_fft_cpx> x(N / 2 + 1, { 1.,0. });
+        // The first and last elements in the frequency domain data are 1 (phase = 0) so
+        // only loop over the points between
+        for(int i = 1; i<N/2; ++i)
+        {
+            double phaseAngle = 2. * M_PI * r[i - 1];
+            x[i].r = cosf((float)phaseAngle);
+            x[i].i = sinf((float)phaseAngle);
+        }
+        // Calculate the time domain data
+        std::vector<float> decorrelationFilter(m_nDecorrelationFilterSamples);
+        kiss_fftr_cfg ifft_cfg = kiss_fftr_alloc(m_nDecorrelationFilterSamples, 1, 0, 0);
+        kiss_fftri(ifft_cfg, &x[0], &decorrelationFilter[0]);
+        for (auto& sample : decorrelationFilter)
+            sample /= (float)m_nDecorrelationFilterSamples;
+
+        kiss_fftr_free(ifft_cfg);
+
+        return decorrelationFilter;
     }
 }
