@@ -49,18 +49,30 @@ namespace admrender {
 		std::vector<double> lowPass;
 		std::vector<double> highPass;
 	};
+	inline bool operator==(const Frequency& lhs, const Frequency& rhs)
+	{
+		return lhs.lowPass == rhs.lowPass && lhs.highPass == rhs.highPass;
+	}
 
 	struct ChannelLock
 	{
 		// If the distance is set <0 then no channel locking is applied
 		double maxDistance = -1.;
 	};
+	inline bool operator==(const ChannelLock& lhs, const ChannelLock& rhs)
+	{
+		return lhs.maxDistance == rhs.maxDistance;
+	}
 	struct ObjectDivergence
 	{
 		double value = 0.;
 		double azimuthRange = 180.;
 		double positionRange = 1.;
 	};
+	inline bool operator==(const ObjectDivergence& lhs, const ObjectDivergence& rhs)
+	{
+		return lhs.value == rhs.value && lhs.azimuthRange == rhs.azimuthRange && lhs.positionRange == rhs.positionRange;
+	}
 
 	struct ScreenEdgeLock {
 		enum Horizontal { NO_HOR, LEFT, RIGHT };
@@ -68,6 +80,10 @@ namespace admrender {
 		Horizontal horizontal = NO_HOR;
 		Vertical vertical = NO_VERT;
 	};
+	inline bool operator==(const ScreenEdgeLock& lhs, const ScreenEdgeLock& rhs)
+	{
+		return lhs.horizontal == rhs.horizontal && lhs.vertical == rhs.vertical;
+	}
 
 	// Structures to hold positions of objects
 	struct PolarBounds 
@@ -79,12 +95,22 @@ namespace admrender {
 		double minDistance;
 		double maxDistance;
 	};
+	inline bool operator==(const PolarBounds& lhs, const PolarBounds& rhs)
+	{
+		return lhs.minAzimuth == rhs.minAzimuth && lhs.maxAzimuth == rhs.maxAzimuth
+			&& lhs.minElevation == rhs.minElevation && lhs.maxElevation == rhs.maxElevation
+			&& lhs.minDistance == rhs.minDistance && lhs.maxDistance == rhs.maxDistance;
+	}
 	struct PolarPosition
 	{
 		double azimuth = 0.0;
 		double elevation = 0.0;
 		double distance = 1.f;
 	};
+	inline bool operator==(const PolarPosition& lhs, const PolarPosition& rhs)
+	{
+		return lhs.azimuth == rhs.azimuth && lhs.elevation == rhs.elevation && lhs.distance == rhs.distance;
+	}
 	struct CartesianBounds
 	{
 		double minX;
@@ -94,17 +120,31 @@ namespace admrender {
 		double minZ;
 		double maxZ;
 	};
+	inline bool operator==(const CartesianBounds& lhs, const CartesianBounds& rhs)
+	{
+		return lhs.minX == rhs.minX && lhs.maxX == rhs.maxX
+			&& lhs.minY == rhs.minY && lhs.maxY == rhs.maxY
+			&& lhs.minZ == rhs.minZ && lhs.maxZ == rhs.maxZ;
+	}
 	struct CartesianPosition
 	{
 		double x = 1.0;
 		double y = 0.0;
 		double z = 0.0;
 	};
+	inline bool operator==(const CartesianPosition& lhs, const CartesianPosition& rhs)
+	{
+		return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
+	}
 	struct JumpPosition
 	{
 		bool flag = false;
 		double interpolationLength = 0.0;
 	};
+	inline bool operator==(const JumpPosition& lhs, const JumpPosition& rhs)
+	{
+		return lhs.flag == rhs.flag && lhs.interpolationLength == rhs.interpolationLength;
+	}
 
 	struct DirectSpeakerPolarPosition
 	{
@@ -114,6 +154,11 @@ namespace admrender {
 		// Bounds for speaker used in DirectSpeaker gain calculation
 		std::vector<PolarBounds> bounds;
 	};
+	inline bool operator==(const DirectSpeakerPolarPosition& lhs, const DirectSpeakerPolarPosition& rhs)
+	{
+		return lhs.azimuth == rhs.azimuth && lhs.elevation == rhs.elevation
+			&& lhs.distance == rhs.distance && lhs.bounds == rhs.bounds;
+	}
 	struct DirectSpeakerCartesianPosition
 	{
 		double x = 1.0;
@@ -122,6 +167,11 @@ namespace admrender {
 		// Bounds for speaker used in DirectSpeaker gain calculation
 		std::vector<CartesianBounds> bounds;
 	};
+	inline bool operator==(const DirectSpeakerCartesianPosition& lhs, const DirectSpeakerCartesianPosition& rhs)
+	{
+		return lhs.x == rhs.x && lhs.y == rhs.y
+			&& lhs.z == rhs.z && lhs.bounds == rhs.bounds;
+	}
 
 	struct ExclusionZone { };
 
@@ -133,6 +183,12 @@ namespace admrender {
 		float maxY;
 		float maxZ;
 	};
+	inline bool operator==(const CartesianExclusionZone& lhs, const CartesianExclusionZone& rhs)
+	{
+		return lhs.minX == rhs.minX && lhs.maxX == rhs.maxX
+			&& lhs.minY == rhs.minY && lhs.maxY == rhs.maxY
+			&& lhs.minZ == rhs.minZ && lhs.maxZ == rhs.maxZ;
+	}
 
 	struct PolarExclusionZone : ExclusionZone {
 		float minElevation;
@@ -140,6 +196,11 @@ namespace admrender {
 		float minAzimuth;
 		float maxAzimuth;
 	};
+	inline bool operator==(const PolarExclusionZone& lhs, const PolarExclusionZone& rhs)
+	{
+		return lhs.minAzimuth == rhs.minAzimuth && lhs.maxAzimuth == rhs.maxAzimuth
+			&& lhs.minElevation == rhs.minElevation && lhs.maxElevation == rhs.maxElevation;
+	}
 
 	struct Screen { };
 
@@ -148,12 +209,21 @@ namespace admrender {
 		PolarPosition centrePosition;
 		float widthAzimuth;
 	};
+	inline bool operator==(const PolarScreen& lhs, const PolarScreen& rhs)
+	{
+		return lhs.aspectRatio == rhs.aspectRatio && lhs.centrePosition == rhs.centrePosition
+			&& lhs.widthAzimuth == rhs.widthAzimuth;
+	}
 	struct CartesianScreen : Screen {
 		float aspectRatio;
 		CartesianPosition centrePosition;
 		float widthX;
 	};
-
+	inline bool operator==(const CartesianScreen& lhs, const CartesianScreen& rhs)
+	{
+		return lhs.aspectRatio == rhs.aspectRatio && lhs.centrePosition == rhs.centrePosition
+			&& lhs.widthX == rhs.widthX;
+	}
 
 	// Metadata for different objects. See Rec. ITU-R BS.2127-0 page 86.
 
@@ -180,6 +250,16 @@ namespace admrender {
 		// Screen lock
 		ScreenEdgeLock screenEdgeLock;
 	};
+	inline bool operator==(const ObjectMetadata& lhs, const ObjectMetadata& rhs)
+	{
+		return lhs.polarPosition == rhs.polarPosition && lhs.cartesianPosition == rhs.cartesianPosition
+			&& lhs.gain == rhs.gain && lhs.diffuse == rhs.diffuse
+			&& lhs.channelLock == rhs.channelLock && lhs.objectDivergence == rhs.objectDivergence
+			&& lhs.cartesian == rhs.cartesian && lhs.jumpPosition == rhs.jumpPosition
+			&& lhs.trackInd == rhs.trackInd && lhs.zoneExclusionPolar == rhs.zoneExclusionPolar
+			&& lhs.screenEdgeLock == rhs.screenEdgeLock;
+	}
+
 	// The metadata for HoaType
 	struct HoaMetadata
 	{
@@ -191,6 +271,11 @@ namespace admrender {
 		std::string normalization = "SN3D";
 		std::vector<unsigned int> trackInds;
 	};
+	inline bool operator==(const HoaMetadata& lhs, const HoaMetadata& rhs)
+	{
+		return lhs.orders == rhs.orders && lhs.degrees == rhs.degrees
+			&& lhs.normalization == rhs.normalization && lhs.trackInds == rhs.trackInds;
+	}
 	// The metadata for DirectSpeaker
 	// See See Rec. ITU-R BS.2127-0 page 63.
 	struct DirectSpeakerMetadata
@@ -206,6 +291,12 @@ namespace admrender {
 		// Channel frequency information
 		Frequency channelFrequency;
 	};
+	inline bool operator==(const DirectSpeakerMetadata& lhs, const DirectSpeakerMetadata& rhs)
+	{
+		return lhs.speakerLabel == rhs.speakerLabel && lhs.polarPosition == rhs.polarPosition
+			&& lhs.trackInd == rhs.trackInd && lhs.audioPackFormatID == rhs.audioPackFormatID
+			&& lhs.channelFrequency == rhs.channelFrequency;
+	}
 
 	// Information about all of the channels in the stream. Contains the type of each track
 	// and the number of channels
