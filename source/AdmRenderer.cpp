@@ -125,10 +125,12 @@ namespace admrender {
 
 		// Set up the buffers holding the direct and diffuse speaker signals
 		speakerOut.resize(m_nOutputChannels);
+		speakerOutDirect.resize(m_nOutputChannels);
 		speakerOutDiffuse.resize(m_nOutputChannels);
 		for (unsigned int i = 0; i < m_nOutputChannels; ++i)
 		{
 			speakerOut[i].resize(nSamples, 0.f);
+			speakerOutDirect[i].resize(nSamples, 0.f);
 			speakerOutDiffuse[i].resize(nSamples, 0.f);
 		}
 
@@ -145,8 +147,9 @@ namespace admrender {
 	{
 		m_bFirstFrame = true;
 		decorrelate.Reset();
-		ClearDirectSpeakerBuffer();
-		ClearDiffuseSpeakerBuffer();
+		ClearOutputBuffer();
+		ClearObjectDirectBuffer();
+		ClearObjectDiffuseBuffer();
 		ClearHoaBuffer();
 	}
 
@@ -162,10 +165,14 @@ namespace admrender {
 		int nObjectInd = GetMatchingIndex(pannerTrackInd, metadata.trackInd, TypeDefinition::Objects);
 
 		if (nObjectInd == -1) // this track was not declared at construction. Stopping here.
+		{
+			std::cerr << "AdmRender Warning: Expected a track index that was declared an Object in construction. Input will not be rendered." << std::endl;
 			return;
+		}
 
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
+			// If the output is set to binaural then convert the object to HOA so it is rendered with the HOA-to-binaural decoder
 			// Set the position of the source from the metadata
 			PolarPoint newPos;
 			newPos.fAzimuth = DegreesToRadians((float)metadata.polarPosition.azimuth);
@@ -183,7 +190,7 @@ namespace admrender {
 			hoaEncoders[nObjectInd].ProcessAccumul(pIn, nSamples, &hoaAudioOut);
 		}
 		else
-			pointSourcePanners[nObjectInd].ProcessAccumul(metadata, pIn, speakerOut, speakerOutDiffuse, nSamples);
+			pointSourcePanners[nObjectInd].ProcessAccumul(metadata, pIn, speakerOutDirect, speakerOutDiffuse, nSamples);
 
 	}
 
@@ -232,35 +239,52 @@ namespace admrender {
 		}
 	}
 
+	void CAdmRenderer::AddBinaural(float** pBinIn, unsigned int nSamples)
+	{
+		if (m_RenderLayout == OutputLayout::Binaural)
+		{
+			// Add the binaural signals directly to the output buffer with no processing
+			for (unsigned int iSpk = 0; iSpk < m_nOutputChannels; ++iSpk)
+				for (unsigned int iSample = 0; iSample < nSamples; ++iSample)
+					speakerOut[iSpk][iSample] += pBinIn[iSpk][iSample];
+		}
+	}
+
 	void CAdmRenderer::GetRenderedAudio(float** pRender, unsigned int nSamples)
 	{
-		// For now, clear the input buffers
+		// Clear the input buffers
 		for (int iCh = 0; iCh < (int)m_nOutputChannels; ++iCh)
 			memset(pRender[iCh], 0, nSamples * sizeof(float));
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
 			// For binaural, everything has been rendered to HOA since we don't have any real loudspeaker system to target
 			hoaBinaural.Process(&hoaAudioOut, pRender);
+			// Add any Binaural type signals to the output buffer
+			for (unsigned int iSpk = 0; iSpk < m_nOutputChannels; ++iSpk)
+				for (unsigned int iSample = 0; iSample < nSamples; ++iSample)
+					pRender[iSpk][iSample] += speakerOut[iSpk][iSample];
 		}
 		else
 		{
 			// Apply diffuseness filters and compensation delay
-			decorrelate.Process(speakerOut, speakerOutDiffuse, nSamples);
+			decorrelate.Process(speakerOutDirect, speakerOutDiffuse, nSamples);
 
 			// Decode the HOA stream to the output buffer
 			hoaDecoder.Process(&hoaAudioOut, nSamples, pRender);
 			// Add the signals that have already been routed to the speaker layout to the output buffer
 			for (unsigned int iSpk = 0; iSpk < m_nOutputChannels; ++iSpk)
 				for (unsigned int iSample = 0; iSample < nSamples; ++iSample)
-					pRender[iSpk][iSample] += speakerOut[iSpk][iSample] + speakerOutDiffuse[iSpk][iSample];
+					pRender[iSpk][iSample] += speakerOut[iSpk][iSample] + speakerOutDirect[iSpk][iSample] + speakerOutDiffuse[iSpk][iSample];
 		}
 
 		// Clear the HOA data for the next frame
 		ClearHoaBuffer();
-		// Clear the DirectSpeaker data for the next frame
-		ClearDirectSpeakerBuffer();
+		// Clear the output buffer
+		ClearOutputBuffer();
+		// Clear the Object direct signal data
+		ClearObjectDirectBuffer();
 		// Clear the data in the diffuse buffers
-		ClearDiffuseSpeakerBuffer();
+		ClearObjectDiffuseBuffer();
 
 		m_bFirstFrame = false;
 	}
@@ -272,13 +296,19 @@ namespace admrender {
 			hoaAudioOut.InsertStream(m_pZeros.get(), iHoaCh, nHoaSamples);
 	}
 
-	void CAdmRenderer::ClearDirectSpeakerBuffer()
+	void CAdmRenderer::ClearOutputBuffer()
 	{
 		for (unsigned int iCh = 0; iCh < m_nOutputChannels; ++iCh)
-			std::fill(speakerOut[iCh].begin(),speakerOut[iCh].end(),0.);
+			std::fill(speakerOut[iCh].begin(), speakerOut[iCh].end(), 0.);
 	}
 
-	void CAdmRenderer::ClearDiffuseSpeakerBuffer()
+	void CAdmRenderer::ClearObjectDirectBuffer()
+	{
+		for (unsigned int iCh = 0; iCh < m_nOutputChannels; ++iCh)
+			std::fill(speakerOutDirect[iCh].begin(),speakerOutDirect[iCh].end(),0.);
+	}
+
+	void CAdmRenderer::ClearObjectDiffuseBuffer()
 	{
 		for (unsigned int iCh = 0; iCh < m_nOutputChannels; ++iCh)
 			std::fill(speakerOutDiffuse[iCh].begin(), speakerOutDiffuse[iCh].end(), 0.);

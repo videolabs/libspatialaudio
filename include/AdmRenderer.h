@@ -77,13 +77,23 @@ namespace admrender {
 		void AddHoa(float** pHoaIn, unsigned int nSamples, HoaMetadata metadata);
 
 		/**
-			Adds an HOA stream to be rendered
+			Adds an DirectSpeaker stream to be rendered
 
-			Inputs: pHoaIn - nHoaChannels x nSamples array containing the HOA signal to be rendereds
+			Inputs: pDirSpkIn -  nSamples array containing the mono speaker signal to be rendered
+					nSamples - number of samples in the block
+					metadata - the DirectSpeaker metadata
+		*/
+		void AddDirectSpeaker(float* pDirSpkIn, unsigned int nSamples, DirectSpeakerMetadata metadata);
+
+		/**
+			Adds a binaural signal to the output. If the output type was not set to Binaural at startup
+			then the input is discarded.
+
+			Inputs: pBinIn - 2 x nSamples array containing the HOA signal to be rendereds
 					nSamples - number of samples in the block
 					metadata - the HOA metadata
 		*/
-		void AddDirectSpeaker(float* pDirSpkIn, unsigned int nSamples, DirectSpeakerMetadata metadata);
+		void AddBinaural(float** pBinIn, unsigned int nSamples);
 
 		/**
 			Get the rendered audio
@@ -125,12 +135,15 @@ namespace admrender {
 		CAmbisonicBinauralizer hoaBinaural;
 		// Buffers to hold the HOA audio
 		CBFormat hoaAudioOut;
-		// Buffers to hold the DirectSpeaker audio
+		// Buffers holding the output signal
 		std::vector<std::vector<float>> speakerOut;
-		// Buffers to hold the diffuse audio
+		// Buffers to hold the direct object audio
+		std::vector<std::vector<float>> speakerOutDirect;
+		// Buffers to hold the diffuse object audio
 		std::vector<std::vector<float>> speakerOutDiffuse;
-		void ClearDirectSpeakerBuffer();
-		void ClearDiffuseSpeakerBuffer();
+		void ClearOutputBuffer();
+		void ClearObjectDirectBuffer();
+		void ClearObjectDiffuseBuffer();
 
 		std::unique_ptr<CAdmDirectSpeakersGainCalc> directSpeakerGainCalc;
 
