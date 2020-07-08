@@ -437,7 +437,8 @@ namespace admrender {
 	};
 
 	/**
-		This class calculates the gains required to spatialise a mono signal.
+		This class calculates then applies a vector of gains to a mono input signal to generate the Direct and Diffuse
+		Object signals.
 	*/
 	class CAdmPointSourcePanner
 	{
@@ -464,6 +465,9 @@ namespace admrender {
 		bool m_bFirstFrame = true;
 		// The gain calculator
 		CAdmPointSourcePannerGainCalc m_gainCalculator;
+
+		// The previously set metadata
+		ObjectMetadata m_metadata;
 
 		ChannelLockHandler channelLockHandler;
 		ZoneExclusionHandler zoneExclusionHandler;

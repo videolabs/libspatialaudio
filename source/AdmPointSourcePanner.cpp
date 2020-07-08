@@ -782,58 +782,67 @@ namespace admrender {
 
 	void CAdmPointSourcePanner::ProcessAccumul(ObjectMetadata metadata, float* pIn, std::vector<std::vector<float>> &ppDirect, std::vector<std::vector<float>>& ppDiffuse, unsigned int nSamples)
 	{
-		// Get the panning direction
-		PolarPosition direction;
-		if (metadata.cartesian)
-		{
-			// If cartesian = true then convert the position to polar coordinates.
-			// Note: Rec. ITU-R BS.2127-0 defines a different set of processing when
-			// this flag is set but that is not yet implemented here. Instead, the polar
-			// position path is used regardless of this flag.
-			direction = CartesianToPolar(metadata.cartesianPosition);
-		}
-		else
-			direction = metadata.polarPosition;
-
-		// TODO: Apply screenEdgeLock and screenScaling
-
-		// Apply channelLock to modify the position of the source, if required
-		direction = channelLockHandler.handle(metadata.channelLock, direction);
-
-		// Apply divergence
-		auto divergedData = divergedPositionsAndGains(metadata.objectDivergence,direction);
-		auto diverged_positions = divergedData.first;
-		auto diverged_gains = divergedData.second;
-		unsigned int nDivergedGains = (unsigned int)diverged_gains.size();
-
-		// Calculate the new gains to be applied
-		std::vector<std::vector<double>> gains_for_each_pos(nDivergedGains);
-		for(unsigned int iGain = 0; iGain<nDivergedGains; ++iGain)
-			gains_for_each_pos[iGain] = m_gainCalculator.calculateGains(diverged_positions[iGain]);
-
-		// Power summation of the gains
-		std::vector<double> gains(m_nCh);
-		for (int i = 0; i < (int)m_nCh; ++i)
-		{
-			double g_tmp = 0.;
-			for (unsigned int j = 0; j < nDivergedGains; ++j)
-				g_tmp += diverged_gains[j] * gains_for_each_pos[j][i] * gains_for_each_pos[j][i];
-			gains[i] = sqrt(g_tmp);
-		}
-
-		// Zone exclusion downmix
-		// See Rec. ITU-R BS.2127-0 sec. 7.3.12, pg 60
-		gains = zoneExclusionHandler.handle(metadata.zoneExclusionPolar, gains);
-
-		// Apply the overall gain to the spatialisation gains
-		for (auto& g : gains)
-			g *= metadata.gain;
-
-		// Set the interpolation duration based on the conditions on page 35 of Rec. ITU-R BS.2127-0
 		int nInterpSamples = 0;
-		if (metadata.jumpPosition.flag && !m_bFirstFrame)
+
+		std::vector<double> gains(m_nCh);
+
+		if (!(metadata == m_metadata))
 		{
-			nInterpSamples = (int)round(metadata.jumpPosition.interpolationLength* nSamples);
+			// Get the panning direction
+			PolarPosition direction;
+			if (metadata.cartesian)
+			{
+				// If cartesian = true then convert the position to polar coordinates.
+				// Note: Rec. ITU-R BS.2127-0 defines a different set of processing when
+				// this flag is set but that is not yet implemented here. Instead, the polar
+				// position path is used regardless of this flag.
+				direction = CartesianToPolar(metadata.cartesianPosition);
+			}
+			else
+				direction = metadata.polarPosition;
+
+			// TODO: Apply screenEdgeLock and screenScaling
+
+			// Apply channelLock to modify the position of the source, if required
+			direction = channelLockHandler.handle(metadata.channelLock, direction);
+
+			// Apply divergence
+			auto divergedData = divergedPositionsAndGains(metadata.objectDivergence, direction);
+			auto diverged_positions = divergedData.first;
+			auto diverged_gains = divergedData.second;
+			unsigned int nDivergedGains = (unsigned int)diverged_gains.size();
+
+			// Calculate the new gains to be applied
+			std::vector<std::vector<double>> gains_for_each_pos(nDivergedGains);
+			for (unsigned int iGain = 0; iGain < nDivergedGains; ++iGain)
+				gains_for_each_pos[iGain] = m_gainCalculator.calculateGains(diverged_positions[iGain]);
+
+			// Power summation of the gains
+			for (int i = 0; i < (int)m_nCh; ++i)
+			{
+				double g_tmp = 0.;
+				for (unsigned int j = 0; j < nDivergedGains; ++j)
+					g_tmp += diverged_gains[j] * gains_for_each_pos[j][i] * gains_for_each_pos[j][i];
+				gains[i] = sqrt(g_tmp);
+			}
+
+			// Zone exclusion downmix
+			// See Rec. ITU-R BS.2127-0 sec. 7.3.12, pg 60
+			gains = zoneExclusionHandler.handle(metadata.zoneExclusionPolar, gains);
+
+			// Apply the overall gain to the spatialisation gains
+			for (auto& g : gains)
+				g *= metadata.gain;
+
+			// Set the interpolation duration based on the conditions on page 35 of Rec. ITU-R BS.2127-0
+			if (metadata.jumpPosition.flag && !m_bFirstFrame)
+			{
+				nInterpSamples = (int)round(metadata.jumpPosition.interpolationLength * nSamples);
+			}
+		}
+		else // if the metadata input is the same as the last set
+		{
+			gains = m_gains;
 		}
 
 		// Calculate the direct and diffuse gains
@@ -868,6 +877,8 @@ namespace admrender {
 
 		// Store the last calculated gains
 		m_gains = gains;
+		// Store the last input metadata
+		m_metadata = metadata;
 		// Flag that at least one frame has been processed
 		m_bFirstFrame = false;
 	}
