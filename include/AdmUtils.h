@@ -278,4 +278,44 @@ namespace admrender {
 
 		return x;
 	}
+	/**
+		Multiply two matrices
+	*/
+	static std::vector<std::vector<double>> multiplyMat(std::vector<std::vector<double>> A, std::vector<std::vector<double>> B)
+	{
+		size_t rowsA = A.size();
+		size_t colsA = A[0].size();
+		size_t colsB = B[0].size();
+		std::vector<std::vector<double>> ret(rowsA, std::vector<double>(colsB, 0.));
+
+		for (size_t i = 0; i < rowsA; ++i)
+			for (size_t j = 0; j < colsB; ++j)
+				for (size_t k = 0; k < colsA; ++k)
+					ret[i][j] += A[i][k] * B[k][j];
+
+		return ret;
+	}
+	/**
+		Calculate the inverse of a square matrix
+	*/
+	static std::vector<std::vector<double>> inverseMatrix(std::vector<std::vector<double>> mat)
+	{
+		size_t matSize = mat.size();
+		std::vector<std::vector<double>> inverseMat(matSize, std::vector<double>(matSize, 0.));
+
+		// Calculate the inverse of the matrix holding the unit vectors
+		double det = 0.; // determinant
+		for (size_t i = 0; i < matSize; i++)
+			det += (mat[0][i] * (mat[1][(i + 1) % 3] * mat[2][(i + 2) % 3] - mat[1][(i + 2) % 3] * mat[2][(i + 1) % 3]));
+		double invDet = 1. / det;
+
+		for (size_t i = 0; i < matSize; i++)
+			for (size_t j = 0; j < matSize; j++)
+			{
+				inverseMat[i][j] = ((mat[(j + 1) % 3][(i + 1) % 3] * mat[(j + 2) % 3][(i + 2) % 3])
+					- (mat[(j + 1) % 3][(i + 2) % 3] * mat[(j + 2) % 3][(i + 1) % 3])) * invDet;
+			}
+
+		return inverseMat;
+	}
 }

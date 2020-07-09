@@ -21,6 +21,7 @@
 #include "AdmLayouts.h"
 #include "AdmUtils.h"
 #include "AdmPointSourcePanner.h"
+#include "AdmDirectSpeakerGainCalc.h"
 #include "AdmDecorrelate.h"
 
 /*
@@ -117,38 +118,36 @@ namespace admrender {
 		// Flag if it is the first processing frame
 		bool m_bFirstFrame = true;
 
-		StreamInformation channelInformation;
+		StreamInformation m_channelInformation;
 
 		Layout m_outputLayout;
 
 		// The channel indices of the tracks that can use a point source panner
-		std::vector<std::pair<unsigned int,TypeDefinition>> pannerTrackInd;
-		std::vector<CAdmPointSourcePanner> pointSourcePanners;
+		std::vector<std::pair<unsigned int,TypeDefinition>> m_pannerTrackInd;
+		std::vector<CAdmPointSourcePanner> m_pointSourcePanners;
 		// HOA encoders to use instead of the pointSourcePanner when output is binaural
-		std::vector<CAmbisonicEncoder> hoaEncoders;
-
-		std::vector<ObjectMetadata> objectMetadata;
+		std::vector<CAmbisonicEncoder> m_hoaEncoders;
 
 		// Ambisonic Decoder
-		CAmbisonicDecoder hoaDecoder;
+		CAmbisonicDecoder m_hoaDecoder;
 		// Ambisonic binaural decoder
-		CAmbisonicBinauralizer hoaBinaural;
+		CAmbisonicBinauralizer m_hoaBinaural;
 		// Buffers to hold the HOA audio
-		CBFormat hoaAudioOut;
+		CBFormat m_hoaAudioOut;
 		// Buffers holding the output signal
-		std::vector<std::vector<float>> speakerOut;
+		std::vector<std::vector<float>> m_speakerOut;
 		// Buffers to hold the direct object audio
-		std::vector<std::vector<float>> speakerOutDirect;
+		std::vector<std::vector<float>> m_speakerOutDirect;
 		// Buffers to hold the diffuse object audio
-		std::vector<std::vector<float>> speakerOutDiffuse;
+		std::vector<std::vector<float>> m_speakerOutDiffuse;
 		void ClearOutputBuffer();
 		void ClearObjectDirectBuffer();
 		void ClearObjectDiffuseBuffer();
 
-		std::unique_ptr<CAdmDirectSpeakersGainCalc> directSpeakerGainCalc;
+		std::unique_ptr<CAdmDirectSpeakersGainCalc> m_directSpeakerGainCalc;
 
 		// Decorrelator filter processor
-		CAdmDecorrelate decorrelate;
+		CAdmDecorrelate m_decorrelate;
 
 		// A buffer containing all zeros to use to clear the HOA data
 		std::unique_ptr<float[]> m_pZeros;
