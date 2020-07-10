@@ -180,7 +180,8 @@ namespace admrender {
 		if (isLfeChannel)
 		{
 			idx = m_layout.getMatchingChannelIndex("LFE1");
-			gains[idx] = 1.;
+			if (idx >= 0)
+				gains[idx] = 1.;
 		}
 		else
 		{
@@ -214,9 +215,9 @@ namespace admrender {
 
 		// Rename the LFE channels, if requried.
 		// See Rec. ITU-R BS.2127-0 sec 8.3
-		if (speakerLabel.compare("LFE") || speakerLabel.compare("LFEL"))
+		if (speakerLabel == "LFE" || speakerLabel == "LFEL")
 			speakerLabel = "LFE1";
-		else if (speakerLabel.compare("LFER"))
+		else if (speakerLabel == "LFER")
 			speakerLabel = "LFE2";
 
 		return speakerLabel;
