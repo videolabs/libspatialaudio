@@ -20,16 +20,6 @@
 #include "AdmMappingRules.h"
 #include "AdmPointSourcePannerGainCalc.h"
 
-//#include <assert.h>
-//#include <set>
-//#include <algorithm>
-//#include <memory>
-//#include <limits>
-//#include <regex>
-//#include <map>
-#include <sstream>
-#include <iostream>
-
 namespace admrender {
 
 	/**
@@ -58,12 +48,6 @@ namespace admrender {
 			set
 		*/
 		int findClosestWithinBounds(DirectSpeakerPolarPosition direction, double tol);
-
-		/**
-			If the the speaker label is in the format "urn:itu:bs:2051:[0-9]:speaker:X+YYY then
-			return the X+YYY portion. Otherwise, returns the original input
-		*/
-		std::string GetNominalSpeakerLabel(const std::string& label);
 
 		/**
 			Determine if a given mapping rule applies for input layout, speaker label and output layout.

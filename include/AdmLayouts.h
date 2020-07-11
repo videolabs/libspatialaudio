@@ -81,6 +81,52 @@ namespace admrender {
 		return layoutNoLFE;
 	}
 
+	/**
+		Directions of audio channels from Rec. ITU-R BS.2094-1 Table 1
+	*/
+	const std::map<std::string, PolarPosition> bs2094Positions = {
+		{"M+030", PolarPosition{30.,0.,1.}},
+		{"M-030", PolarPosition{-30.,0.,1.}},
+		{"M+000", PolarPosition{0.,0.,1.}},
+		{"LFE", PolarPosition{0.,-30.,1.}},
+		{"M+110", PolarPosition{110.,0.,1.}},
+		{"M-110", PolarPosition{-110.,0.,1.}},
+		{"M+022", PolarPosition{22.5,0.,1.}},
+		{"M-022", PolarPosition{-22.5,0.,1.}},
+		{"M+180", PolarPosition{180.,0.,1.}},
+		{"M+090", PolarPosition{90.,0.,1.}},
+		{"M-090", PolarPosition{-90.,0.,1.}},
+		{"T+000", PolarPosition{0.,90.,1.}},
+		{"U+030", PolarPosition{30.,30.,1.}},
+		{"U+000", PolarPosition{0.,30.,1.}},
+		{"U-030", PolarPosition{-30.,30.,1.}},
+		{"U+110", PolarPosition{110.,30.,1.}},
+		{"U+180", PolarPosition{180.,30.,1.}},
+		{"U-110", PolarPosition{-110.,30.,1.}},
+		{"U+090", PolarPosition{90.,30.,1.}},
+		{"U-090", PolarPosition{-90.,30.,1.}},
+		{"B+000", PolarPosition{0.,-30.,1.}},
+		{"B+045", PolarPosition{45.,-30.,1.}},
+		{"B-045", PolarPosition{-45.,-30.,1.}},
+		{"B+060", PolarPosition{60.,-30.,1.}},
+		{"B-060", PolarPosition{-60.,-30.,1.}},
+		{"M+135_Diff", PolarPosition{135.,0.,1.}},
+		{"M-135_Diff", PolarPosition{-135.,0.,1.}},
+		{"M+135", PolarPosition{135.,0.,1.}},
+		{"M-135", PolarPosition{-135.,0.,1.}},
+		{"U+135", PolarPosition{135.,30.,1.}},
+		{"U-135", PolarPosition{-135.,30.,1.}},
+		{"LFE1", PolarPosition{45.,-30.,1.}},
+		{"LFE2", PolarPosition{-45.,-30.,1.}},
+		{"U+045", PolarPosition{45.,0.,1.}},
+		{"U-045", PolarPosition{-45.,0.,1.}},
+		{"M+SC", PolarPosition{25.,0.,1.}},
+		{"M-SC", PolarPosition{-25.,0.,1.}},
+		{"M+045", PolarPosition{45.,0.,1.}},
+		{"M-045", PolarPosition{-45.,0.,1.}},
+		{"UH+180", PolarPosition{180.,45.,1.}}
+	};
+
 	const std::vector<Layout> speakerLayouts = {
 		// Stereo
 		Layout{

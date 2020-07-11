@@ -196,33 +196,6 @@ namespace admrender {
 		return gains;
 	}
 
-	std::string CAdmDirectSpeakersGainCalc::GetNominalSpeakerLabel(const std::string& label)
-	{
-		std::string speakerLabel = label;
-
-		std::stringstream ss(speakerLabel);
-		std::string token;
-		std::vector<std::string> tokens;
-		while (std::getline(ss, token, ':'))
-		{
-			tokens.push_back(token);
-		}
-
-		if (tokens.size() == 7)
-			if (tokens[0] == "urn" && tokens[1] == "itu" && tokens[2] == "bs" && tokens[3] == "2051" &&
-				(std::stoi(tokens[4]) >= 0 || std::stoi(tokens[4]) < 10) && tokens[5] == "speaker")
-				speakerLabel = tokens[6];
-
-		// Rename the LFE channels, if requried.
-		// See Rec. ITU-R BS.2127-0 sec 8.3
-		if (speakerLabel == "LFE" || speakerLabel == "LFEL")
-			speakerLabel = "LFE1";
-		else if (speakerLabel == "LFER")
-			speakerLabel = "LFE2";
-
-		return speakerLabel;
-	}
-
 	bool CAdmDirectSpeakersGainCalc::MappingRuleApplies(const MappingRule& rule, const std::string& inputLayout, const std::string& speakerLabel, admrender::Layout& outputLayout)
 	{
 		// All conditions must be met for the rule to apply

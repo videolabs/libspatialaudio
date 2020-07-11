@@ -219,9 +219,21 @@ namespace admrender {
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
 			PolarPoint newPos;
-			newPos.fAzimuth = DegreesToRadians((float)metadata.polarPosition.azimuth);
-			newPos.fElevation = DegreesToRadians((float)metadata.polarPosition.elevation);
-			newPos.fDistance = (float)metadata.polarPosition.distance;
+			// Get the speaker position based on the nominal speaker direction
+			auto spkPosIt = bs2094Positions.find(GetNominalSpeakerLabel(metadata.speakerLabel));
+			if (spkPosIt != bs2094Positions.end())
+			{
+				newPos.fAzimuth = DegreesToRadians((float)spkPosIt->second.azimuth);
+				newPos.fElevation = DegreesToRadians((float)spkPosIt->second.elevation);
+				newPos.fDistance = (float)spkPosIt->second.distance;
+			}
+			else
+			{
+				// If there is no matching speaker name then take the direction from the metadata
+				newPos.fAzimuth = DegreesToRadians((float)metadata.polarPosition.azimuth);
+				newPos.fElevation = DegreesToRadians((float)metadata.polarPosition.elevation);
+				newPos.fDistance = (float)metadata.polarPosition.distance;
+			}
 			int nDirectSpeakerInd = GetMatchingIndex(m_pannerTrackInd, metadata.trackInd, TypeDefinition::DirectSpeakers);
 			m_hoaEncoders[nDirectSpeakerInd].SetPosition(newPos);
 			// Encode the audio and add it to the buffer for output
