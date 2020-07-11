@@ -37,9 +37,13 @@ list(APPEND headers
     include/AmbisonicMicrophone.h
     include/AmbisonicSource.h
     include/AdmDecorrelate.h
+    include/AdmDirectSpeakerGainCalc.h
     include/AdmLayouts.h
+    include/AdmMappingRules.h
     include/AdmMetadata.h
     include/AdmPointSourcePanner.h
+    include/AdmPointSourcePannerGainCalc.h
+    include/AdmRegionHandlers.h
     include/AdmRenderer.h
     include/AdmUtils.h
     include/BFormat.h
@@ -76,7 +80,10 @@ list(APPEND sources
     source/AmbisonicEncoderDist.cpp
     source/AmbisonicZoomer.cpp
     source/AdmDecorrelate.cpp
+    source/AdmDirectSpeakerGainCalc.cpp
     source/AdmPointSourcePanner.cpp
+    source/AdmPointSourcePannerGainCalc.cpp
+    source/AdmRegionHandlers.cpp
     source/AdmRenderer.cpp
 )
 
