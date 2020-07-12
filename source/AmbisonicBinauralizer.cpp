@@ -325,7 +325,7 @@ void CAmbisonicBinauralizer::ArrangeSpeakers()
         nSpeakerSetUp = kAmblib_Dodecahedron;
     }
 
-    m_AmbDecoder.Configure(m_nOrder, m_b3D, nSpeakerSetUp, nSpeakers);
+    m_AmbDecoder.Configure(m_nOrder, m_b3D, m_nBlockSize, nSpeakerSetUp, nSpeakers);
 
     //Calculate all the speaker coefficients
     m_AmbDecoder.Refresh();

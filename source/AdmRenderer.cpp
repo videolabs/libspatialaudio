@@ -121,7 +121,7 @@ namespace admrender {
 			m_nOutputChannels = 2;
 
 		unsigned int tailLength = 0;
-		m_hoaBinaural.Configure(hoaOrder, true, nSampleRate, nSamples, tailLength);
+		bool binConfigured = m_hoaBinaural.Configure(hoaOrder, true, nSampleRate, nSamples, tailLength);
 
 		// Set up the buffers holding the direct and diffuse speaker signals
 		m_speakerOut.resize(m_nOutputChannels);
