@@ -13,6 +13,7 @@
 /*############################################################################*/
 
 #include "AdmPointSourcePannerGainCalc.h"
+#include<cmath>
 #include<string>
 #include <map>
 

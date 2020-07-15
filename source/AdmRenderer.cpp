@@ -13,6 +13,7 @@
 /*############################################################################*/
 
 #include "AdmRenderer.h"
+#include<type_traits>
 #include<iostream>
 
 namespace admrender {

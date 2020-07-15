@@ -13,6 +13,7 @@
 /*############################################################################*/
 
 #include "AdmPointSourcePanner.h"
+#include<cmath>
 #include<string>
 #include <map>
 
@@ -137,5 +138,4 @@ namespace admrender {
 		// Flag that at least one frame has been processed
 		m_bFirstFrame = false;
 	}
-
 }
