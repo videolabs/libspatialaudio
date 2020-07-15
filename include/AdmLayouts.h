@@ -143,29 +143,29 @@ namespace admrender {
 		"0+5+0",std::vector<Channel>{ Channel{"M+030",PolarPosition{30.,0.,1.},PolarPosition{30.,0.,1.},false},
 			Channel{"M-030",PolarPosition{-30.,0.,1.},PolarPosition{-30.,0.,1.},false},
 			Channel{"M+000",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"LFE1",PolarPosition{45.,-30.,1.},PolarPosition{45.,-30.,1.},true},
 			Channel{"M+110",PolarPosition{110.,0.,1.},PolarPosition{110.,0.,1.},false},
-			Channel{"M-110",PolarPosition{-110.,0.,1.},PolarPosition{-110.,0.,1.},false},
-			Channel{"LFE1",PolarPosition{45.,-30.,1.},PolarPosition{45.,-30.,1.},true}}, true},
+			Channel{"M-110",PolarPosition{-110.,0.,1.},PolarPosition{-110.,0.,1.},false}}, true},
 		// 5.1.2
 		Layout{
 		"2+5+0",std::vector<Channel>{ Channel{"M+030",PolarPosition{30.,0.,1.},PolarPosition{30.,0.,1.},false},
 			Channel{"M-030",PolarPosition{-30.,0.,1.},PolarPosition{-30.,0.,1.},false},
 			Channel{"M+000",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"LFE1",PolarPosition{45.,-30.,1.},PolarPosition{45.,-30.,1.},true},
 			Channel{"M+110",PolarPosition{110.,0.,1.},PolarPosition{110.,0.,1.},false},
 			Channel{"M-110",PolarPosition{-110.,0.,1.},PolarPosition{-110.,0.,1.},false},
 			Channel{"U+030",PolarPosition{30.,30.,1.},PolarPosition{30.,30.,1.},false},
-			Channel{"U-030",PolarPosition{-30.,30.,1.},PolarPosition{-30.,30.,1.},false},
-			Channel{"LFE1",PolarPosition{45.,-30.,1.},PolarPosition{45.,-30.,1.},true}}, true},
+			Channel{"U-030",PolarPosition{-30.,30.,1.},PolarPosition{-30.,30.,1.},false}}, true},
 		// 7.1
 		Layout{
 		"0+7+0",std::vector<Channel>{ Channel{"M+030",PolarPosition{30.,0.,1.},PolarPosition{30.,0.,1.},false},
 			Channel{"M-030",PolarPosition{-30.,0.,1.},PolarPosition{-30.,0.,1.},false},
 			Channel{"M+000",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"LFE1",PolarPosition{45.,-30.,1.},PolarPosition{45.,-30.,1.},true},
 			Channel{"M+90",PolarPosition{90.,0.,1.},PolarPosition{90.,0.,1.},false},
 			Channel{"M-90",PolarPosition{-90.,0.,1.},PolarPosition{-90.,0.,1.},false},
 			Channel{"M+135",PolarPosition{135.,0.,1.},PolarPosition{135.,0.,1.},false},
-			Channel{"M-135",PolarPosition{-135.,0.,1.},PolarPosition{-135.,0.,1.},false},
-			Channel{"LFE1",PolarPosition{45.,-30.,1.},PolarPosition{45.,-30.,1.},true}}, true},
+			Channel{"M-135",PolarPosition{-135.,0.,1.},PolarPosition{-135.,0.,1.},false}}, true},
 			};
 
 	/**
