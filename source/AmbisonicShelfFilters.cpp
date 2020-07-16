@@ -105,6 +105,7 @@ bool CAmbisonicShelfFilters::Configure(unsigned nOrder, bool b3D, unsigned nBloc
         for(unsigned i = 0; i < m_nTaps; i++)
             if(m_b3D){
                 switch(m_nOrder){
+                    case 0: pfPsychIR[i_m][i] = i == 0 ? 1.f : 0.f; break;
                     case 1: pfPsychIR[i_m][i] = 2.f*first_order_3D[i_m][i] / 32767.f; break;
                     case 2: pfPsychIR[i_m][i] = 2.f*second_order_3D[i_m][i] / 32767.f; break;
                     case 3: pfPsychIR[i_m][i] = 2.f*third_order_3D[i_m][i] / 32767.f; break;
@@ -112,6 +113,7 @@ bool CAmbisonicShelfFilters::Configure(unsigned nOrder, bool b3D, unsigned nBloc
                 }
                 else{
                     switch(m_nOrder){
+                    case 0: pfPsychIR[i_m][i] = i == 0 ? 1.f : 0.f; break;
                     case 1: pfPsychIR[i_m][i] = 2.f*first_order_2D[i_m][i] / 32767.f; break;
                     case 2: pfPsychIR[i_m][i] = 2.f*second_order_2D[i_m][i] / 32767.f; break;
                     case 3: pfPsychIR[i_m][i] = 2.f*third_order_2D[i_m][i] / 32767.f; break;

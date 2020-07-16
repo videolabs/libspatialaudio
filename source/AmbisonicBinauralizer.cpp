@@ -40,7 +40,9 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
                                        unsigned& tailLength,
                                        std::string HRTFPath)
 {
-    shelfFilters.Configure(nOrder, b3D, nBlockSize, 0);
+    bool bShelfConfig = shelfFilters.Configure(nOrder, b3D, nBlockSize, 0);
+    if (!bShelfConfig)
+        return false;
 
     //Iterators
     unsigned niEar = 0;
@@ -314,7 +316,7 @@ void CAmbisonicBinauralizer::ArrangeSpeakers()
     unsigned nSpeakers = OrderToSpeakers(m_nOrder, m_b3D);
     //Custom speaker setup
     // Select cube layout for first order a dodecahedron for 2nd and 3rd
-    if (m_nOrder == 1)
+    if (m_nOrder <= 1)
     {
         std::cout << "Getting first order cube" << std::endl;
         nSpeakerSetUp = kAmblib_Cube2;
