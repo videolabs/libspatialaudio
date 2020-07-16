@@ -17,18 +17,31 @@
 
 namespace admrender {
 
-	CAdmRenderer::CAdmRenderer(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath)
+	CAdmRenderer::CAdmRenderer()
+	{
+
+	}
+
+	CAdmRenderer::~CAdmRenderer()
+	{
+	}
+
+	bool CAdmRenderer::Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath)
 	{
 		// Set the output layout
 		m_RenderLayout = outputTarget;
 		// Set the order to be used for the HOA rendering
 		m_HoaOrder = hoaOrder;
+		if (m_HoaOrder > 3 || m_HoaOrder < 0)
+			return false; // only accepts orders 0 to 3
 		// Set the maximum number of samples expected in a frame
 		m_nSamples = nSamples;
 		// Store the channel information
 		m_channelInformation = channelInfo;
 		// Configure the B-format buffers
-		m_hoaAudioOut.Configure(hoaOrder, true, nSamples);
+		bool bHoaOutConfig = m_hoaAudioOut.Configure(hoaOrder, true, nSamples);
+		if (!bHoaOutConfig)
+			return false;
 
 		// Set up the output layout
 		unsigned int ambiLayout = kAmblib_Stereo;
@@ -72,7 +85,9 @@ namespace admrender {
 		//Set up the direct gain calculator
 		m_directSpeakerGainCalc = std::make_unique<CAdmDirectSpeakersGainCalc>(m_outputLayout);
 		// Set up the decorrelator
-		m_decorrelate.Configure(m_outputLayout, nSamples);
+		bool bDecorConfig = m_decorrelate.Configure(m_outputLayout, nSamples);
+		if (!bDecorConfig)
+			return false;
 
 		// Set up required processors based on channelInfo
 		unsigned int nObject = 0;
@@ -115,15 +130,18 @@ namespace admrender {
 			}
 		}
 
-		m_hoaDecoder.Configure(hoaOrder, true, nSamples, ambiLayout);
+		bool bHoaDecoderConfig = m_hoaDecoder.Configure(hoaOrder, true, nSamples, ambiLayout);
+		if (!bHoaDecoderConfig)
+			return false;
+
 		m_nOutputChannels = m_hoaDecoder.GetSpeakerCount();
 		if (m_RenderLayout == OutputLayout::Binaural)
 			m_nOutputChannels = 2;
 
 		unsigned int tailLength = 0;
-		bool binConfigured = m_hoaBinaural.Configure(hoaOrder, true, nSampleRate, nSamples, tailLength, HRTFPath);
-		// TODO: if (!binConfigured) throw or configure outside the ctor
-				
+		bool bBinConf = m_hoaBinaural.Configure(hoaOrder, true, nSampleRate, nSamples, tailLength, HRTFPath);
+		if (!bBinConf)
+			return false;
 
 		// Set up the buffers holding the direct and diffuse speaker signals
 		m_speakerOut.resize(m_nOutputChannels);
@@ -141,9 +159,6 @@ namespace admrender {
 		memset(m_pZeros.get(), 0, m_nSamples * sizeof(float));
 	}
 
-	CAdmRenderer::~CAdmRenderer()
-	{
-	}
 
 	void CAdmRenderer::Reset()
 	{

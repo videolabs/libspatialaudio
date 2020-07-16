@@ -36,7 +36,7 @@
 		- Handles exclusion zones, divergence, channel lock
 
 	TODO FOR MORE ADVANCED FUNCTIONALITY
-		- Handle Matrix types
+		- Handle Matrix types (need samples to be able to test)
 		- Handle spread panning (extent)
 		- Handle screenLock
 		- Add Cartesian processing path. Currently convert positions of objects to polar and uses polar processing.
@@ -57,8 +57,22 @@ namespace admrender {
 	class CAdmRenderer
 	{
 	public:
-		CAdmRenderer(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath = "");
+		CAdmRenderer();
 		~CAdmRenderer();
+
+		/**
+			Configure the module.
+
+			Inputs: outputTarget - enum of the output speaker layout target
+					hoaOrder - the HOA order used for decoding HOA streams or in the binaural rendering for OutputLayout::Binaural
+					nSampleRate - the sample rate of the audio
+					nSamples - the maximum number of samples expected in a frame
+					StreamInformation - structure containing the types of each track in the stream
+					HRTFPath - path to the SOFA file used for binaural rendering
+
+			Returns true if everything is configured correctly. Otherwise, returns false.
+		*/
+		bool Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath = "");
 
 		/**
 			Add an audio Object to be rendered
