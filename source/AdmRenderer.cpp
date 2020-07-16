@@ -17,7 +17,7 @@
 
 namespace admrender {
 
-	CAdmRenderer::CAdmRenderer(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo)
+	CAdmRenderer::CAdmRenderer(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath)
 	{
 		// Set the output layout
 		m_RenderLayout = outputTarget;
@@ -121,7 +121,9 @@ namespace admrender {
 			m_nOutputChannels = 2;
 
 		unsigned int tailLength = 0;
-		bool binConfigured = m_hoaBinaural.Configure(hoaOrder, true, nSampleRate, nSamples, tailLength);
+		bool binConfigured = m_hoaBinaural.Configure(hoaOrder, true, nSampleRate, nSamples, tailLength, HRTFPath);
+		// TODO: if (!binConfigured) throw or configure outside the ctor
+				
 
 		// Set up the buffers holding the direct and diffuse speaker signals
 		m_speakerOut.resize(m_nOutputChannels);

@@ -99,7 +99,7 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
             PolarPoint position = m_AmbDecoder.GetPosition(niSpeaker);
 
             bool b_found = p_hrtf->get(position.fAzimuth, position.fElevation, pfHRTF);
-            if (!b_found)
+            if (!b_found) // TODO LEAK
                 return false;
 
             //Scale the HRTFs by the coefficient of the current channel/component

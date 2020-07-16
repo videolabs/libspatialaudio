@@ -57,7 +57,7 @@ namespace admrender {
 	class CAdmRenderer
 	{
 	public:
-		CAdmRenderer(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo);
+		CAdmRenderer(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath = "");
 		~CAdmRenderer();
 
 		/**
