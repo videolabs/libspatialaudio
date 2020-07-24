@@ -170,19 +170,14 @@ namespace admrender {
 		ClearHoaBuffer();
 	}
 
-	void CAdmRenderer::AddObject(float* pIn, unsigned int nSamples, ObjectMetadata metadata)
+	void CAdmRenderer::AddObject(float* pIn, unsigned int nSamples, ObjectMetadata metadata, unsigned int nOffset)
 	{
 		if (metadata.cartesian)
 		{
 			std::cerr << "AdmRender Warning: Cartesian flag not implemented. Position will be converted to polar." << std::endl;
 			// convert from cartesian to polar coordinates
 			metadata.polarPosition = CartesianToPolar(metadata.cartesianPosition);
-			std::cerr << "Num samples = " << nSamples << std::endl;
-			std::cerr << "Metadata:" << std::endl;
-			std::cerr << "jump flag = " << metadata.jumpPosition.flag << std::endl;
-			std::cerr << "interpolation duration = " << metadata.jumpPosition.interpolationLength << std::endl;
-			std::cerr << "x = " << metadata.cartesianPosition.x << ", y = " << metadata.cartesianPosition.y << ", z = " << metadata.cartesianPosition.z << std::endl;
-			std::cerr << "az = " << metadata.polarPosition.azimuth << ", el = " << metadata.polarPosition.elevation << ", d = " << metadata.polarPosition.distance << std::endl;
+			metadata.cartesian = false;
 		}
 		// Map from the track index to the corresponding panner index
 		int nObjectInd = GetMatchingIndex(m_pannerTrackInd, metadata.trackInd, TypeDefinition::Objects);
@@ -210,13 +205,13 @@ namespace admrender {
 
 			m_hoaEncoders[nObjectInd].SetPosition(newPos, (float)interpDur);
 			// Encode the audio and add it to the buffer for output
-			m_hoaEncoders[nObjectInd].ProcessAccumul(pIn, nSamples, &m_hoaAudioOut);
+			m_hoaEncoders[nObjectInd].ProcessAccumul(pIn, nSamples, &m_hoaAudioOut, nOffset);
 		}
 		else
-			m_pointSourcePanners[nObjectInd].ProcessAccumul(metadata, pIn, m_speakerOutDirect, m_speakerOutDiffuse, nSamples);
+			m_pointSourcePanners[nObjectInd].ProcessAccumul(metadataBlock, pIn, m_speakerOutDirect, m_speakerOutDiffuse, nSamples, nOffset);
 	}
 
-	void CAdmRenderer::AddHoa(float** pHoaIn, unsigned int nSamples, HoaMetadata metadata)
+	void CAdmRenderer::AddHoa(float** pHoaIn, unsigned int nSamples, HoaMetadata metadata, unsigned int nOffset)
 	{
 		if (metadata.normalization != "SN3D")
 		{
@@ -231,11 +226,11 @@ namespace admrender {
 			int degree = metadata.degrees[iHoaCh];
 			// which HOA channel to write to based on the order and degree
 			unsigned int iHoaChWrite = order * (order + 1) + degree;
-			m_hoaAudioOut.AddStream(pHoaIn[iHoaCh], iHoaChWrite, nSamples);
+			m_hoaAudioOut.AddStream(pHoaIn[iHoaCh], iHoaChWrite, nSamples, nOffset);
 		}
 	}
 
-	void CAdmRenderer::AddDirectSpeaker(float* pDirSpkIn, unsigned int nSamples, DirectSpeakerMetadata metadata)
+	void CAdmRenderer::AddDirectSpeaker(float* pDirSpkIn, unsigned int nSamples, DirectSpeakerMetadata metadata, unsigned int nOffset)
 	{
 		// If no matching output speaker then pan using the point source panner
 		// Set the position of the source from the metadata
@@ -260,7 +255,7 @@ namespace admrender {
 			int nDirectSpeakerInd = GetMatchingIndex(m_pannerTrackInd, metadata.trackInd, TypeDefinition::DirectSpeakers);
 			m_hoaEncoders[nDirectSpeakerInd].SetPosition(newPos);
 			// Encode the audio and add it to the buffer for output
-			m_hoaEncoders[nDirectSpeakerInd].ProcessAccumul(pDirSpkIn, nSamples, &m_hoaAudioOut);
+			m_hoaEncoders[nDirectSpeakerInd].ProcessAccumul(pDirSpkIn, nSamples, &m_hoaAudioOut, nOffset);
 		}
 		else
 		{
@@ -269,18 +264,18 @@ namespace admrender {
 			for (int iSpk = 0; iSpk < (int)m_nOutputChannels; ++iSpk)
 				if (gains[iSpk] != 0.)
 					for (int iSample = 0; iSample < (int)nSamples; ++iSample)
-						m_speakerOut[iSpk][iSample] += pDirSpkIn[iSample] * (float)gains[iSpk];
+						m_speakerOut[iSpk][iSample + nOffset] += pDirSpkIn[iSample] * (float)gains[iSpk];
 		}
 	}
 
-	void CAdmRenderer::AddBinaural(float** pBinIn, unsigned int nSamples)
+	void CAdmRenderer::AddBinaural(float** pBinIn, unsigned int nSamples, unsigned int nOffset)
 	{
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
 			// Add the binaural signals directly to the output buffer with no processing
 			for (unsigned int iSpk = 0; iSpk < m_nOutputChannels; ++iSpk)
 				for (unsigned int iSample = 0; iSample < nSamples; ++iSample)
-					m_speakerOut[iSpk][iSample] += pBinIn[iSpk][iSample];
+					m_speakerOut[iSpk][iSample + nOffset] += pBinIn[iSpk][iSample];
 		}
 	}
 

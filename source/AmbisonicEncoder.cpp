@@ -85,7 +85,7 @@ void CAmbisonicEncoder::Process(float* pfSrc, unsigned nSamples, CBFormat* pfDst
     }
 }
 
-void CAmbisonicEncoder::ProcessAccumul(float* pfSrc, unsigned nSamples, CBFormat* pfDst)
+void CAmbisonicEncoder::ProcessAccumul(float* pfSrc, unsigned nSamples, CBFormat* pfDst, unsigned int nOffset)
 {
     unsigned niChannel = 0;
     unsigned niSample = 0;
@@ -99,12 +99,12 @@ void CAmbisonicEncoder::ProcessAccumul(float* pfSrc, unsigned nSamples, CBFormat
             for (niSample = 0; niSample < nInterpSamples; niSample++)
             {
                 float fInterp = niSample * deltaCoeff;
-                pfDst->m_ppfChannels[niChannel][niSample] += pfSrc[niSample] * (fInterp * m_pfCoeff[niChannel] + (1.f - fInterp) * m_pfCoeffOld[niChannel]);
+                pfDst->m_ppfChannels[niChannel][niSample + nOffset] += pfSrc[niSample] * (fInterp * m_pfCoeff[niChannel] + (1.f - fInterp) * m_pfCoeffOld[niChannel]);
             }
             // once interpolation has finished
             for (niSample = nInterpSamples; niSample < nSamples; niSample++)
             {
-                pfDst->m_ppfChannels[niChannel][niSample] += pfSrc[niSample] * m_pfCoeff[niChannel];
+                pfDst->m_ppfChannels[niChannel][niSample + nOffset] += pfSrc[niSample] * m_pfCoeff[niChannel];
             }
         }
         // Set interpolation duration to zero so none is applied on next call
@@ -116,7 +116,7 @@ void CAmbisonicEncoder::ProcessAccumul(float* pfSrc, unsigned nSamples, CBFormat
         {
             for (niSample = 0; niSample < nSamples; niSample++)
             {
-                pfDst->m_ppfChannels[niChannel][niSample] += pfSrc[niSample] * m_pfCoeff[niChannel];
+                pfDst->m_ppfChannels[niChannel][niSample + nOffset] += pfSrc[niSample] * m_pfCoeff[niChannel];
             }
         }
     }

@@ -54,7 +54,7 @@ public:
     /**
         Add a number of samples to a specific channel of the BFormat.
     */
-    void AddStream(float* pfData, unsigned nChannel, unsigned nSamples);
+    void AddStream(float* pfData, unsigned nChannel, unsigned nSamples, unsigned nOffset = 0);
     /**
         Copy a number of samples from a specific channel of the BFormat.
     */

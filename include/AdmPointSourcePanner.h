@@ -38,7 +38,8 @@ namespace admrender {
 			** The outputs are *added* to the ppDirect and ppDiffuse buffers so be sure to clear the buffers
 			before passing them to this for the first time **
 		*/
-		void ProcessAccumul(ObjectMetadata metadata, float* pIn, std::vector<std::vector<float>>& ppDirect, std::vector<std::vector<float>>& ppDiffuse, unsigned int nSamples);
+		void ProcessAccumul(ObjectMetadata metadata, float* pIn, std::vector<std::vector<float>>& ppDirect, std::vector<std::vector<float>>& ppDiffuse,
+			unsigned int nSamples, unsigned int nOffset);
 
 	private:
 		Layout m_layout;

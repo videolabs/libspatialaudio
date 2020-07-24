@@ -62,7 +62,7 @@ void CBFormat::InsertStream(float* pfData, unsigned nChannel, unsigned nSamples)
     memcpy(m_ppfChannels[nChannel], pfData, nSamples * sizeof(float));
 }
 
-void CBFormat::AddStream(float* pfData, unsigned nChannel, unsigned nSamples)
+void CBFormat::AddStream(float* pfData, unsigned nChannel, unsigned nSamples, unsigned nOffset)
 {
     unsigned niSample = 0;
 

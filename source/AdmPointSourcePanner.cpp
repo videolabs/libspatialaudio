@@ -34,7 +34,8 @@ namespace admrender {
 
 	}
 
-	void CAdmPointSourcePanner::ProcessAccumul(ObjectMetadata metadata, float* pIn, std::vector<std::vector<float>> &ppDirect, std::vector<std::vector<float>>& ppDiffuse, unsigned int nSamples)
+	void CAdmPointSourcePanner::ProcessAccumul(ObjectMetadata metadata, float* pIn, std::vector<std::vector<float>> &ppDirect, std::vector<std::vector<float>>& ppDiffuse,
+		unsigned int nSamples, unsigned int nOffset)
 	{
 		int nInterpSamples = 0;
 
@@ -116,14 +117,14 @@ namespace admrender {
 				{
 					float fInterp = (float)iSample * deltaCoeff;
 					float sampleData = pIn[iSample] * (fInterp * (float)gains[iCh] + (1.f - fInterp) * (float)m_gains[iCh]);
-					ppDirect[i][iSample] += sampleData * directCoefficient;
-					ppDiffuse[i][iSample] += sampleData * diffuseCoefficient;
+					ppDirect[i][iSample + nOffset] += sampleData * directCoefficient;
+					ppDiffuse[i][iSample + nOffset] += sampleData * diffuseCoefficient;
 				}
 				for (iSample = nInterpSamples; iSample < (int)nSamples; ++iSample)
 				{
 					float sampleData = pIn[iSample] * (float)gains[iCh];
-					ppDirect[i][iSample] += sampleData * directCoefficient;
-					ppDiffuse[i][iSample] += sampleData * diffuseCoefficient;
+					ppDirect[i][iSample + nOffset] += sampleData * directCoefficient;
+					ppDiffuse[i][iSample + nOffset] += sampleData * diffuseCoefficient;
 				}
 				iCh++;
 			}

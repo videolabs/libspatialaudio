@@ -80,7 +80,7 @@ namespace admrender {
 			Inputs: pIn - Pointer to audio 
 					channelInd - channel index in the ADM
 		*/
-		void AddObject(float* pIn, unsigned int nSamples, ObjectMetadata metadata);
+		void AddObject(float* pIn, unsigned int nSamples, ObjectMetadata metadata, unsigned int nOffset = 0);
 
 		/**
 			Adds an HOA stream to be rendered
@@ -89,7 +89,7 @@ namespace admrender {
 					nSamples - number of samples in the block
 					metadata - the HOA metadata
 		*/
-		void AddHoa(float** pHoaIn, unsigned int nSamples, HoaMetadata metadata);
+		void AddHoa(float** pHoaIn, unsigned int nSamples, HoaMetadata metadata, unsigned int nOffset = 0);
 
 		/**
 			Adds an DirectSpeaker stream to be rendered
@@ -98,7 +98,7 @@ namespace admrender {
 					nSamples - number of samples in the block
 					metadata - the DirectSpeaker metadata
 		*/
-		void AddDirectSpeaker(float* pDirSpkIn, unsigned int nSamples, DirectSpeakerMetadata metadata);
+		void AddDirectSpeaker(float* pDirSpkIn, unsigned int nSamples, DirectSpeakerMetadata metadata, unsigned int nOffset = 0);
 
 		/**
 			Adds a binaural signal to the output. If the output type was not set to Binaural at startup
@@ -108,7 +108,7 @@ namespace admrender {
 					nSamples - number of samples in the block
 					metadata - the HOA metadata
 		*/
-		void AddBinaural(float** pBinIn, unsigned int nSamples);
+		void AddBinaural(float** pBinIn, unsigned int nSamples, unsigned int nOffset = 0);
 
 		/**
 			Get the rendered audio
