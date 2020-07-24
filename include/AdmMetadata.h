@@ -139,7 +139,7 @@ namespace admrender {
 	struct JumpPosition
 	{
 		bool flag = false;
-		double interpolationLength = 0.0;
+		int interpolationLength = 0;
 	};
 	inline bool operator==(const JumpPosition& lhs, const JumpPosition& rhs)
 	{

@@ -157,7 +157,7 @@ namespace admrender {
 	{
 		double out = input;
 		int i = 0;
-		while (out < -180. && out > 180.)
+		while (out < -180. || out > 180.)
 		{
 			if (out < -180.)
 				out += i++ * 360.;

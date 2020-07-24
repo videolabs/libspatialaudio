@@ -91,6 +91,7 @@ namespace admrender {
 
 		// Set up required processors based on channelInfo
 		unsigned int nObject = 0;
+		int iObj = 0;
 		for (unsigned int iCh = 0; iCh < channelInfo.nChannels; ++iCh)
 		{
 			switch (channelInfo.typeDefinition[iCh])
@@ -120,6 +121,10 @@ namespace admrender {
 				{
 					m_pointSourcePanners.push_back(CAdmPointSourcePanner(m_outputLayout));
 				}
+				m_objectMetadata.push_back(ObjectMetadata());
+				m_objectMetadataProc.push_back(ObjectMetadata());
+				m_channelToObjMap.insert(std::pair<int, int>(iCh, iObj++));
+				m_lastObjPos.push_back(PolarPosition());
 				break;
 			case TypeDefinition::HOA:
 				break;
@@ -188,20 +193,64 @@ namespace admrender {
 			return;
 		}
 
+		// Check if the metadata has changed
+		int iObj = m_channelToObjMap[nObjectInd];
+		bool newMetadata = !(metadata == m_objectMetadata[iObj]);
+		if (newMetadata)
+		{
+			m_objectMetadata[iObj] = metadata;
+			m_objectMetadataProc[iObj] = metadata;
+		}
+
+		// Get a block of metadata corresponding to the nSamples of the input
+		ObjectMetadata metadataBlock = m_objectMetadataProc[iObj];
+
+		if (m_objectMetadataProc[iObj].jumpPosition.interpolationLength > 0) // if the last set metadata still requires interpolation
+		{
+			// The interpolation length for the block is either the full block length or the number of samples interpolation left, if less than nSamples
+			metadataBlock.jumpPosition.interpolationLength = std::min(nSamples, (unsigned int)metadataBlock.jumpPosition.interpolationLength);
+			// Get the polar position (cartesian processing is not handled) required at the end of the interpolation
+			PolarPosition targetPosition = m_objectMetadataProc[iObj].polarPosition;
+			if (m_objectMetadataProc[iObj].jumpPosition.interpolationLength <= nSamples)
+			{
+				metadataBlock.polarPosition = targetPosition;
+			}
+			else // get the polar position expected after nSamples samples
+			{
+				double azimuthDifference = convertToRangeMinus180To180(targetPosition.azimuth - m_lastObjPos[iObj].azimuth);
+				auto deltaAz = nSamples * azimuthDifference / m_objectMetadataProc[iObj].jumpPosition.interpolationLength;
+				auto deltaEl = nSamples * (targetPosition.elevation - m_lastObjPos[iObj].elevation) / m_objectMetadataProc[iObj].jumpPosition.interpolationLength;
+				auto deltaDist = nSamples * (targetPosition.distance - m_lastObjPos[iObj].distance) / m_objectMetadataProc[iObj].jumpPosition.interpolationLength;
+				metadataBlock.polarPosition.azimuth = m_lastObjPos[iObj].azimuth +  deltaAz;
+				metadataBlock.polarPosition.elevation = m_lastObjPos[iObj].elevation + deltaEl;
+				metadataBlock.polarPosition.distance = m_lastObjPos[iObj].distance + deltaDist;
+			}
+			m_lastObjPos[iObj] = metadataBlock.polarPosition;
+
+			// Subtract the number of input samples from the metadata interpolationLength
+			m_objectMetadataProc[iObj].jumpPosition.interpolationLength -= nSamples;
+			if (m_objectMetadataProc[iObj].jumpPosition.interpolationLength <= 0)
+			{
+				m_objectMetadataProc[iObj].jumpPosition.interpolationLength = 0;
+				// interpolation is finished so flag jumpPosition as false
+				m_objectMetadataProc[iObj].jumpPosition.flag = false;
+			}
+		}
+
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
 			// If the output is set to binaural then convert the object to HOA so it is rendered with the HOA-to-binaural decoder
 			// Set the position of the source from the metadata
 			PolarPoint newPos;
-			newPos.fAzimuth = DegreesToRadians((float)metadata.polarPosition.azimuth);
-			newPos.fElevation = DegreesToRadians((float)metadata.polarPosition.elevation);
-			newPos.fDistance = (float)metadata.polarPosition.distance;
+			newPos.fAzimuth = DegreesToRadians((float)metadataBlock.polarPosition.azimuth);
+			newPos.fElevation = DegreesToRadians((float)metadataBlock.polarPosition.elevation);
+			newPos.fDistance = (float)metadataBlock.polarPosition.distance;
 
 			// Set the interpolation duration based on the conditions on page 35 of Rec. ITU-R BS.2127-0
 			// If the flag is 
 			double interpDur = 0.;
-			if (metadata.jumpPosition.flag && !m_bFirstFrame)
-				interpDur = metadata.jumpPosition.interpolationLength;
+			if (metadataBlock.jumpPosition.flag && !m_bFirstFrame)
+				interpDur = metadataBlock.jumpPosition.interpolationLength/nSamples;
 
 			m_hoaEncoders[nObjectInd].SetPosition(newPos, (float)interpDur);
 			// Encode the audio and add it to the buffer for output

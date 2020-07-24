@@ -92,7 +92,7 @@ namespace admrender {
 			// Set the interpolation duration based on the conditions on page 35 of Rec. ITU-R BS.2127-0
 			if (metadata.jumpPosition.flag && !m_bFirstFrame)
 			{
-				nInterpSamples = (int)round(metadata.jumpPosition.interpolationLength * nSamples);
+				nInterpSamples = metadata.jumpPosition.interpolationLength;
 			}
 		}
 		else // if the metadata input is the same as the last set

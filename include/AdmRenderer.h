@@ -136,6 +136,16 @@ namespace admrender {
 
 		Layout m_outputLayout;
 
+		// Vector holding the last unique set metadata for each object in the stream
+		std::vector<ObjectMetadata> m_objectMetadata;
+		// Vector holding the metadata used in processing when the interpolationLength is longer than an audio frame
+		std::vector<ObjectMetadata> m_objectMetadataProc;
+		// A map from the channel index to the object index in the order the objects were listed
+		// in the stream at configuration
+		std::map<int, int> m_channelToObjMap;
+		// The last position of each of the objects
+		std::vector<PolarPosition> m_lastObjPos;
+
 		// The channel indices of the tracks that can use a point source panner
 		std::vector<std::pair<unsigned int,TypeDefinition>> m_pannerTrackInd;
 		std::vector<CAdmPointSourcePanner> m_pointSourcePanners;
