@@ -140,6 +140,11 @@ void CAmbisonicShelfFilters::Refresh()
 
 void CAmbisonicShelfFilters::Process(CBFormat* pBFSrcDst)
 {
+    Process(pBFSrcDst, m_nBlockSize);
+}
+
+void CAmbisonicShelfFilters::Process(CBFormat* pBFSrcDst, unsigned int nSamples)
+{
     kiss_fft_cpx cpTemp;
 
     unsigned iChannelOrder = 0;
@@ -154,8 +159,8 @@ void CAmbisonicShelfFilters::Process(CBFormat* pBFSrcDst)
 
         iChannelOrder = int(sqrt(niChannel));    //get the order of the current channel
 
-        memcpy(m_pfScratchBufferA, pBFSrcDst->m_ppfChannels[niChannel], m_nBlockSize * sizeof(float));
-        memset(&m_pfScratchBufferA[m_nBlockSize], 0, (m_nFFTSize - m_nBlockSize) * sizeof(float));
+        memcpy(m_pfScratchBufferA, pBFSrcDst->m_ppfChannels[niChannel], nSamples * sizeof(float));
+        memset(&m_pfScratchBufferA[nSamples], 0, (m_nFFTSize - nSamples) * sizeof(float));
         kiss_fftr(m_pFFT_psych_cfg, m_pfScratchBufferA, m_pcpScratch);
         // Perform the convolution in the frequency domain
         for (unsigned ni = 0; ni < m_nFFTBins; ni++)
@@ -170,11 +175,11 @@ void CAmbisonicShelfFilters::Process(CBFormat* pBFSrcDst)
         kiss_fftri(m_pIFFT_psych_cfg, m_pcpScratch, m_pfScratchBufferA);
         for (unsigned ni = 0; ni < m_nFFTSize; ni++)
             m_pfScratchBufferA[ni] *= m_fFFTScaler;
-        memcpy(pBFSrcDst->m_ppfChannels[niChannel], m_pfScratchBufferA, m_nBlockSize * sizeof(float));
+        memcpy(pBFSrcDst->m_ppfChannels[niChannel], m_pfScratchBufferA, nSamples * sizeof(float));
         for (unsigned ni = 0; ni < m_nOverlapLength; ni++)
         {
             pBFSrcDst->m_ppfChannels[niChannel][ni] += m_pfOverlap[niChannel][ni];
         }
-        memcpy(m_pfOverlap[niChannel], &m_pfScratchBufferA[m_nBlockSize], m_nOverlapLength * sizeof(float));
+        memcpy(m_pfOverlap[niChannel], &m_pfScratchBufferA[nSamples], m_nOverlapLength * sizeof(float));
     }
 }

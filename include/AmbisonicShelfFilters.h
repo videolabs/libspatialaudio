@@ -48,9 +48,11 @@ public:
     */
     void Refresh();
     /**
-        Filter otate B-Format stream.
+        Filter B-Format stream.
+        Overload with number of samples (nSamples < m_nBlockSize) to process shorter block sizes
     */
     void Process(CBFormat* pBFSrcDst);
+    void Process(CBFormat* pBFSrcDst, unsigned int nSamples);
 
 protected:
     kiss_fftr_cfg m_pFFT_psych_cfg;

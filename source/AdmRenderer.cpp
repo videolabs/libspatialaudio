@@ -177,6 +177,12 @@ namespace admrender {
 			std::cerr << "AdmRender Warning: Cartesian flag not implemented. Position will be converted to polar." << std::endl;
 			// convert from cartesian to polar coordinates
 			metadata.polarPosition = CartesianToPolar(metadata.cartesianPosition);
+			std::cerr << "Num samples = " << nSamples << std::endl;
+			std::cerr << "Metadata:" << std::endl;
+			std::cerr << "jump flag = " << metadata.jumpPosition.flag << std::endl;
+			std::cerr << "interpolation duration = " << metadata.jumpPosition.interpolationLength << std::endl;
+			std::cerr << "x = " << metadata.cartesianPosition.x << ", y = " << metadata.cartesianPosition.y << ", z = " << metadata.cartesianPosition.z << std::endl;
+			std::cerr << "az = " << metadata.polarPosition.azimuth << ", el = " << metadata.polarPosition.elevation << ", d = " << metadata.polarPosition.distance << std::endl;
 		}
 		// Map from the track index to the corresponding panner index
 		int nObjectInd = GetMatchingIndex(m_pannerTrackInd, metadata.trackInd, TypeDefinition::Objects);
@@ -286,7 +292,7 @@ namespace admrender {
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
 			// For binaural, everything has been rendered to HOA since we don't have any real loudspeaker system to target
-			m_hoaBinaural.Process(&m_hoaAudioOut, pRender);
+			m_hoaBinaural.Process(&m_hoaAudioOut, pRender, nSamples);
 			// Add any Binaural type signals to the output buffer
 			for (unsigned int iSpk = 0; iSpk < m_nOutputChannels; ++iSpk)
 				for (unsigned int iSample = 0; iSample < nSamples; ++iSample)
