@@ -138,46 +138,4 @@ namespace admrender {
 		m_bFirstFrame = false;
 	}
 
-	std::pair<std::vector<PolarPosition>, std::vector<double>> CAdmPointSourcePanner::divergedPositionsAndGains(ObjectDivergence divergence, PolarPosition polarDirection)
-	{
-		std::vector<PolarPosition> diverged_positions;
-		std::vector<double> diverged_gains;
-		
-		double x = divergence.value;
-		double d = polarDirection.distance;
-		// if the divergence value is zero then return the original direction and a gain of 1
-		if (x == 0.)
-			return { std::vector<PolarPosition>{polarDirection},std::vector<double>{1.} };
-
-		// If there is any divergence then calculate the gains and directions
-		// Calculate gains using Rec. ITU-R BS.2127-0 sec. 7.3.7.1
-		diverged_gains.resize(3, 0.);
-		diverged_gains[0] = (1.-x)/(x+1.);
-		double glr = x / (x + 1.);
-		diverged_gains[1] = glr;
-		diverged_gains[2] = glr;
-
-		std::vector<std::vector<double>> cartPositions(3);
-		cartPositions[0] = { d,0.,0. };
-		auto cartesianTmp = PolarToCartesian(PolarPosition{ x * divergence.azimuthRange,0.,d });
-		cartPositions[1] = { cartesianTmp.y,-cartesianTmp.x,cartesianTmp.z };
-		cartesianTmp = PolarToCartesian(PolarPosition{ -x * divergence.azimuthRange,0.,d });
-		cartPositions[2] = { cartesianTmp.y,-cartesianTmp.x,cartesianTmp.z };
-
-		// Rotate them so that the centre position is in specified input direction
-		double rotMat[9] = { 0. };
-		getRotationMatrix(polarDirection.azimuth, -polarDirection.elevation, 0., &rotMat[0]);
-		diverged_positions.resize(3);
-		for (int iDiverge = 0; iDiverge < 3; ++iDiverge)
-		{
-			std::vector<double> directionRotated(3, 0.);
-			for (int i = 0; i < 3; ++i)
-				for (int j = 0; j < 3; ++j)
-					directionRotated[i] += rotMat[3 * i + j] * cartPositions[iDiverge][j];
-			diverged_positions[iDiverge] = CartesianToPolar(CartesianPosition{ -directionRotated[1],directionRotated[0],directionRotated[2] });
-		}
-
-		return { diverged_positions, diverged_gains };
-	}
-
 }

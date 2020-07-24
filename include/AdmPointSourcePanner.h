@@ -57,10 +57,5 @@ namespace admrender {
 
 		ChannelLockHandler channelLockHandler;
 		ZoneExclusionHandler zoneExclusionHandler;
-		
-		/**
-			Get the diverged source positions and directions
-		*/
-		std::pair<std::vector<PolarPosition>, std::vector<double>> divergedPositionsAndGains(ObjectDivergence divergence, PolarPosition polarDirection);
 	};
 }

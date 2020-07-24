@@ -150,7 +150,7 @@ namespace admrender {
 		std::vector<std::pair<unsigned int,TypeDefinition>> m_pannerTrackInd;
 		std::vector<CAdmPointSourcePanner> m_pointSourcePanners;
 		// HOA encoders to use instead of the pointSourcePanner when output is binaural
-		std::vector<CAmbisonicEncoder> m_hoaEncoders;
+		std::vector<std::vector<CAmbisonicEncoder>> m_hoaEncoders;
 
 		// Ambisonic Decoder
 		CAmbisonicDecoder m_hoaDecoder;

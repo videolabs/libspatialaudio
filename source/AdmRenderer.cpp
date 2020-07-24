@@ -82,13 +82,6 @@ namespace admrender {
 			break;
 		}
 
-		//Set up the direct gain calculator
-		m_directSpeakerGainCalc = std::make_unique<CAdmDirectSpeakersGainCalc>(m_outputLayout);
-		// Set up the decorrelator
-		bool bDecorConfig = m_decorrelate.Configure(m_outputLayout, nSamples);
-		if (!bDecorConfig)
-			return false;
-
 		// Set up required processors based on channelInfo
 		unsigned int nObject = 0;
 		int iObj = 0;
@@ -100,8 +93,8 @@ namespace admrender {
 				m_pannerTrackInd.push_back({ iCh,TypeDefinition::DirectSpeakers });
 				if (m_RenderLayout == OutputLayout::Binaural)
 				{
-					m_hoaEncoders.push_back(CAmbisonicEncoder());
-					m_hoaEncoders[nObject++].Configure(hoaOrder, true, 0);
+					m_hoaEncoders.push_back(std::vector<CAmbisonicEncoder>(1.,CAmbisonicEncoder()));
+					m_hoaEncoders[nObject++][0].Configure(hoaOrder, true, 0);
 				}
 				else
 				{
@@ -114,8 +107,10 @@ namespace admrender {
 				m_pannerTrackInd.push_back({ iCh,TypeDefinition::Objects });
 				if (m_RenderLayout == OutputLayout::Binaural)
 				{
-					m_hoaEncoders.push_back(CAmbisonicEncoder());
-					m_hoaEncoders[nObject++].Configure(hoaOrder, true, 0);
+					m_hoaEncoders.push_back(std::vector<CAmbisonicEncoder>(3., CAmbisonicEncoder()));
+					for (int i = 0; i < 3; ++i)
+						m_hoaEncoders[nObject][i].Configure(hoaOrder, true, 0);
+					nObject++;
 				}
 				else
 				{
@@ -134,6 +129,13 @@ namespace admrender {
 				break;
 			}
 		}
+
+		//Set up the direct gain calculator
+		m_directSpeakerGainCalc = std::make_unique<CAdmDirectSpeakersGainCalc>(m_outputLayout);
+		// Set up the decorrelator
+		bool bDecorConfig = m_decorrelate.Configure(m_outputLayout, nSamples);
+		if (!bDecorConfig)
+			return false;
 
 		bool bHoaDecoderConfig = m_hoaDecoder.Configure(hoaOrder, true, nSamples, ambiLayout);
 		if (!bHoaDecoderConfig)
@@ -202,6 +204,12 @@ namespace admrender {
 			m_objectMetadataProc[iObj] = metadata;
 		}
 
+		// If it is the first block then do not interpolate. Just take the value set.
+		if (m_bFirstFrame)
+		{
+			m_lastObjPos[iObj] = metadata.polarPosition;
+		}
+
 		// Get a block of metadata corresponding to the nSamples of the input
 		ObjectMetadata metadataBlock = m_objectMetadataProc[iObj];
 
@@ -239,22 +247,30 @@ namespace admrender {
 
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
-			// If the output is set to binaural then convert the object to HOA so it is rendered with the HOA-to-binaural decoder
-			// Set the position of the source from the metadata
-			PolarPoint newPos;
-			newPos.fAzimuth = DegreesToRadians((float)metadataBlock.polarPosition.azimuth);
-			newPos.fElevation = DegreesToRadians((float)metadataBlock.polarPosition.elevation);
-			newPos.fDistance = (float)metadataBlock.polarPosition.distance;
+			// Handle divergence processing for binaural output
+			auto divergedData = divergedPositionsAndGains(metadataBlock.objectDivergence, metadataBlock.polarPosition);
+			auto diverged_positions = divergedData.first;
+			auto diverged_gains = divergedData.second;
+			int nDivergedGains = (int)diverged_gains.size();
 
-			// Set the interpolation duration based on the conditions on page 35 of Rec. ITU-R BS.2127-0
-			// If the flag is 
-			double interpDur = 0.;
-			if (metadataBlock.jumpPosition.flag && !m_bFirstFrame)
-				interpDur = metadataBlock.jumpPosition.interpolationLength/nSamples;
+			for (int iDiv = 0; iDiv < nDivergedGains; ++iDiv)
+			{
+				// If the output is set to binaural then convert the object to HOA so it is rendered with the HOA-to-binaural decoder
+				// Set the position of the source from the metadata
+				PolarPoint newPos;
+				newPos.fAzimuth = DegreesToRadians((float)diverged_positions[iDiv].azimuth);
+				newPos.fElevation = DegreesToRadians((float)diverged_positions[iDiv].elevation);
+				newPos.fDistance = (float)diverged_positions[iDiv].distance;
 
-			m_hoaEncoders[nObjectInd].SetPosition(newPos, (float)interpDur);
-			// Encode the audio and add it to the buffer for output
-			m_hoaEncoders[nObjectInd].ProcessAccumul(pIn, nSamples, &m_hoaAudioOut, nOffset);
+				// Set the interpolation in the range from 0 to 1 where 1 = full length of the frame (i.e. nSamples)
+				double interpDur = 0.;
+				if (metadataBlock.jumpPosition.flag && !m_bFirstFrame)
+					interpDur = metadataBlock.jumpPosition.interpolationLength / nSamples;
+
+				m_hoaEncoders[nObjectInd][iDiv].SetPosition(newPos, (float)interpDur);
+				// Encode the audio and add it to the buffer for output
+				m_hoaEncoders[nObjectInd][iDiv].ProcessAccumul(pIn, nSamples, &m_hoaAudioOut, nOffset, diverged_gains[iDiv]);
+			}
 		}
 		else
 			m_pointSourcePanners[nObjectInd].ProcessAccumul(metadataBlock, pIn, m_speakerOutDirect, m_speakerOutDiffuse, nSamples, nOffset);
@@ -302,9 +318,9 @@ namespace admrender {
 				newPos.fDistance = (float)metadata.polarPosition.distance;
 			}
 			int nDirectSpeakerInd = GetMatchingIndex(m_pannerTrackInd, metadata.trackInd, TypeDefinition::DirectSpeakers);
-			m_hoaEncoders[nDirectSpeakerInd].SetPosition(newPos);
+			m_hoaEncoders[nDirectSpeakerInd][0].SetPosition(newPos);
 			// Encode the audio and add it to the buffer for output
-			m_hoaEncoders[nDirectSpeakerInd].ProcessAccumul(pDirSpkIn, nSamples, &m_hoaAudioOut, nOffset);
+			m_hoaEncoders[nDirectSpeakerInd][0].ProcessAccumul(pDirSpkIn, nSamples, &m_hoaAudioOut, nOffset);
 		}
 		else
 		{

@@ -139,6 +139,7 @@ namespace admrender {
 	struct JumpPosition
 	{
 		bool flag = false;
+		// This is the duration of the interpolation in samples
 		int interpolationLength = 0;
 	};
 	inline bool operator==(const JumpPosition& lhs, const JumpPosition& rhs)

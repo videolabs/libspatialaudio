@@ -55,7 +55,7 @@ public:
         Encode mono stream to B-Format and adds it to the pBFDst buffer.
         Allows an optional offset for the position in samples at which the input data is to be written
     */
-    void ProcessAccumul(float* pfSrc, unsigned nSamples, CBFormat* pBFDst, unsigned int nOffset = 0);
+    void ProcessAccumul(float* pfSrc, unsigned nSamples, CBFormat* pBFDst, unsigned int nOffset = 0, float fGain = 1.f);
 
 private:
     // The last set HOA coefficients
