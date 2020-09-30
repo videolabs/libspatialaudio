@@ -167,7 +167,7 @@ namespace admrender {
 			return false;
 
 		// Set up the buffers holding the direct and diffuse speaker signals
-		int nAmbiCh = m_outputLayout.channels.size();
+		size_t nAmbiCh = m_outputLayout.channels.size();
 		m_speakerOut.resize(m_nOutputChannels);
 		m_speakerOutDirect.resize(m_nOutputChannels);
 		m_speakerOutDiffuse.resize(m_nOutputChannels);
@@ -180,7 +180,7 @@ namespace admrender {
 			m_speakerOutDirect[i].resize(nSamples, 0.f);
 			m_speakerOutDiffuse[i].resize(nSamples, 0.f);
 		}
-		for (unsigned int i = 0; i < nAmbiCh; ++i)
+		for (size_t i = 0; i < nAmbiCh; ++i)
 		{
 			m_hoaObjectDirectVec[i].resize(nSamples, 0.f);
 			m_hoaObjectDiffuseVec[i].resize(nSamples, 0.f);
@@ -244,7 +244,7 @@ namespace admrender {
 			metadataBlock.jumpPosition.interpolationLength = std::min(nSamples, (unsigned int)metadataBlock.jumpPosition.interpolationLength);
 			// Get the polar position (cartesian processing is not handled) required at the end of the interpolation
 			PolarPosition targetPosition = m_objectMetadataProc[iObj].polarPosition;
-			if (m_objectMetadataProc[iObj].jumpPosition.interpolationLength <= nSamples)
+			if (m_objectMetadataProc[iObj].jumpPosition.interpolationLength <= (int)nSamples)
 			{
 				metadataBlock.polarPosition = targetPosition;
 			}
@@ -299,8 +299,8 @@ namespace admrender {
 
 				m_hoaEncoders[nObjectInd][iDiv].SetPosition(newPos, (float)interpDur);
 				// Encode the audio and add it to the buffer for output buffers with the direct/diffuse gain applied
-				m_hoaEncoders[nObjectInd][iDiv].ProcessAccumul(pIn, nSamples, &m_hoaObjectDirect, nOffset, directCoefficient * diverged_gains[iDiv]);
-				m_hoaEncoders[nObjectInd][iDiv].ProcessAccumul(pIn, nSamples, &m_hoaObjectDiffuse, nOffset, diffuseCoefficient * diverged_gains[iDiv]);
+				m_hoaEncoders[nObjectInd][iDiv].ProcessAccumul(pIn, nSamples, &m_hoaObjectDirect, nOffset, directCoefficient * (float)diverged_gains[iDiv]);
+				m_hoaEncoders[nObjectInd][iDiv].ProcessAccumul(pIn, nSamples, &m_hoaObjectDiffuse, nOffset, diffuseCoefficient * (float)diverged_gains[iDiv]);
 			}
 		}
 		else
@@ -383,7 +383,7 @@ namespace admrender {
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
 			// Prepare the data to send to the decorrelator
-			for (int iCh = 0; iCh < m_hoaAudioOut.GetChannelCount(); ++iCh)
+			for (unsigned int iCh = 0; iCh < m_hoaAudioOut.GetChannelCount(); ++iCh)
 			{
 				m_hoaObjectDirect.ExtractStream(&m_hoaObjectDirectVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
 				m_hoaObjectDiffuse.ExtractStream(&m_hoaObjectDiffuseVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
@@ -393,7 +393,7 @@ namespace admrender {
 			m_decorrelate.Process(m_hoaObjectDirectVec, m_hoaObjectDiffuseVec, nSamples);
 
 			// Add the direct and diffuse signals to the HOA and DirectSpeaker signals
-			for (int iCh = 0; iCh < m_hoaAudioOut.GetChannelCount(); ++iCh)
+			for (unsigned int iCh = 0; iCh < m_hoaAudioOut.GetChannelCount(); ++iCh)
 			{
 				m_hoaAudioOut.AddStream(&m_hoaObjectDirectVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
 				m_hoaAudioOut.AddStream(&m_hoaObjectDiffuseVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
