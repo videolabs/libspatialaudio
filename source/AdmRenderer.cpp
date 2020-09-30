@@ -42,6 +42,12 @@ namespace admrender {
 		bool bHoaOutConfig = m_hoaAudioOut.Configure(hoaOrder, true, nSamples);
 		if (!bHoaOutConfig)
 			return false;
+		bHoaOutConfig = m_hoaObjectDirect.Configure(hoaOrder, true, nSamples);
+		if (!bHoaOutConfig)
+			return false;
+		bHoaOutConfig = m_hoaObjectDiffuse.Configure(hoaOrder, true, nSamples);
+		if (!bHoaOutConfig)
+			return false;
 
 		// Set up the output layout
 		unsigned int ambiLayout = kAmblib_Stereo;
@@ -75,8 +81,17 @@ namespace admrender {
 			break;
 		case OutputLayout::Binaural:
 			ambiLayout = kAmblib_Dodecahedron;
-			// Load stereo here because the layout is not used for binaural decoding
-			m_outputLayout = GetMatchingLayout("0+2+0");
+			// This is only used in the setting the decorrelator when using binaural output
+			switch (hoaOrder)
+			{
+			case 0: m_outputLayout = GetMatchingLayout("0+2+0"); break;
+			case 1: m_outputLayout = GetMatchingLayout("1OA"); break;
+			case 2: m_outputLayout = GetMatchingLayout("2OA"); break;
+			case 3: m_outputLayout = GetMatchingLayout("3OA"); break;
+			default:
+				break;
+			}
+
 			break;
 		default:
 			break;
@@ -93,7 +108,7 @@ namespace admrender {
 				m_pannerTrackInd.push_back({ iCh,TypeDefinition::DirectSpeakers });
 				if (m_RenderLayout == OutputLayout::Binaural)
 				{
-					m_hoaEncoders.push_back(std::vector<CAmbisonicEncoder>(1.,CAmbisonicEncoder()));
+					m_hoaEncoders.push_back(std::vector<CAmbisonicEncoder>(1., CAmbisonicEncoder()));
 					m_hoaEncoders[nObject++][0].Configure(hoaOrder, true, 0);
 				}
 				else
@@ -130,8 +145,9 @@ namespace admrender {
 			}
 		}
 
-		//Set up the direct gain calculator
-		m_directSpeakerGainCalc = std::make_unique<CAdmDirectSpeakersGainCalc>(m_outputLayout);
+		//Set up the direct gain calculator if output is not binaural
+		if (m_RenderLayout != OutputLayout::Binaural)
+			m_directSpeakerGainCalc = std::make_unique<CAdmDirectSpeakersGainCalc>(m_outputLayout);
 		// Set up the decorrelator
 		bool bDecorConfig = m_decorrelate.Configure(m_outputLayout, nSamples);
 		if (!bDecorConfig)
@@ -151,14 +167,23 @@ namespace admrender {
 			return false;
 
 		// Set up the buffers holding the direct and diffuse speaker signals
+		int nAmbiCh = m_outputLayout.channels.size();
 		m_speakerOut.resize(m_nOutputChannels);
 		m_speakerOutDirect.resize(m_nOutputChannels);
 		m_speakerOutDiffuse.resize(m_nOutputChannels);
+		m_hoaObjectDirectVec.resize(nAmbiCh);
+		m_hoaObjectDiffuseVec.resize(nAmbiCh);
 		for (unsigned int i = 0; i < m_nOutputChannels; ++i)
 		{
 			m_speakerOut[i].resize(nSamples, 0.f);
+
 			m_speakerOutDirect[i].resize(nSamples, 0.f);
 			m_speakerOutDiffuse[i].resize(nSamples, 0.f);
+		}
+		for (unsigned int i = 0; i < nAmbiCh; ++i)
+		{
+			m_hoaObjectDirectVec[i].resize(nSamples, 0.f);
+			m_hoaObjectDiffuseVec[i].resize(nSamples, 0.f);
 		}
 
 		// A buffer of zeros to use to clear the HOA buffer
@@ -253,6 +278,11 @@ namespace admrender {
 			auto diverged_gains = divergedData.second;
 			int nDivergedGains = (int)diverged_gains.size();
 
+			// Calculate the direct and diffuse gains
+			// See Rec. ITU-R BS.2127-0 sec.7.3.1 page 39
+			float directCoefficient = (float)std::sqrt(1. - metadata.diffuse);
+			float diffuseCoefficient = (float)std::sqrt(metadata.diffuse);
+
 			for (int iDiv = 0; iDiv < nDivergedGains; ++iDiv)
 			{
 				// If the output is set to binaural then convert the object to HOA so it is rendered with the HOA-to-binaural decoder
@@ -268,8 +298,9 @@ namespace admrender {
 					interpDur = metadataBlock.jumpPosition.interpolationLength / nSamples;
 
 				m_hoaEncoders[nObjectInd][iDiv].SetPosition(newPos, (float)interpDur);
-				// Encode the audio and add it to the buffer for output
-				m_hoaEncoders[nObjectInd][iDiv].ProcessAccumul(pIn, nSamples, &m_hoaAudioOut, nOffset, diverged_gains[iDiv]);
+				// Encode the audio and add it to the buffer for output buffers with the direct/diffuse gain applied
+				m_hoaEncoders[nObjectInd][iDiv].ProcessAccumul(pIn, nSamples, &m_hoaObjectDirect, nOffset, directCoefficient * diverged_gains[iDiv]);
+				m_hoaEncoders[nObjectInd][iDiv].ProcessAccumul(pIn, nSamples, &m_hoaObjectDiffuse, nOffset, diffuseCoefficient * diverged_gains[iDiv]);
 			}
 		}
 		else
@@ -351,6 +382,22 @@ namespace admrender {
 			memset(pRender[iCh], 0, nSamples * sizeof(float));
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
+			// Prepare the data to send to the decorrelator
+			for (int iCh = 0; iCh < m_hoaAudioOut.GetChannelCount(); ++iCh)
+			{
+				m_hoaObjectDirect.ExtractStream(&m_hoaObjectDirectVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
+				m_hoaObjectDiffuse.ExtractStream(&m_hoaObjectDiffuseVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
+			}
+
+			// Apply diffuseness filters and compensation delay
+			m_decorrelate.Process(m_hoaObjectDirectVec, m_hoaObjectDiffuseVec, nSamples);
+
+			// Add the direct and diffuse signals to the HOA and DirectSpeaker signals
+			for (int iCh = 0; iCh < m_hoaAudioOut.GetChannelCount(); ++iCh)
+			{
+				m_hoaAudioOut.AddStream(&m_hoaObjectDirectVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
+				m_hoaAudioOut.AddStream(&m_hoaObjectDiffuseVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
+			}
 			// For binaural, everything has been rendered to HOA since we don't have any real loudspeaker system to target
 			m_hoaBinaural.Process(&m_hoaAudioOut, pRender, nSamples);
 			// Add any Binaural type signals to the output buffer
@@ -387,19 +434,27 @@ namespace admrender {
 	{
 		unsigned int nHoaSamples = m_hoaAudioOut.GetSampleCount();
 		for (unsigned int iHoaCh = 0; iHoaCh < m_hoaAudioOut.GetChannelCount(); ++iHoaCh)
+		{
 			m_hoaAudioOut.InsertStream(m_pZeros.get(), iHoaCh, nHoaSamples);
+			m_hoaObjectDirect.InsertStream(m_pZeros.get(), iHoaCh, nHoaSamples);
+			m_hoaObjectDiffuse.InsertStream(m_pZeros.get(), iHoaCh, nHoaSamples);
+		}
 	}
 
 	void CAdmRenderer::ClearOutputBuffer()
 	{
 		for (unsigned int iCh = 0; iCh < m_nOutputChannels; ++iCh)
 			std::fill(m_speakerOut[iCh].begin(), m_speakerOut[iCh].end(), 0.);
+		for (unsigned int iAmbiCh = 0; iAmbiCh < m_hoaObjectDirectVec.size(); ++iAmbiCh)
+			std::fill(m_hoaObjectDiffuseVec[iAmbiCh].begin(), m_hoaObjectDiffuseVec[iAmbiCh].end(), 0.);
 	}
 
 	void CAdmRenderer::ClearObjectDirectBuffer()
 	{
 		for (unsigned int iCh = 0; iCh < m_nOutputChannels; ++iCh)
 			std::fill(m_speakerOutDirect[iCh].begin(), m_speakerOutDirect[iCh].end(),0.);
+		for (unsigned int iAmbiCh = 0; iAmbiCh < m_hoaObjectDirectVec.size(); ++iAmbiCh)
+			std::fill(m_hoaObjectDirectVec[iAmbiCh].begin(), m_hoaObjectDirectVec[iAmbiCh].end(), 0.);
 	}
 
 	void CAdmRenderer::ClearObjectDiffuseBuffer()

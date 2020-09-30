@@ -166,6 +166,41 @@ namespace admrender {
 			Channel{"M-90",PolarPosition{-90.,0.,1.},PolarPosition{-90.,0.,1.},false},
 			Channel{"M+135",PolarPosition{135.,0.,1.},PolarPosition{135.,0.,1.},false},
 			Channel{"M-135",PolarPosition{-135.,0.,1.},PolarPosition{-135.,0.,1.},false}}, true},
+		// First order Ambisonics (AmbiX). Directions are meaningless so all set to front
+		Layout{
+			"1OA",std::vector<Channel>{ Channel{"ACN0",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN1",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN2",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN3",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false}}, false},
+		// Second order Ambisonics (AmbiX). Directions are meaningless so all set to front
+		Layout{
+			"2OA",std::vector<Channel>{ Channel{"ACN0",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN1",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN2",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN3",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN4",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN5",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN6",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN7",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN8",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false}}, false},
+		// Third order Ambisonics (AmbiX). Directions are meaningless so all set to front
+		Layout{
+			"3OA",std::vector<Channel>{ Channel{"ACN0",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN1",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN2",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN3",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN4",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN5",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN6",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN7",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN8",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN9",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN10",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN11",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN12",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN13",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN14",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
+			Channel{"ACN15",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false}}, false},
 			};
 
 	/**

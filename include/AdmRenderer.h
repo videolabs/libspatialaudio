@@ -158,6 +158,10 @@ namespace admrender {
 		CAmbisonicBinauralizer m_hoaBinaural;
 		// Buffers to hold the HOA audio
 		CBFormat m_hoaAudioOut;
+		// Buffers to hold objects that are converted to HOA, both direct and diffuse
+		CBFormat m_hoaObjectDirect, m_hoaObjectDiffuse;
+		// Vector to pass the direct and diffuse HOA object data to the decorrelator
+		std::vector<std::vector<float>> m_hoaObjectDirectVec, m_hoaObjectDiffuseVec;
 		// Buffers holding the output signal
 		std::vector<std::vector<float>> m_speakerOut;
 		// Buffers to hold the direct object audio
