@@ -26,7 +26,6 @@ namespace admrender {
 		for (unsigned int iCh = 0; iCh < m_layout.channels.size(); ++iCh)
 			if (!m_layout.channels[iCh].isLFE)
 				m_nCh++;
-		m_gains.resize(m_nCh, 0.);
 	}
 
 	CAdmPointSourcePanner::~CAdmPointSourcePanner()
@@ -41,8 +40,9 @@ namespace admrender {
 
 		std::vector<double> gains(m_nCh);
 
-		if (!(metadata == m_metadata))
+		if (!(metadata == m_metadata) || m_gains.size() == 0)
 		{
+			m_gains.resize(m_nCh, 0.);
 			// Get the panning direction
 			PolarPosition direction;
 			if (metadata.cartesian)
