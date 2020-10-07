@@ -26,13 +26,13 @@ CAmbisonicZoomer::CAmbisonicZoomer()
     m_fZoom = 0;
 }
 
-bool CAmbisonicZoomer::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
+bool CAmbisonicZoomer::Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, unsigned nMisc)
 {
     bool success = CAmbisonicBase::Configure(nOrder, b3D, nMisc);
     if(!success)
         return false;
 
-    m_AmbDecoderFront.Configure(m_nOrder, 1, kAmblib_Mono, 1);
+    m_AmbDecoderFront.Configure(m_nOrder, 1, nBlockSize, kAmblib_Mono, 1);
 
     //Calculate all the speaker coefficients
     m_AmbDecoderFront.Refresh();
