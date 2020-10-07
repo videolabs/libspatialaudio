@@ -70,7 +70,7 @@ void CAmbisonicDecoder::Process(CBFormat* pBFSrc, unsigned nSamples, float** ppf
 {
     // If a preset is not loaded then use optimisation shelf filters
     if (!m_bPresetLoaded)
-        shelfFilters.Process(pBFSrc);
+        shelfFilters.Process(pBFSrc, nSamples);
 
     for(unsigned niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
     {

@@ -62,8 +62,15 @@ public:
         in the constructor and Configure() function. It is the responsibility of
         program using this library to handle the blocks of the signal by FIFO
         buffers or other means.
+
+        pBFSrc = the B-format audio to be rendered to binaural
+        ppfDst = the output destination
+        nSamples = the number of samples to be in the input output. Useful if
+        working with variable sizes of buffers. Must be less than the max size
+        set at Configure
     */
     void Process(CBFormat* pBFSrc, float** ppfDst);
+    void Process(CBFormat* pBFSrc, float** ppfDst, unsigned int nSamples);
 
 protected:
     CAmbisonicDecoder m_AmbDecoder;
