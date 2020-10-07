@@ -57,7 +57,7 @@ void CAmbisonicEncoder::Process(float* pfSrc, unsigned nSamples, CBFormat* pfDst
         // Number of samples expected per frame
         for (niChannel = 0; niChannel < m_nChannelCount; niChannel++)
         {
-            int nInterpSamples = (int)roundf(m_fInterpDur * nSamples);
+            unsigned int nInterpSamples = roundf(m_fInterpDur * nSamples);
             float deltaCoeff = (m_pfCoeff[niChannel] - m_pfCoeffOld[niChannel]) / ((float)nInterpSamples);
             for (niSample = 0; niSample < nInterpSamples; niSample++)
             {
