@@ -522,6 +522,9 @@ void CAmbisonicDecoder::CheckSpeakerSetUp()
 
         switch (GetSpeakerCount())
         {
+        case 1: // Mono speaker setup
+            m_nSpeakerSetUp = kAmblib_Mono;
+            break;
         case 2:
             for (int iSpeaker = 0; iSpeaker < 2; ++iSpeaker)
             {
@@ -589,6 +592,11 @@ void CAmbisonicDecoder::LoadDecoderPreset()
     int nAmbiComponents = OrderToComponents(m_nOrder, m_b3D);
     switch (m_nSpeakerSetUp)
     {
+    case kAmblib_Mono:
+        // Use the coefficients set based on the speaker position.
+        // Preset loaded
+        m_bPresetLoaded = true;
+        break;
     case kAmblib_Stereo:
         // Load the stereo decoder preset
         for (int iSpeaker = 0; iSpeaker < 2; ++iSpeaker)
