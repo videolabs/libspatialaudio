@@ -37,7 +37,7 @@ public:
         lost. The last argument is not used, it is just there to match with
         the base class's form. Returns true if successful.
     */
-    virtual bool Configure(unsigned nOrder, bool b3D, unsigned nMisc);
+    virtual bool Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, unsigned nMisc);
     /**
         Not implemented.
     */
