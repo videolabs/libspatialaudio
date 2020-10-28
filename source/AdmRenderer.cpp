@@ -97,6 +97,16 @@ namespace admrender {
 			break;
 		}
 
+		// Clear the vectors containing the HOA and panning objects so that if the renderer is
+		// reconfigured the mappings will be correct
+		m_hoaEncoders.clear();
+		m_pannerTrackInd.clear();
+		m_pointSourcePanners.clear();
+		m_objectMetadata.clear();
+		m_objectMetadataProc.clear();
+		m_channelToObjMap.clear();
+		m_lastObjPos.clear();
+
 		// Set up required processors based on channelInfo
 		unsigned int nObject = 0;
 		int iObj = 0;

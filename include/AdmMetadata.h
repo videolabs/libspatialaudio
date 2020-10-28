@@ -243,6 +243,10 @@ namespace admrender {
 		ObjectDivergence objectDivergence;
 		// Flag if cartesian position coordinates
 		bool cartesian = false;
+		// Extent parameters
+		double width = 0.0;
+		double height = 0.0;
+		double depth = 0.0;
 		// Jump position to determine how the gains are interpolated
 		JumpPosition jumpPosition;
 		// The track index of the object (starting from 0)
