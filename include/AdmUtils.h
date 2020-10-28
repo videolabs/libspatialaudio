@@ -68,6 +68,7 @@ namespace admrender {
 		Convert from polar to cartesian coordinates. See Rec. ITU-R BS.2127-0 pg 33 for conversions used.
 		0 az = front, +ve az = anti-clockwise
 		0 el = front, +ve el = up
+		Angles are expected in degrees.
 	*/
 	static inline std::vector<double> PolarToCartesian(std::vector<double> polar)
 	{
@@ -108,6 +109,10 @@ namespace admrender {
 			vecNorm += vec[i] * vec[i];
 		vecNorm = sqrt(vecNorm);
 		return vecNorm;
+	}
+	static inline double norm(CartesianPosition vec)
+	{
+		return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 	}
 	/**
 		Returns a rotation matrix for given yaw, pitch, roll (in degrees)
@@ -298,6 +303,21 @@ namespace admrender {
 		return ret;
 	}
 	/**
+		Multiply a matrix to a vector y = Ax;
+	*/
+	static inline std::vector<double> multiplyMatVec(std::vector<std::vector<double>> A, std::vector<double> x)
+	{
+		size_t rowsA = A.size();
+		size_t colsA = A[0].size();
+		std::vector<double> ret(rowsA, 0.);
+
+		for (size_t i = 0; i < rowsA; ++i)
+				for (size_t k = 0; k < colsA; ++k)
+					ret[i] += A[i][k] * x[k];
+
+		return ret;
+	}
+	/**
 		Calculate the inverse of a square matrix
 	*/
 	static inline std::vector<std::vector<double>> inverseMatrix(std::vector<std::vector<double>> mat)
@@ -395,4 +415,20 @@ namespace admrender {
 
 		return { diverged_positions, diverged_gains };
 	}
+	/**
+		Get the rotation matrix required to convert a point from one coordinate system to another.
+
+		See Rec. ITU-R BS.2127-0 sec. 6.8
+	*/
+	static inline std::vector<std::vector<double>> LocalCoordinateSystem(double azInDegrees, double elInDegrees)
+	{
+		std::vector<std::vector<double>> rotMat;
+		rotMat.resize(3);
+
+		rotMat[0] = PolarToCartesian(std::vector<double>{azInDegrees - 90., 0., 1.});
+		rotMat[1] = PolarToCartesian(std::vector<double>{azInDegrees, elInDegrees, 1.});
+		rotMat[2] = PolarToCartesian(std::vector<double>{azInDegrees, elInDegrees + 90., 1.});
+	
+		return rotMat;
+;	}
 }

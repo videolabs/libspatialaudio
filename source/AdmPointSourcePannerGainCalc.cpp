@@ -140,7 +140,12 @@ namespace admrender {
 
 	std::vector<double> CAdmPointSourcePannerGainCalc::CalculateGains(PolarPosition direction)
 	{
-		std::vector<double> gains = _CalculateGains(direction);
+		return CalculateGains(PolarToCartesian(direction));
+	}
+
+	std::vector<double> CAdmPointSourcePannerGainCalc::CalculateGains(CartesianPosition position)
+	{
+		std::vector<double> gains = _CalculateGains(position);
 		if (m_isStereo) // then downmix from 0+5+0 to 0+2+0
 		{
 			// See Rec. ITU-R BS.2127-0 6.1.2.4 (page 2.5) for downmix method 
@@ -168,16 +173,20 @@ namespace admrender {
 			return gains;
 	}
 
-	std::vector<double> CAdmPointSourcePannerGainCalc::_CalculateGains(PolarPosition direction)
+	unsigned int CAdmPointSourcePannerGainCalc::getNumChannels()
+	{
+		return m_isStereo ? 2 : (unsigned int)m_outputLayout.channels.size();
+	}
+
+	std::vector<double> CAdmPointSourcePannerGainCalc::_CalculateGains(CartesianPosition position)
 	{
 		double tol = 1e-6;
 		std::vector<double> gains(m_outputLayout.channels.size(), 0.);
 
 		// get the unit vector in the target direction
 		std::vector<double> directionUnitVec(3, 0.);
-		direction.distance = 1.;
-		CartesianPosition cartesianDirection = PolarToCartesian(direction);
-		directionUnitVec = { cartesianDirection.x, cartesianDirection.y,cartesianDirection.z };
+		double vecNorm = norm(position);
+		directionUnitVec = { position.x / vecNorm, position.y / vecNorm,position.z / vecNorm };
 
 		// Loop through all of the regions until one is found that is not zero gain
 		for (int iNgon = 0; iNgon < m_regions.virtualNgons.size(); ++iNgon)

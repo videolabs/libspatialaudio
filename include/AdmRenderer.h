@@ -23,6 +23,7 @@
 #include "AdmPointSourcePanner.h"
 #include "AdmDirectSpeakerGainCalc.h"
 #include "AdmDecorrelate.h"
+#include "PolarExtent.h"
 
 /*
 
@@ -34,10 +35,11 @@
 		- Set the output format to stereo, binaural, quad, 5.x and 7.x
 		- Apply decorrelation to Objects and apply compensation delay to the direct signal
 		- Handles exclusion zones, divergence, channel lock
+		- Handles extent panning for loudspeaker output
 
 	TODO FOR MORE ADVANCED FUNCTIONALITY
 		- Handle Matrix types (need samples to be able to test)
-		- Handle spread panning (extent)
+		- Handle extent panning for binaural output
 		- Handle screenLock
 		- Add Cartesian processing path. Currently convert positions of objects to polar and uses polar processing.
 

@@ -20,7 +20,7 @@
 namespace admrender {
 
 	CAdmPointSourcePanner::CAdmPointSourcePanner(Layout targetLayout) : m_gainCalculator(getLayoutWithoutLFE(targetLayout)),
-		channelLockHandler(targetLayout), zoneExclusionHandler(targetLayout)
+		channelLockHandler(targetLayout), zoneExclusionHandler(targetLayout), m_extentPanner(m_gainCalculator)
 	{
 		m_layout = targetLayout;
 		m_nCh = 0;
@@ -71,7 +71,7 @@ namespace admrender {
 			// Calculate the new gains to be applied
 			std::vector<std::vector<double>> gains_for_each_pos(nDivergedGains);
 			for (unsigned int iGain = 0; iGain < nDivergedGains; ++iGain)
-				gains_for_each_pos[iGain] = m_gainCalculator.CalculateGains(diverged_positions[iGain]);
+				gains_for_each_pos[iGain] = m_extentPanner.handle(PolarToCartesian(diverged_positions[iGain]), metadata.width, metadata.height, metadata.depth);
 
 			// Power summation of the gains
 			for (int i = 0; i < (int)m_nCh; ++i)

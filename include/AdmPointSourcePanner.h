@@ -18,6 +18,7 @@
 #include "AdmLayouts.h"
 #include "AdmUtils.h"
 #include "AdmPointSourcePannerGainCalc.h"
+#include "PolarExtent.h"
 
 namespace admrender {
 
@@ -51,6 +52,7 @@ namespace admrender {
 		bool m_bFirstFrame = true;
 		// The gain calculator
 		CAdmPointSourcePannerGainCalc m_gainCalculator;
+		CPolarExtentHandler m_extentPanner;
 
 		// The previously set metadata
 		ObjectMetadata m_metadata;
