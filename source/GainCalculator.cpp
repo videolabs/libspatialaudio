@@ -234,10 +234,13 @@ namespace admrender {
 
 	//===================================================================================================================================
 	CGainCalculator::CGainCalculator(Layout outputLayoutNoLFE) : m_pspGainCalculator(getLayoutWithoutLFE(outputLayoutNoLFE)),
-		channelLockHandler(outputLayoutNoLFE), zoneExclusionHandler(outputLayoutNoLFE), m_extentPanner(m_pspGainCalculator), m_ambiExtentPanner(outputLayoutNoLFE.hoaOrder)
+		channelLockHandler(getLayoutWithoutLFE(outputLayoutNoLFE)), zoneExclusionHandler(getLayoutWithoutLFE(outputLayoutNoLFE)),
+		m_extentPanner(m_pspGainCalculator), m_ambiExtentPanner(outputLayoutNoLFE.hoaOrder),
+		m_screenScale(outputLayoutNoLFE.reproductionScreen, getLayoutWithoutLFE(outputLayoutNoLFE)),
+		m_screenEdgeLock(outputLayoutNoLFE.reproductionScreen, getLayoutWithoutLFE(outputLayoutNoLFE))
 	{
-		m_outputLayout = outputLayoutNoLFE;
-		m_nCh = (unsigned int)outputLayoutNoLFE.channels.size();
+		m_outputLayout = getLayoutWithoutLFE(outputLayoutNoLFE);
+		m_nCh = (unsigned int)m_outputLayout.channels.size();
 	}
 
 	CGainCalculator::~CGainCalculator()
@@ -253,7 +256,10 @@ namespace admrender {
 
 		CartesianPosition position = PolarToCartesian(metadata.polarPosition);
 
-		// TODO: Apply screenEdgeLock and screenScaling
+		// Apply screen scaling
+		position = m_screenScale.handle(position, metadata.screenRef, metadata.referenceScreen, metadata.cartesian);
+		// Apply screen edge lock
+		position = m_screenEdgeLock.HandleVector(position, metadata.screenEdgeLock, metadata.cartesian);
 
 		// Apply channelLock to modify the position of the source, if required
 		position = channelLockHandler.handle(metadata.channelLock, position);

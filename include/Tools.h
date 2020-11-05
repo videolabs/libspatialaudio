@@ -14,14 +14,14 @@
 
 #pragma once
 
-//#include "AdmMetadata.h"
-#include "LoudspeakerLayouts.h"
-
 #define _USE_MATH_DEFINES
 #include<math.h>
 #include<numeric>
 #include<algorithm>
 #include <iostream>
+#include <vector>
+
+#include "Coordinates.h"
 
 #define DEG2RAD M_PI/180.
 #define RAD2DEG 180./M_PI
@@ -392,9 +392,28 @@ static inline std::vector<std::vector<double>> LocalCoordinateSystem(double azIn
 	return rotMat;
 }
 /**
-	
+	Clamp a value between a minimum and a maximum
 */
 static inline double clamp(double val, double minVal, double maxVal)
 {
 	return std::min(maxVal, std::max(val, minVal));
+}
+/**
+	Apply piecewise linear interpolation to a value
+	The size of fromVals and toVals must match.
+	The elements of fromVals should be ascending order.
+	If the input val is outside the range defined in fromVals then it is returned unchanged
+*/
+static inline double interp(double val, std::vector<double> fromVals, std::vector<double> toVals)
+{
+	int nPieces = (int)fromVals.size();
+	for(int iPiece = 0; iPiece < nPieces-1; ++iPiece)
+		if (val >= fromVals[iPiece] && val < fromVals[iPiece + 1])
+		{
+			double rangeFrom = fromVals[iPiece + 1] - fromVals[iPiece];
+			double rangeTo = toVals[iPiece + 1] - toVals[iPiece];
+			return (val - fromVals[iPiece]) / rangeFrom * rangeTo + toVals[iPiece];
+		}
+
+	return val;
 }

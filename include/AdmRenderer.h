@@ -38,14 +38,11 @@
 		- Apply decorrelation to Objects and apply compensation delay to the direct signal
 		- Handles exclusion zones, divergence, channel lock
 		- Handles extent panning for both loudspeaker and binaural output
+		- Handle screen scaling and screen edge lock
 
 	TODO FOR MORE ADVANCED FUNCTIONALITY
 		- Handle Matrix types (need samples to be able to test)
-		- Handle screenLock
 		- Add Cartesian processing path. Currently convert positions of objects to polar and uses polar processing.
-
-	TODO FOR BETTER ITU COMPLIANCE:
-		- Allow more output speaker formats
 
 */
 
@@ -84,10 +81,11 @@ namespace admrender {
 					nSamples - the maximum number of samples expected in a frame
 					StreamInformation - structure containing the types of each track in the stream
 					HRTFPath - path to the SOFA file used for binaural rendering
+					reproductionScreen - the reproduction screen used on the playback side. If none or unknown then leave blank. Vector should be of size = 1 (i.e. only one screen)
 
 			Returns true if everything is configured correctly. Otherwise, returns false.
 		*/
-		bool Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath = "");
+		bool Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath = "", std::vector<Screen> reproductionScreen = std::vector<Screen>{});
 
 		/**
 			Add an audio Object to be rendered

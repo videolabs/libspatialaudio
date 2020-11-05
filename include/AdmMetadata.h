@@ -18,6 +18,7 @@
 #include <string>
 #include <map>
 #include "Coordinates.h"
+#include "ScreenCommon.h"
 
 namespace admrender {
 
@@ -172,21 +173,6 @@ namespace admrender {
 			&& lhs.minElevation == rhs.minElevation && lhs.maxElevation == rhs.maxElevation;
 	}
 
-	struct Screen {
-		// Flag if the screen is cartesian. Only one set of properties is used depending on this flag so make sure they match
-		bool isCartesianScreen = false;
-
-		// Polar screen properties
-		float aspectRatio;
-		PolarPosition centrePosition;
-		float widthAzimuth;
-
-		// Cartesian screen properties
-		float aspectRatio;
-		CartesianPosition centrePosition;
-		float widthX;
-	};
-
 	// Metadata for different objects. See Rec. ITU-R BS.2127-0 page 86.
 
 	// The metadata for ObjectType
@@ -213,10 +199,14 @@ namespace admrender {
 		// The track index of the object (starting from 0)
 		unsigned int trackInd = 0;
 		std::vector<PolarExclusionZone> zoneExclusionPolar;
+		// Screen reference for screen scaling
+		bool screenRef = false;
 		// Screen lock
 		ScreenEdgeLock screenEdgeLock;
 		// The length of the block in samples
 		unsigned int blockLength = 0;
+		// The reference screen
+		std::vector<Screen> referenceScreen;
 	};
 	inline bool operator==(const ObjectMetadata& lhs, const ObjectMetadata& rhs)
 	{
@@ -226,7 +216,8 @@ namespace admrender {
 			&& lhs.width == rhs.width && lhs.height == rhs.height && lhs.depth == rhs.depth
 			&& lhs.cartesian == rhs.cartesian && lhs.jumpPosition == rhs.jumpPosition
 			&& lhs.trackInd == rhs.trackInd && lhs.zoneExclusionPolar == rhs.zoneExclusionPolar
-			&& lhs.screenEdgeLock == rhs.screenEdgeLock;
+			&& lhs.screenEdgeLock == rhs.screenEdgeLock && lhs.screenRef == rhs.screenRef
+			&& lhs.blockLength == rhs.blockLength;
 	}
 
 	// The metadata for HoaType
@@ -259,6 +250,8 @@ namespace admrender {
 		std::vector<std::string> audioPackFormatID;
 		// Channel frequency information
 		Frequency channelFrequency;
+		// Screen edge lock
+		ScreenEdgeLock screenEdgeLock;
 	};
 	inline bool operator==(const DirectSpeakerMetadata& lhs, const DirectSpeakerMetadata& rhs)
 	{

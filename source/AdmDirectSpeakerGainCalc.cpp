@@ -20,10 +20,10 @@ namespace admrender {
 
 	//===================================================================================================================================
 	CAdmDirectSpeakersGainCalc::CAdmDirectSpeakersGainCalc(Layout layoutWithLFE)
-		: m_pointSourcePannerGainCalc(getLayoutWithoutLFE(layoutWithLFE))
+		: m_pointSourcePannerGainCalc(getLayoutWithoutLFE(layoutWithLFE)), m_screenEdgeLock(layoutWithLFE.reproductionScreen, layoutWithLFE)
 	{
 		m_layout = layoutWithLFE;
-		m_nCh = (unsigned int) m_layout.channels.size();
+		m_nCh = (unsigned int)m_layout.channels.size();
 	}
 
 	CAdmDirectSpeakersGainCalc::~CAdmDirectSpeakersGainCalc()
@@ -161,9 +161,15 @@ namespace admrender {
 			return gains;
 		}
 
-		// TODO: Implement screenLock
-
 		DirectSpeakerPolarPosition direction = metadata.polarPosition;
+
+		// Screen edge locking
+		CartesianPosition position = PolarToCartesian(PolarPosition{ direction.azimuth,direction.elevation,direction.distance });
+		position = m_screenEdgeLock.HandleVector(position, metadata.screenEdgeLock);
+		PolarPosition polarPosition = CartesianToPolar(position);
+		direction.azimuth = polarPosition.azimuth;
+		direction.elevation = polarPosition.elevation;
+		direction.distance = polarPosition.distance;
 
 		// Check for speakers within bounds
 		double tol = 1e-5;

@@ -26,7 +26,7 @@ namespace admrender {
 	{
 	}
 
-	bool CAdmRenderer::Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath)
+	bool CAdmRenderer::Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath, std::vector<Screen> reproductionScreen)
 	{
 		// Set the output layout
 		m_RenderLayout = outputTarget;
@@ -71,7 +71,7 @@ namespace admrender {
 		case OutputLayout::SevenPointZero:
 			ambiLayout = kAmblib_70;
 			m_outputLayout = GetMatchingLayout("0+7+0");
-			m_outputLayout.hasLFE;
+			m_outputLayout.hasLFE = false;
 			break;
 		case OutputLayout::Binaural:
 			ambiLayout = kAmblib_Dodecahedron;
@@ -90,6 +90,9 @@ namespace admrender {
 		default:
 			break;
 		}
+
+		if (reproductionScreen.size() > 0)
+			m_outputLayout.reproductionScreen = reproductionScreen;
 
 		// Clear the vectors containing the HOA and panning objects so that if the renderer is
 		// reconfigured the mappings will be correct
