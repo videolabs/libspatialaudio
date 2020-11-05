@@ -20,6 +20,7 @@
 #include <map>
 #include <sstream>
 #include "Coordinates.h"
+#include "ScreenCommon.h"
 
 // Information about a speaker channel (as opposed to an audio channel, which could be Object, HOA, etc.)
 struct Channel
@@ -42,6 +43,8 @@ public:
 
 	bool isHoa = false;
 	unsigned int hoaOrder = 0;
+
+	std::vector<Screen> reproductionScreen = {};
 
 	/*
 		If the channel name matches one of the channels in the Layout then return

@@ -57,6 +57,8 @@ list(APPEND headers
     include/PointSourcePannerGainCalc.h
     include/PolarExtent.h
     include/RegionHandlers.h
+    include/Screen.h
+    include/ScreenCommon.h
     include/SpeakersBinauralizer.h
     include/Tools.h
     source/kiss_fft/kiss_fft.h
@@ -92,6 +94,7 @@ list(APPEND sources
     source/PointSourcePannerGainCalc.cpp
     source/PolarExtent.cpp
     source/RegionHandlers.cpp
+    source/Screen.cpp
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")

@@ -17,6 +17,7 @@
 #include "AdmMetadata.h"
 #include "PolarExtent.h"
 #include "AmbisonicEncoder.h"
+#include "Screen.h"
 
 namespace admrender {
 
@@ -77,6 +78,9 @@ namespace admrender {
 		CPointSourcePannerGainCalc m_pspGainCalculator;
 		CPolarExtentHandler m_extentPanner;
 		CAmbisonicPolarExtentHandler m_ambiExtentPanner;
+
+		CScreenScaleHandler m_screenScale;
+		CScreenEdgeLock m_screenEdgeLock;
 
 		ChannelLockHandler channelLockHandler;
 		ZoneExclusionHandler zoneExclusionHandler;

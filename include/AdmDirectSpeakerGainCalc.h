@@ -19,6 +19,7 @@
 #include "Tools.h"
 #include "AdmMappingRules.h"
 #include "PointSourcePannerGainCalc.h"
+#include "Screen.h"
 
 namespace admrender {
 
@@ -40,6 +41,8 @@ namespace admrender {
 		unsigned int m_nCh = 0;
 		Layout m_layout;
 		CPointSourcePannerGainCalc m_pointSourcePannerGainCalc;
+
+		CScreenEdgeLock m_screenEdgeLock;
 
 		bool isLFE(DirectSpeakerMetadata metadata);
 

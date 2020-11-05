@@ -34,3 +34,11 @@ inline bool operator==(const CartesianPosition& lhs, const CartesianPosition& rh
 {
 	return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
 }
+inline CartesianPosition operator+(const CartesianPosition& lhs, const CartesianPosition& rhs)
+{
+	return CartesianPosition{ lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z };
+}
+inline CartesianPosition operator-(const CartesianPosition& lhs, const CartesianPosition& rhs)
+{
+	return CartesianPosition{ lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z };
+}
