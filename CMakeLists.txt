@@ -18,6 +18,7 @@ option(BUILD_STATIC_LIBS "Build static library" ON)
 include(GNUInstallDirs)
 
 list(APPEND headers
+    include/AdmConversions.h
     include/AdmDirectSpeakerGainCalc.h
     include/AdmMappingRules.h
     include/AdmMetadata.h

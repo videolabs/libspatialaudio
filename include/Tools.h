@@ -289,11 +289,28 @@ static inline std::vector<double> multiplyMatVec(std::vector<std::vector<double>
 	return ret;
 }
 /**
+	Calculate the inverse of a square matrix of size 2x2
+*/
+static inline std::vector<std::vector<double>> inverseMatrix2x2(std::vector<std::vector<double>> mat)
+{
+	double a = mat[0][0];
+	double b = mat[0][1];
+	double c = mat[1][0];
+	double d = mat[1][1];
+	double det = a * d - b * c;
+
+	return { {d / det, -b / det},{-c / det, a / det} };
+}
+/**
 	Calculate the inverse of a square matrix
 */
 static inline std::vector<std::vector<double>> inverseMatrix(std::vector<std::vector<double>> mat)
 {
 	size_t matSize = mat.size();
+
+	if (matSize == 2)
+		return inverseMatrix2x2(mat);
+
 	std::vector<std::vector<double>> inverseMat(matSize, std::vector<double>(matSize, 0.));
 
 	// Calculate the inverse of the matrix holding the unit vectors
