@@ -156,6 +156,11 @@ float CAmbisonicSource::GetCoefficient(unsigned nChannel)
     return m_pfCoeff[nChannel];
 }
 
+std::vector<float> CAmbisonicSource::GetCoefficients()
+{
+    return m_pfCoeff;
+}
+
 void CAmbisonicSource::SetGain(float fGain)
 {
     m_fGain = fGain;

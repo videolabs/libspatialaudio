@@ -76,6 +76,10 @@ public:
     */
     virtual float GetCoefficient(unsigned nChannel);
     /**
+        Get the vector of coefficients
+    */
+    virtual std::vector<float> GetCoefficients();
+    /**
         Sets the source's gain.
     */
     virtual void SetGain(float fGain);

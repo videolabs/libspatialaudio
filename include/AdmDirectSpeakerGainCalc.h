@@ -15,10 +15,10 @@
 #pragma once
 
 #include "AdmMetadata.h"
-#include "AdmLayouts.h"
-#include "AdmUtils.h"
+#include "LoudspeakerLayouts.h"
+#include "Tools.h"
 #include "AdmMappingRules.h"
-#include "AdmPointSourcePannerGainCalc.h"
+#include "PointSourcePannerGainCalc.h"
 
 namespace admrender {
 
@@ -39,7 +39,7 @@ namespace admrender {
 	private:
 		unsigned int m_nCh = 0;
 		Layout m_layout;
-		CAdmPointSourcePannerGainCalc m_pointSourcePannerGainCalc;
+		CPointSourcePannerGainCalc m_pointSourcePannerGainCalc;
 
 		bool isLFE(DirectSpeakerMetadata metadata);
 
@@ -53,6 +53,6 @@ namespace admrender {
 			Determine if a given mapping rule applies for input layout, speaker label and output layout.
 			See Rec. ITU-R BS.2127-0 sec 8.4
 		*/
-		bool MappingRuleApplies(const MappingRule& rule, const std::string& input_layout, const std::string& speakerLabel, admrender::Layout& output_layout);
+		bool MappingRuleApplies(const MappingRule& rule, const std::string& input_layout, const std::string& speakerLabel, Layout& output_layout);
 	};
 }

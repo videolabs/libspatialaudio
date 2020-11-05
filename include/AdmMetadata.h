@@ -16,8 +16,8 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
 #include <map>
+#include "Coordinates.h"
 
 namespace admrender {
 
@@ -28,18 +28,6 @@ namespace admrender {
 		Matrix,
 		Objects,
 		HOA,
-		Binaural
-	};
-
-	// The different output layouts supported by this class
-	enum class OutputLayout
-	{
-		Stereo = 1,
-		Quad,
-		FivePointOne,
-		FivePointZero,
-		SevenPointOne,
-		SevenPointZero,
 		Binaural
 	};
 
@@ -101,16 +89,6 @@ namespace admrender {
 			&& lhs.minElevation == rhs.minElevation && lhs.maxElevation == rhs.maxElevation
 			&& lhs.minDistance == rhs.minDistance && lhs.maxDistance == rhs.maxDistance;
 	}
-	struct PolarPosition
-	{
-		double azimuth = 0.0;
-		double elevation = 0.0;
-		double distance = 1.f;
-	};
-	inline bool operator==(const PolarPosition& lhs, const PolarPosition& rhs)
-	{
-		return lhs.azimuth == rhs.azimuth && lhs.elevation == rhs.elevation && lhs.distance == rhs.distance;
-	}
 	struct CartesianBounds
 	{
 		double minX;
@@ -126,16 +104,7 @@ namespace admrender {
 			&& lhs.minY == rhs.minY && lhs.maxY == rhs.maxY
 			&& lhs.minZ == rhs.minZ && lhs.maxZ == rhs.maxZ;
 	}
-	struct CartesianPosition
-	{
-		double x = 1.0;
-		double y = 0.0;
-		double z = 0.0;
-	};
-	inline bool operator==(const CartesianPosition& lhs, const CartesianPosition& rhs)
-	{
-		return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
-	}
+
 	struct JumpPosition
 	{
 		bool flag = false;
@@ -203,28 +172,20 @@ namespace admrender {
 			&& lhs.minElevation == rhs.minElevation && lhs.maxElevation == rhs.maxElevation;
 	}
 
-	struct Screen { };
+	struct Screen {
+		// Flag if the screen is cartesian. Only one set of properties is used depending on this flag so make sure they match
+		bool isCartesianScreen = false;
 
-	struct PolarScreen : Screen {
+		// Polar screen properties
 		float aspectRatio;
 		PolarPosition centrePosition;
 		float widthAzimuth;
-	};
-	inline bool operator==(const PolarScreen& lhs, const PolarScreen& rhs)
-	{
-		return lhs.aspectRatio == rhs.aspectRatio && lhs.centrePosition == rhs.centrePosition
-			&& lhs.widthAzimuth == rhs.widthAzimuth;
-	}
-	struct CartesianScreen : Screen {
+
+		// Cartesian screen properties
 		float aspectRatio;
 		CartesianPosition centrePosition;
 		float widthX;
 	};
-	inline bool operator==(const CartesianScreen& lhs, const CartesianScreen& rhs)
-	{
-		return lhs.aspectRatio == rhs.aspectRatio && lhs.centrePosition == rhs.centrePosition
-			&& lhs.widthX == rhs.widthX;
-	}
 
 	// Metadata for different objects. See Rec. ITU-R BS.2127-0 page 86.
 
@@ -254,12 +215,15 @@ namespace admrender {
 		std::vector<PolarExclusionZone> zoneExclusionPolar;
 		// Screen lock
 		ScreenEdgeLock screenEdgeLock;
+		// The length of the block in samples
+		unsigned int blockLength = 0;
 	};
 	inline bool operator==(const ObjectMetadata& lhs, const ObjectMetadata& rhs)
 	{
 		return lhs.polarPosition == rhs.polarPosition && lhs.cartesianPosition == rhs.cartesianPosition
 			&& lhs.gain == rhs.gain && lhs.diffuse == rhs.diffuse
 			&& lhs.channelLock == rhs.channelLock && lhs.objectDivergence == rhs.objectDivergence
+			&& lhs.width == rhs.width && lhs.height == rhs.height && lhs.depth == rhs.depth
 			&& lhs.cartesian == rhs.cartesian && lhs.jumpPosition == rhs.jumpPosition
 			&& lhs.trackInd == rhs.trackInd && lhs.zoneExclusionPolar == rhs.zoneExclusionPolar
 			&& lhs.screenEdgeLock == rhs.screenEdgeLock;

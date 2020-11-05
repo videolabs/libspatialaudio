@@ -18,45 +18,48 @@ option(BUILD_STATIC_LIBS "Build static library" ON)
 include(GNUInstallDirs)
 
 list(APPEND headers
-    include/AmbisonicBase.h
-    include/AmbisonicDecoderPresets.h
-    include/AmbisonicProcessor.h
-    include/AmbisonicSpeaker.h
-    include/AmbisonicBinauralizer.h
-    include/AmbisonicEncoderDist.h
-    include/AmbisonicPsychoacousticFilters.h
-    include/AmbisonicShelfFilters.h
-    include/AmbisonicTypesDefinesCommons.h
-    include/SpeakersBinauralizer.h
-    include/AmbisonicCommons.h
-    include/AmbisonicEncoder.h
-    include/Ambisonics.h
-    include/AmbisonicZoomer.h
-    include/mit_hrtf_filter.h
-    include/AmbisonicDecoder.h
-    include/AmbisonicMicrophone.h
-    include/AmbisonicSource.h
-    include/AdmDecorrelate.h
     include/AdmDirectSpeakerGainCalc.h
-    include/AdmLayouts.h
     include/AdmMappingRules.h
     include/AdmMetadata.h
-    include/AdmPointSourcePanner.h
-    include/AdmPointSourcePannerGainCalc.h
-    include/AdmRegionHandlers.h
     include/AdmRenderer.h
-    include/AdmUtils.h
+    include/AmbisonicBase.h
+    include/AmbisonicBinauralizer.h
+    include/AmbisonicCommons.h
+    include/AmbisonicDecoder.h
+    include/AmbisonicDecoderPresets.h
+    include/AmbisonicEncoderDist.h
+    include/AmbisonicEncoder.h
+    include/AmbisonicMicrophone.h
+    include/AmbisonicProcessor.h
+    include/AmbisonicPsychoacousticFilters.h
+    include/Ambisonics.h
+    include/AmbisonicShelfFilters.h
+    include/AmbisonicSource.h
+    include/AmbisonicSpeaker.h
+    include/AmbisonicTypesDefinesCommons.h
+    include/AmbisonicZoomer.h
     include/BFormat.h
-    include/mit_hrtf_lib.h
+    include/Coordinates.h
+    include/Decorrelate.h
+    include/GainCalculator.h
+    include/GainInterp.h
     include/hrtf/hrtf.h
     include/hrtf/mit_hrtf.h
     include/hrtf/sofa_hrtf.h
+    include/LoudspeakerLayouts.h
+    include/mit_hrtf_filter.h
+    include/mit_hrtf_lib.h
     include/normal/mit_hrtf_normal_44100.h
     include/normal/mit_hrtf_normal_48000.h
     include/normal/mit_hrtf_normal_88200.h
     include/normal/mit_hrtf_normal_96000.h
-    source/kiss_fft/kiss_fftr.h
+    include/PointSourcePannerGainCalc.h
+    include/PolarExtent.h
+    include/RegionHandlers.h
+    include/SpeakersBinauralizer.h
+    include/Tools.h
     source/kiss_fft/kiss_fft.h
+    source/kiss_fft/kiss_fftr.h
 )
 
 list(APPEND sources
@@ -79,12 +82,15 @@ list(APPEND sources
     source/AmbisonicSpeaker.cpp
     source/AmbisonicEncoderDist.cpp
     source/AmbisonicZoomer.cpp
-    source/AdmDecorrelate.cpp
+    source/Decorrelate.cpp
     source/AdmDirectSpeakerGainCalc.cpp
-    source/AdmPointSourcePanner.cpp
-    source/AdmPointSourcePannerGainCalc.cpp
-    source/AdmRegionHandlers.cpp
     source/AdmRenderer.cpp
+    source/Decorrelate.cpp
+    source/GainCalculator.cpp
+    source/GainInterp.cpp
+    source/PointSourcePannerGainCalc.cpp
+    source/PolarExtent.cpp
+    source/RegionHandlers.cpp
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")

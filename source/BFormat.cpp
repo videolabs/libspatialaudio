@@ -68,7 +68,7 @@ void CBFormat::AddStream(float* pfData, unsigned nChannel, unsigned nSamples, un
 
     for (niSample = 0; niSample < nSamples; niSample++)
     {
-        m_ppfChannels[nChannel][niSample] += pfData[niSample];
+        m_ppfChannels[nChannel][niSample + nOffset] += pfData[niSample];
     }
 }
 
