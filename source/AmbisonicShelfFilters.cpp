@@ -64,10 +64,10 @@ bool CAmbisonicShelfFilters::Configure(unsigned nOrder, bool b3D, unsigned nBloc
     m_nTaps = nbTaps;
 
     //What will the overlap size be?
-    m_nOverlapLength = m_nBlockSize < m_nTaps ? m_nBlockSize - 1 : m_nTaps - 1;
+    m_nOverlapLength = m_nTaps - 1;
     //How large does the FFT need to be
     m_nFFTSize = 1;
-    while(m_nFFTSize < (m_nBlockSize + m_nTaps + m_nOverlapLength))
+    while(m_nFFTSize < (m_nBlockSize + m_nTaps - 1))
         m_nFFTSize <<= 1;
     //How many bins is that
     m_nFFTBins = m_nFFTSize / 2 + 1;
@@ -176,10 +176,25 @@ void CAmbisonicShelfFilters::Process(CBFormat* pBFSrcDst, unsigned int nSamples)
         for (unsigned ni = 0; ni < m_nFFTSize; ni++)
             m_pfScratchBufferA[ni] *= m_fFFTScaler;
         memcpy(pBFSrcDst->m_ppfChannels[niChannel], m_pfScratchBufferA, nSamples * sizeof(float));
-        for (unsigned ni = 0; ni < m_nOverlapLength; ni++)
+        unsigned int nOverlapOut = std::min(nSamples, m_nOverlapLength);
+        for (unsigned ni = 0; ni < nOverlapOut; ni++)
         {
             pBFSrcDst->m_ppfChannels[niChannel][ni] += m_pfOverlap[niChannel][ni];
         }
-        memcpy(m_pfOverlap[niChannel], &m_pfScratchBufferA[nSamples], m_nOverlapLength * sizeof(float));
+        int nOverlapRetain = m_nOverlapLength - nOverlapOut;
+        if (nOverlapRetain > 0)
+        {
+            memcpy(m_pfOverlap[niChannel], &m_pfOverlap[niChannel][nOverlapOut], nOverlapRetain * sizeof(float));
+            // clear the rest of the overlap buffer
+            memset(&m_pfOverlap[niChannel][nOverlapRetain], 0, nOverlapOut * sizeof(float));
+            // Add the new overlap to the old buffer
+            for (unsigned ni = 0; ni < m_nOverlapLength; ni++) {
+                m_pfOverlap[niChannel][ni] += m_pfScratchBufferA[nSamples + ni];
+            }
+        }
+        else
+        {
+            memcpy(m_pfOverlap[niChannel], &m_pfScratchBufferA[nSamples], m_nOverlapLength * sizeof(float));
+        }
     }
 }

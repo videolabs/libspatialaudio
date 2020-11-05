@@ -58,10 +58,10 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
     m_nBlockSize = nBlockSize;
 
     //What will the overlap size be?
-    m_nOverlapLength = m_nBlockSize < m_nTaps ? m_nBlockSize - 1 : m_nTaps - 1;
+    m_nOverlapLength = m_nTaps - 1;
     //How large does the FFT need to be
     m_nFFTSize = 1;
-    while(m_nFFTSize < (m_nBlockSize + m_nTaps + m_nOverlapLength))
+    while(m_nFFTSize < (m_nBlockSize + m_nTaps - 1))
         m_nFFTSize <<= 1;
     //How many bins is that
     m_nFFTBins = m_nFFTSize / 2 + 1;
@@ -241,6 +241,7 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
         memset(m_pfScratchBufferC.data(), 0, m_nFFTSize * sizeof(float));
         for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
         {
+
             memcpy(m_pfScratchBufferB.data(), pBFSrc->m_ppfChannels[niChannel], nSamples * sizeof(float));
             memset(&m_pfScratchBufferB[nSamples], 0, (m_nFFTSize - nSamples) * sizeof(float));
             kiss_fftr(m_pFFT_cfg.get(), m_pfScratchBufferB.data(), m_pcpScratch.get());
@@ -255,7 +256,6 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
             kiss_fftri(m_pIFFT_cfg.get(), m_pcpScratch.get(), m_pfScratchBufferB.data());
             for(ni = 0; ni < m_nFFTSize; ni++)
                 m_pfScratchBufferA[ni] += m_pfScratchBufferB[ni];
-
             for(ni = 0; ni < m_nFFTSize; ni++){
                 // Subtract certain channels (such as Y) to generate right ear.
                 if((niChannel==1) || (niChannel==4) || (niChannel==5) ||
@@ -274,12 +274,30 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
         }
         memcpy(ppfDst[0], m_pfScratchBufferA.data(), nSamples * sizeof(float));
         memcpy(ppfDst[1], m_pfScratchBufferC.data(), nSamples * sizeof(float));
-        for(ni = 0; ni < m_nOverlapLength; ni++){
+        unsigned int nOverlapOut = std::min(nSamples, m_nOverlapLength);
+        for(ni = 0; ni < nOverlapOut; ni++){
             ppfDst[0][ni] += m_pfOverlap[0][ni];
             ppfDst[1][ni] += m_pfOverlap[1][ni];
         }
-        memcpy(m_pfOverlap[0].data(), &m_pfScratchBufferA[nSamples], m_nOverlapLength * sizeof(float));
-        memcpy(m_pfOverlap[1].data(), &m_pfScratchBufferC[nSamples], m_nOverlapLength * sizeof(float));
+        int nOverlapRetain = m_nOverlapLength - nOverlapOut;
+        if (nOverlapRetain > 0)
+        {
+            memcpy(m_pfOverlap[0].data(), &m_pfOverlap[0][nOverlapOut], nOverlapRetain * sizeof(float));
+            memcpy(m_pfOverlap[1].data(), &m_pfOverlap[1][nOverlapOut], nOverlapRetain * sizeof(float));
+            // clear the rest of the overlap buffer
+            memset(&m_pfOverlap[0][nOverlapRetain], 0, nOverlapOut * sizeof(float));
+            memset(&m_pfOverlap[1][nOverlapRetain], 0, nOverlapOut * sizeof(float));
+            // Add the new overlap to the old buffer
+            for (ni = 0; ni < m_nOverlapLength; ni++) {
+                m_pfOverlap[0][ni] += m_pfScratchBufferA[nSamples + ni];
+                m_pfOverlap[1][ni] += m_pfScratchBufferC[nSamples + ni];
+            }
+        }
+        else
+        {
+            memcpy(m_pfOverlap[0].data(), &m_pfScratchBufferA[nSamples], m_nOverlapLength * sizeof(float));
+            memcpy(m_pfOverlap[1].data(), &m_pfScratchBufferC[nSamples], m_nOverlapLength * sizeof(float));
+        }
     }
     else
     {
@@ -308,9 +326,26 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
             for(ni = 0; ni < m_nFFTSize; ni++)
                 m_pfScratchBufferA[ni] *= m_fFFTScaler;
             memcpy(ppfDst[niEar], m_pfScratchBufferA.data(), nSamples * sizeof(float));
-            for(ni = 0; ni < m_nOverlapLength; ni++)
+            unsigned int nOverlapOut = std::min(nSamples, m_nOverlapLength);
+            for (ni = 0; ni < nOverlapOut; ni++)
+            {
                 ppfDst[niEar][ni] += m_pfOverlap[niEar][ni];
-            memcpy(m_pfOverlap[niEar].data(), &m_pfScratchBufferA[nSamples], m_nOverlapLength * sizeof(float));
+            }
+            int nOverlapRetain = m_nOverlapLength - nOverlapOut;
+            if (nOverlapRetain > 0)
+            {
+                memcpy(m_pfOverlap[niEar].data(), &m_pfOverlap[niEar][nOverlapOut], nOverlapRetain * sizeof(float));
+                // clear the rest of the overlap buffer
+                memset(&m_pfOverlap[niEar][nOverlapRetain], 0, nOverlapOut * sizeof(float));
+                // Add the new overlap to the old buffer
+                for (ni = 0; ni < m_nOverlapLength; ni++) {
+                    m_pfOverlap[niEar][ni] += m_pfScratchBufferA[nSamples + ni];
+                }
+            }
+            else
+            {
+                memcpy(m_pfOverlap[niEar].data(), &m_pfScratchBufferA[nSamples], m_nOverlapLength * sizeof(float));
+            }
         }
     }
 }
