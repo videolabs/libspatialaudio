@@ -24,7 +24,7 @@ CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(Layout layout)
 		return;
 
 	// Store the output layout
-	m_outputLayout = layout;
+	m_outputLayout = getLayoutWithoutLFE(layout);
 	std::string layoutName = m_outputLayout.name;
 
 	// Check that the loudspeaker layout is supported
