@@ -171,18 +171,7 @@ namespace admrender {
 		direction.elevation = polarPosition.elevation;
 		direction.distance = polarPosition.distance;
 
-		// Check for speakers within bounds
-		double tol = 1e-5;
-		int idxWithinBounds = findClosestWithinBounds(direction, tol);
-		if (idxWithinBounds >= 0)
-		{
-			gains[idxWithinBounds] = 1.;
-
-			return gains;
-		}
-
-		// If no speakers within bounds then get the gains from a point source panner or route
-		// the output to LFE1
+		// If the channel is LFE then send to the appropriate LFE (if any exist)
 		if (isLfeChannel)
 		{
 			idx = m_layout.getMatchingChannelIndex("LFE1");
@@ -191,6 +180,16 @@ namespace admrender {
 		}
 		else
 		{
+			// Check for speakers within bounds
+			double tol = 1e-5;
+			int idxWithinBounds = findClosestWithinBounds(direction, tol);
+			if (idxWithinBounds >= 0)
+			{
+				gains[idxWithinBounds] = 1.;
+
+				return gains;
+			}
+
 			std::vector<double> gainsPSP = m_pointSourcePannerGainCalc.CalculateGains(PolarPosition{ direction.azimuth,direction.elevation,direction.distance });
 			// fill in the gains on the non-LFE channels
 			int indNonLfe = 0;

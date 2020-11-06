@@ -327,7 +327,7 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
                 m_pfScratchBufferA[ni] *= m_fFFTScaler;
             memcpy(ppfDst[niEar], m_pfScratchBufferA.data(), nSamples * sizeof(float));
             unsigned int nOverlapOut = std::min(nSamples, m_nOverlapLength);
-            for (unsigned ni = 0; ni < nOverlapOut; ni++)
+            for (ni = 0; ni < nOverlapOut; ni++)
             {
                 ppfDst[niEar][ni] += m_pfOverlap[niEar][ni];
             }
@@ -338,7 +338,7 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
                 // clear the rest of the overlap buffer
                 memset(&m_pfOverlap[niEar][nOverlapRetain], 0, nOverlapOut * sizeof(float));
                 // Add the new overlap to the old buffer
-                for (unsigned ni = 0; ni < m_nOverlapLength; ni++) {
+                for (ni = 0; ni < m_nOverlapLength; ni++) {
                     m_pfOverlap[niEar][ni] += m_pfScratchBufferA[nSamples + ni];
                 }
             }

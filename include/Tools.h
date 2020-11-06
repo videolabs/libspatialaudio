@@ -249,12 +249,12 @@ static inline bool insideAngleRange(double x, double startAngle, double endAngle
 	startAngle = convertToRangeMinus180To180(startAngle);
 	endAngle = convertToRangeMinus180To180(endAngle);
 		
-	if (startAngle < endAngle)
+	if (startAngle <= endAngle)
 		return x >= startAngle - tol && x <= endAngle + tol;
 	else if (startAngle > endAngle)
 		return  x >= startAngle - tol || x <= endAngle + tol;
 
-	return x;
+	return false;
 }
 /**
 	Multiply two matrices
