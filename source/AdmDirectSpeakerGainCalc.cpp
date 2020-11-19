@@ -89,7 +89,7 @@ namespace admrender {
 		else if (withinBounds.size() > 1)
 		{
 			std::vector<double> distanceWithinBounds;
-			CartesianPosition cartDirection = PolarToCartesian(direction);
+			CartesianPosition cartDirection = PolarToCartesian(PolarPosition{ direction.azimuth,direction.elevation,direction.distance });
 			for (auto& t : withinBounds)
 			{
 				CartesianPosition spkCart = PolarToCartesian(m_layout.channels[t].polarPositionNominal);
@@ -196,7 +196,7 @@ namespace admrender {
 		return gains;
 	}
 
-	bool CAdmDirectSpeakersGainCalc::MappingRuleApplies(const MappingRule& rule, const std::string& inputLayout, const std::string& speakerLabel, admrender::Layout& outputLayout)
+	bool CAdmDirectSpeakersGainCalc::MappingRuleApplies(const MappingRule& rule, const std::string& inputLayout, const std::string& speakerLabel, Layout& outputLayout)
 	{
 		// All conditions must be met for the rule to apply
 		// "rule.speakerLabel is equal to the first (and only) speakerLabel"

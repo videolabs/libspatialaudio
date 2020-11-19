@@ -43,12 +43,6 @@ namespace admrender {
 		bool bHoaOutConfig = m_hoaAudioOut.Configure(hoaOrder, true, nSamples);
 		if (!bHoaOutConfig)
 			return false;
-		bHoaOutConfig = m_hoaObjectDirect.Configure(hoaOrder, true, nSamples);
-		if (!bHoaOutConfig)
-			return false;
-		bHoaOutConfig = m_hoaObjectDiffuse.Configure(hoaOrder, true, nSamples);
-		if (!bHoaOutConfig)
-			return false;
 
 		// Set up the output layout
 		unsigned int ambiLayout = kAmblib_Stereo;
@@ -102,11 +96,8 @@ namespace admrender {
 		// reconfigured the mappings will be correct
 		m_hoaEncoders.clear();
 		m_pannerTrackInd.clear();
-		m_pointSourcePanners.clear();
 		m_objectMetadata.clear();
-		m_objectMetadataProc.clear();
 		m_channelToObjMap.clear();
-		m_lastObjPos.clear();
 
 		// Set up required processors based on channelInfo
 		unsigned int nObject = 0;
@@ -119,33 +110,18 @@ namespace admrender {
 				m_pannerTrackInd.push_back({ iCh,TypeDefinition::DirectSpeakers });
 				if (m_RenderLayout == OutputLayout::Binaural)
 				{
-					m_hoaEncoders.push_back(std::vector<CAmbisonicEncoder>(1., CAmbisonicEncoder()));
+					m_hoaEncoders.push_back(std::vector<CAmbisonicEncoder>(1, CAmbisonicEncoder()));
 					m_hoaEncoders[nObject++][0].Configure(hoaOrder, true, 0);
-				}
-				else
-				{
-					m_pointSourcePanners.push_back(CAdmPointSourcePanner(m_outputLayout));
 				}
 				break;
 			case TypeDefinition::Matrix:
 				break;
 			case TypeDefinition::Objects:
 				m_pannerTrackInd.push_back({ iCh,TypeDefinition::Objects });
-				if (m_RenderLayout == OutputLayout::Binaural)
-				{
-					m_hoaEncoders.push_back(std::vector<CAmbisonicEncoder>(3., CAmbisonicEncoder()));
-					for (int i = 0; i < 3; ++i)
-						m_hoaEncoders[nObject][i].Configure(hoaOrder, true, 0);
-					nObject++;
-				}
-				else
-				{
-					m_pointSourcePanners.push_back(CAdmPointSourcePanner(m_outputLayout));
-				}
+				m_gainInterpDirect.push_back(CGainInterp());
+				m_gainInterpDiffuse.push_back(CGainInterp());
 				m_objectMetadata.push_back(ObjectMetadata());
-				m_objectMetadataProc.push_back(ObjectMetadata());
 				m_channelToObjMap.insert(std::pair<int, int>(iCh, iObj++));
-				m_lastObjPos.push_back(PolarPosition());
 				break;
 			case TypeDefinition::HOA:
 				break;
@@ -156,6 +132,8 @@ namespace admrender {
 			}
 		}
 
+		// Set up the gain calculator
+		m_objectGainCalc = std::make_unique<CGainCalculator>(m_outputLayout);
 		//Set up the direct gain calculator if output is not binaural
 		if (m_RenderLayout != OutputLayout::Binaural)
 			m_directSpeakerGainCalc = std::make_unique<CAdmDirectSpeakersGainCalc>(m_outputLayout);
@@ -163,6 +141,18 @@ namespace admrender {
 		bool bDecorConfig = m_decorrelate.Configure(m_outputLayout, nSamples);
 		if (!bDecorConfig)
 			return false;
+		// Set up the Householder matrix matrix to apply to the diffuse gains when output is binaural
+		if (m_RenderLayout == OutputLayout::Binaural)
+		{
+			size_t nCh = m_outputLayout.channels.size();
+			m_scatteringMatrix.resize(nCh);
+			for (size_t iCh = 0; iCh < nCh; ++iCh)
+			{
+				m_scatteringMatrix[iCh].resize(nCh);
+				for (size_t jCh = 0; jCh < nCh; ++jCh)
+					m_scatteringMatrix[iCh][jCh] = (iCh == jCh ? (double)nCh - 2. : -2.) / (double)nCh;
+			}
+		}
 
 		bool bHoaDecoderConfig = m_hoaDecoder.Configure(hoaOrder, true, nSamples, ambiLayout);
 		if (!bHoaDecoderConfig)
@@ -182,8 +172,8 @@ namespace admrender {
 		m_speakerOut.resize(m_nOutputChannels);
 		m_speakerOutDirect.resize(m_nOutputChannels);
 		m_speakerOutDiffuse.resize(m_nOutputChannels);
-		m_hoaObjectDirectVec.resize(nAmbiCh);
-		m_hoaObjectDiffuseVec.resize(nAmbiCh);
+		m_hoaObjectDirect.resize(nAmbiCh);
+		m_hoaObjectDiffuse.resize(nAmbiCh);
 		for (unsigned int i = 0; i < m_nOutputChannels; ++i)
 		{
 			m_speakerOut[i].resize(nSamples, 0.f);
@@ -193,8 +183,8 @@ namespace admrender {
 		}
 		for (size_t i = 0; i < nAmbiCh; ++i)
 		{
-			m_hoaObjectDirectVec[i].resize(nSamples, 0.f);
-			m_hoaObjectDiffuseVec[i].resize(nSamples, 0.f);
+			m_hoaObjectDirect[i].resize(nSamples, 0.f);
+			m_hoaObjectDiffuse[i].resize(nSamples, 0.f);
 		}
 
 		// A buffer of zeros to use to clear the HOA buffer
@@ -207,22 +197,24 @@ namespace admrender {
 
 	void CAdmRenderer::Reset()
 	{
-		m_bFirstFrame = true;
 		m_decorrelate.Reset();
 		ClearOutputBuffer();
 		ClearObjectDirectBuffer();
 		ClearObjectDiffuseBuffer();
 		ClearHoaBuffer();
+
+		for (size_t i = 0; i < m_gainInterpDirect.size(); ++i)
+		{
+			m_gainInterpDiffuse[i].Reset();
+			m_gainInterpDirect[i].Reset();
+		}
 	}
 
 	void CAdmRenderer::AddObject(float* pIn, unsigned int nSamples, ObjectMetadata metadata, unsigned int nOffset)
 	{
-		if (metadata.cartesian)
-		{
-			// convert from cartesian to polar coordinates
-			metadata.polarPosition = CartesianToPolar(metadata.cartesianPosition);
-			metadata.cartesian = false;
-		}
+		// convert from cartesian to polar metadata (if required)
+		toPolar(metadata);
+
 		// Map from the track index to the corresponding panner index
 		int nObjectInd = GetMatchingIndex(m_pannerTrackInd, metadata.trackInd, TypeDefinition::Objects);
 
@@ -237,86 +229,39 @@ namespace admrender {
 		bool newMetadata = !(metadata == m_objectMetadata[iObj]);
 		if (newMetadata)
 		{
+			// Store the metadata
 			m_objectMetadata[iObj] = metadata;
-			m_objectMetadataProc[iObj] = metadata;
-		}
+			// Calculate a new gain vector with this metadata
+			std::vector<double> directGains;
+			std::vector<double> diffuseGains;
+			m_objectGainCalc->CalculateGains(metadata, directGains, diffuseGains);
 
-		// If it is the first block then do not interpolate. Just take the value set.
-		if (m_bFirstFrame)
-		{
-			m_lastObjPos[iObj] = metadata.polarPosition;
-		}
+			// Apply scattering to the diffuse gains when output is binaural
+			if (m_RenderLayout == OutputLayout::Binaural)
+				diffuseGains = multiplyMatVec(m_scatteringMatrix, diffuseGains);
 
-		// Get a block of metadata corresponding to the nSamples of the input
-		ObjectMetadata metadataBlock = m_objectMetadataProc[iObj];
+			// Get the interpolation time
+			unsigned int interpLength = 0;
+			if (metadata.jumpPosition.flag)
+				interpLength = metadata.jumpPosition.interpolationLength;
+			else
+				interpLength = metadata.blockLength;
 
-		if (m_objectMetadataProc[iObj].jumpPosition.interpolationLength > 0) // if the last set metadata still requires interpolation
-		{
-			// The interpolation length for the block is either the full block length or the number of samples interpolation left, if less than nSamples
-			metadataBlock.jumpPosition.interpolationLength = std::min(nSamples, (unsigned int)metadataBlock.jumpPosition.interpolationLength);
-			// Get the polar position (cartesian processing is not handled) required at the end of the interpolation
-			PolarPosition targetPosition = m_objectMetadataProc[iObj].polarPosition;
-			if (m_objectMetadataProc[iObj].jumpPosition.interpolationLength <= (int)nSamples)
-			{
-				metadataBlock.polarPosition = targetPosition;
-			}
-			else // get the polar position expected after nSamples samples
-			{
-				double azimuthDifference = convertToRangeMinus180To180(targetPosition.azimuth - m_lastObjPos[iObj].azimuth);
-				auto deltaAz = nSamples * azimuthDifference / m_objectMetadataProc[iObj].jumpPosition.interpolationLength;
-				auto deltaEl = nSamples * (targetPosition.elevation - m_lastObjPos[iObj].elevation) / m_objectMetadataProc[iObj].jumpPosition.interpolationLength;
-				auto deltaDist = nSamples * (targetPosition.distance - m_lastObjPos[iObj].distance) / m_objectMetadataProc[iObj].jumpPosition.interpolationLength;
-				metadataBlock.polarPosition.azimuth = m_lastObjPos[iObj].azimuth +  deltaAz;
-				metadataBlock.polarPosition.elevation = m_lastObjPos[iObj].elevation + deltaEl;
-				metadataBlock.polarPosition.distance = m_lastObjPos[iObj].distance + deltaDist;
-			}
-			m_lastObjPos[iObj] = metadataBlock.polarPosition;
-
-			// Subtract the number of input samples from the metadata interpolationLength
-			m_objectMetadataProc[iObj].jumpPosition.interpolationLength -= nSamples;
-			if (m_objectMetadataProc[iObj].jumpPosition.interpolationLength <= 0)
-			{
-				m_objectMetadataProc[iObj].jumpPosition.interpolationLength = 0;
-				// interpolation is finished so flag jumpPosition as false
-				m_objectMetadataProc[iObj].jumpPosition.flag = false;
-			}
+			// Set the gains in the interpolators
+			m_gainInterpDirect[iObj].SetGainVector(directGains, interpLength);
+			m_gainInterpDiffuse[iObj].SetGainVector(diffuseGains, interpLength);
 		}
 
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
-			// Handle divergence processing for binaural output
-			auto divergedData = divergedPositionsAndGains(metadataBlock.objectDivergence, metadataBlock.polarPosition);
-			auto diverged_positions = divergedData.first;
-			auto diverged_gains = divergedData.second;
-			int nDivergedGains = (int)diverged_gains.size();
-
-			// Calculate the direct and diffuse gains
-			// See Rec. ITU-R BS.2127-0 sec.7.3.1 page 39
-			float directCoefficient = (float)std::sqrt(1. - metadata.diffuse);
-			float diffuseCoefficient = (float)std::sqrt(metadata.diffuse);
-
-			for (int iDiv = 0; iDiv < nDivergedGains; ++iDiv)
-			{
-				// If the output is set to binaural then convert the object to HOA so it is rendered with the HOA-to-binaural decoder
-				// Set the position of the source from the metadata
-				PolarPoint newPos;
-				newPos.fAzimuth = DegreesToRadians((float)diverged_positions[iDiv].azimuth);
-				newPos.fElevation = DegreesToRadians((float)diverged_positions[iDiv].elevation);
-				newPos.fDistance = (float)diverged_positions[iDiv].distance;
-
-				// Set the interpolation in the range from 0 to 1 where 1 = full length of the frame (i.e. nSamples)
-				double interpDur = 0.;
-				if (metadataBlock.jumpPosition.flag && !m_bFirstFrame)
-					interpDur = metadataBlock.jumpPosition.interpolationLength / nSamples;
-
-				m_hoaEncoders[nObjectInd][iDiv].SetPosition(newPos, (float)interpDur);
-				// Encode the audio and add it to the buffer for output buffers with the direct/diffuse gain applied
-				m_hoaEncoders[nObjectInd][iDiv].ProcessAccumul(pIn, nSamples, &m_hoaObjectDirect, nOffset, directCoefficient * (float)diverged_gains[iDiv]);
-				m_hoaEncoders[nObjectInd][iDiv].ProcessAccumul(pIn, nSamples, &m_hoaObjectDiffuse, nOffset, diffuseCoefficient * (float)diverged_gains[iDiv]);
-			}
+			m_gainInterpDirect[iObj].ProcessAccumul(pIn, m_hoaObjectDirect, nSamples, nOffset);
+			m_gainInterpDiffuse[iObj].ProcessAccumul(pIn, m_hoaObjectDiffuse, nSamples, nOffset);
 		}
 		else
-			m_pointSourcePanners[nObjectInd].ProcessAccumul(metadataBlock, pIn, m_speakerOutDirect, m_speakerOutDiffuse, nSamples, nOffset);
+		{
+			m_gainInterpDirect[iObj].ProcessAccumul(pIn, m_speakerOutDirect, nSamples, nOffset);
+			m_gainInterpDiffuse[iObj].ProcessAccumul(pIn, m_speakerOutDiffuse, nSamples, nOffset);
+		}
 	}
 
 	void CAdmRenderer::AddHoa(float** pHoaIn, unsigned int nSamples, HoaMetadata metadata, unsigned int nOffset)
@@ -394,21 +339,14 @@ namespace admrender {
 			memset(pRender[iCh], 0, nSamples * sizeof(float));
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
-			// Prepare the data to send to the decorrelator
-			for (unsigned int iCh = 0; iCh < m_hoaAudioOut.GetChannelCount(); ++iCh)
-			{
-				m_hoaObjectDirect.ExtractStream(&m_hoaObjectDirectVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
-				m_hoaObjectDiffuse.ExtractStream(&m_hoaObjectDiffuseVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
-			}
-
 			// Apply diffuseness filters and compensation delay
-			m_decorrelate.Process(m_hoaObjectDirectVec, m_hoaObjectDiffuseVec, nSamples);
+			m_decorrelate.Process(m_hoaObjectDirect, m_hoaObjectDiffuse, nSamples);
 
 			// Add the direct and diffuse signals to the HOA and DirectSpeaker signals
 			for (unsigned int iCh = 0; iCh < m_hoaAudioOut.GetChannelCount(); ++iCh)
 			{
-				m_hoaAudioOut.AddStream(&m_hoaObjectDirectVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
-				m_hoaAudioOut.AddStream(&m_hoaObjectDiffuseVec[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
+				m_hoaAudioOut.AddStream(&m_hoaObjectDirect[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
+				m_hoaAudioOut.AddStream(&m_hoaObjectDiffuse[iCh][0], iCh, m_hoaAudioOut.GetSampleCount());
 			}
 			// For binaural, everything has been rendered to HOA since we don't have any real loudspeaker system to target
 			m_hoaBinaural.Process(&m_hoaAudioOut, pRender, nSamples);
@@ -438,8 +376,6 @@ namespace admrender {
 		ClearObjectDirectBuffer();
 		// Clear the data in the diffuse buffers
 		ClearObjectDiffuseBuffer();
-
-		m_bFirstFrame = false;
 	}
 
 	void CAdmRenderer::ClearHoaBuffer()
@@ -448,31 +384,29 @@ namespace admrender {
 		for (unsigned int iHoaCh = 0; iHoaCh < m_hoaAudioOut.GetChannelCount(); ++iHoaCh)
 		{
 			m_hoaAudioOut.InsertStream(m_pZeros.get(), iHoaCh, nHoaSamples);
-			m_hoaObjectDirect.InsertStream(m_pZeros.get(), iHoaCh, nHoaSamples);
-			m_hoaObjectDiffuse.InsertStream(m_pZeros.get(), iHoaCh, nHoaSamples);
 		}
 	}
 
 	void CAdmRenderer::ClearOutputBuffer()
 	{
 		for (unsigned int iCh = 0; iCh < m_nOutputChannels; ++iCh)
-			std::fill(m_speakerOut[iCh].begin(), m_speakerOut[iCh].end(), 0.);
-		for (unsigned int iAmbiCh = 0; iAmbiCh < m_hoaObjectDirectVec.size(); ++iAmbiCh)
-			std::fill(m_hoaObjectDiffuseVec[iAmbiCh].begin(), m_hoaObjectDiffuseVec[iAmbiCh].end(), 0.);
+			std::fill(m_speakerOut[iCh].begin(), m_speakerOut[iCh].end(), 0.f);
+		for (unsigned int iAmbiCh = 0; iAmbiCh < m_hoaObjectDirect.size(); ++iAmbiCh)
+			std::fill(m_hoaObjectDiffuse[iAmbiCh].begin(), m_hoaObjectDiffuse[iAmbiCh].end(), 0.f);
 	}
 
 	void CAdmRenderer::ClearObjectDirectBuffer()
 	{
 		for (unsigned int iCh = 0; iCh < m_nOutputChannels; ++iCh)
-			std::fill(m_speakerOutDirect[iCh].begin(), m_speakerOutDirect[iCh].end(),0.);
-		for (unsigned int iAmbiCh = 0; iAmbiCh < m_hoaObjectDirectVec.size(); ++iAmbiCh)
-			std::fill(m_hoaObjectDirectVec[iAmbiCh].begin(), m_hoaObjectDirectVec[iAmbiCh].end(), 0.);
+			std::fill(m_speakerOutDirect[iCh].begin(), m_speakerOutDirect[iCh].end(), 0.f);
+		for (unsigned int iAmbiCh = 0; iAmbiCh < m_hoaObjectDirect.size(); ++iAmbiCh)
+			std::fill(m_hoaObjectDirect[iAmbiCh].begin(), m_hoaObjectDirect[iAmbiCh].end(), 0.f);
 	}
 
 	void CAdmRenderer::ClearObjectDiffuseBuffer()
 	{
 		for (unsigned int iCh = 0; iCh < m_nOutputChannels; ++iCh)
-			std::fill(m_speakerOutDiffuse[iCh].begin(), m_speakerOutDiffuse[iCh].end(), 0.);
+			std::fill(m_speakerOutDiffuse[iCh].begin(), m_speakerOutDiffuse[iCh].end(), 0.f);
 	}
 
 	int CAdmRenderer::GetMatchingIndex(std::vector<std::pair<unsigned int, TypeDefinition>> vector, unsigned int nElement, TypeDefinition trackType)

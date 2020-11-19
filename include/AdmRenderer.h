@@ -18,12 +18,14 @@
 #include <string>
 #include "Ambisonics.h"
 #include "AdmMetadata.h"
-#include "AdmLayouts.h"
-#include "AdmUtils.h"
-#include "AdmPointSourcePanner.h"
+#include "LoudspeakerLayouts.h"
+#include "Tools.h"
+#include "AdmConversions.h"
+#include "GainInterp.h"
 #include "AdmDirectSpeakerGainCalc.h"
-#include "AdmDecorrelate.h"
+#include "Decorrelate.h"
 #include "PolarExtent.h"
+#include "GainCalculator.h"
 
 /*
 
@@ -35,11 +37,10 @@
 		- Set the output format to stereo, binaural, quad, 5.x and 7.x
 		- Apply decorrelation to Objects and apply compensation delay to the direct signal
 		- Handles exclusion zones, divergence, channel lock
-		- Handles extent panning for loudspeaker output
+		- Handles extent panning for both loudspeaker and binaural output
 
 	TODO FOR MORE ADVANCED FUNCTIONALITY
 		- Handle Matrix types (need samples to be able to test)
-		- Handle extent panning for binaural output
 		- Handle screenLock
 		- Add Cartesian processing path. Currently convert positions of objects to polar and uses polar processing.
 
@@ -49,6 +50,18 @@
 */
 
 namespace admrender {
+
+	// The different output layouts supported by this class
+	enum class OutputLayout
+	{
+		Stereo = 1,
+		Quad,
+		FivePointOne,
+		FivePointZero,
+		SevenPointOne,
+		SevenPointZero,
+		Binaural
+	};
 
 	/** This is a renderer for ADM streams. It aims to provide a simple way to
 		add spatial data to the stream audio using the methods available in
@@ -79,7 +92,7 @@ namespace admrender {
 		/**
 			Add an audio Object to be rendered
 
-			Inputs: pIn - Pointer to audio 
+			Inputs: pIn - Pointer to audio
 					channelInd - channel index in the ADM
 		*/
 		void AddObject(float* pIn, unsigned int nSamples, ObjectMetadata metadata, unsigned int nOffset = 0);
@@ -131,28 +144,27 @@ namespace admrender {
 		// Maximum number of samples expected in a frame
 		unsigned int m_nSamples;
 
-		// Flag if it is the first processing frame
-		bool m_bFirstFrame = true;
-
 		StreamInformation m_channelInformation;
 
 		Layout m_outputLayout;
 
 		// Vector holding the last unique set metadata for each object in the stream
 		std::vector<ObjectMetadata> m_objectMetadata;
-		// Vector holding the metadata used in processing when the interpolationLength is longer than an audio frame
-		std::vector<ObjectMetadata> m_objectMetadataProc;
 		// A map from the channel index to the object index in the order the objects were listed
 		// in the stream at configuration
 		std::map<int, int> m_channelToObjMap;
-		// The last position of each of the objects
-		std::vector<PolarPosition> m_lastObjPos;
 
 		// The channel indices of the tracks that can use a point source panner
-		std::vector<std::pair<unsigned int,TypeDefinition>> m_pannerTrackInd;
-		std::vector<CAdmPointSourcePanner> m_pointSourcePanners;
+		std::vector<std::pair<unsigned int, TypeDefinition>> m_pannerTrackInd;
+		// Gain interpolators
+		std::vector<CGainInterp> m_gainInterpDirect;
+		std::vector<CGainInterp> m_gainInterpDiffuse;
+		// The gain calculator for Object type channels
+		std::unique_ptr<CGainCalculator> m_objectGainCalc;
 		// HOA encoders to use instead of the pointSourcePanner when output is binaural
 		std::vector<std::vector<CAmbisonicEncoder>> m_hoaEncoders;
+		// The gain calculator for the DirectSpeaker channels
+		std::unique_ptr<CAdmDirectSpeakersGainCalc> m_directSpeakerGainCalc;
 
 		// Ambisonic Decoder
 		CAmbisonicDecoder m_hoaDecoder;
@@ -160,10 +172,8 @@ namespace admrender {
 		CAmbisonicBinauralizer m_hoaBinaural;
 		// Buffers to hold the HOA audio
 		CBFormat m_hoaAudioOut;
-		// Buffers to hold objects that are converted to HOA, both direct and diffuse
-		CBFormat m_hoaObjectDirect, m_hoaObjectDiffuse;
 		// Vector to pass the direct and diffuse HOA object data to the decorrelator
-		std::vector<std::vector<float>> m_hoaObjectDirectVec, m_hoaObjectDiffuseVec;
+		std::vector<std::vector<float>> m_hoaObjectDirect, m_hoaObjectDiffuse;
 		// Buffers holding the output signal
 		std::vector<std::vector<float>> m_speakerOut;
 		// Buffers to hold the direct object audio
@@ -174,10 +184,13 @@ namespace admrender {
 		void ClearObjectDirectBuffer();
 		void ClearObjectDiffuseBuffer();
 
-		std::unique_ptr<CAdmDirectSpeakersGainCalc> m_directSpeakerGainCalc;
-
 		// Decorrelator filter processor
-		CAdmDecorrelate m_decorrelate;
+		CDecorrelate m_decorrelate;
+		// Scattering matrix applied to the diffuse gains before decorrelation is applied. Only used when input layout is HOA.
+		// This is useful when hoa component W = 1 and all others are near-zero (for objects with high width/height, for example)
+		// the the field is actually diffuse rather than just a decorrelation of a near-mono signal, which can collapse to an in-head
+		// effect
+		std::vector<std::vector<double>> m_scatteringMatrix;
 
 		// A buffer containing all zeros to use to clear the HOA data
 		std::unique_ptr<float[]> m_pZeros;
