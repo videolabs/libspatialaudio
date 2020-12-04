@@ -15,16 +15,29 @@
 // CSpreadPannerBase ================================================================================
 CSpreadPannerBase::CSpreadPannerBase()
 {
-	// Set up the grid on the sphere 
-	// The algorithm and some extra reading can be found here :
-	// http://extremelearning.com.au/how-to-evenly-distribute-points-on-a-sphere-more-effectively-than-the-canonical-fibonacci-lattice/
-	double goldenRatio = (1. + std::pow(5., 0.5)) / 2.;
-	for (int i = 0; i < m_nVirtualSources; ++i)
+	// Set up the grid on the sphere
+	// The algorithm can be found here:
+	// http://web.archive.org/web/20150108040043/http://www.math.niu.edu/~rusin/known-math/95/equispace.elect
+	double perimiter_centre = 2. * M_PI;
+	int nRows = 37; // 5deg elevation from -90 to +90
+	double deltaEl = 180. / (double)(nRows - 1);
+	for (int iEl = 0; iEl < nRows; ++iEl)
 	{
-		double theta = 2. * M_PI * i / goldenRatio;
-		double phi = std::acos(1. - 2. * ((double)i + 0.5) / (double)m_nVirtualSources);
-		m_virtualSourcePositions.push_back({ cos(theta) * sin(phi), sin(theta) * sin(phi), cos(phi) });
+		double el = iEl * deltaEl - 90.;
+		double radius = std::cos(el * DEG2RAD);
+		double perimiter = perimiter_centre * radius;
+		int nAz = (int)std::round((perimiter / perimiter_centre) * 2. * (double)(nRows - 1));
+		// There must be at least one point at the poles
+		if (nAz == 0)
+			nAz = 1;
+		double deltaAz = 360. / (double)(nAz);
+		for (int iAz = 0; iAz < nAz; ++iAz)
+		{
+			double az = iAz * deltaAz;
+			m_virtualSourcePositions.push_back(PolarToCartesian(PolarPosition{ az,el,1. }));
+		}
 	}
+	m_nVirtualSources = (int)m_virtualSourcePositions.size();
 
 	m_weights.resize(m_nVirtualSources);
 }
@@ -49,7 +62,10 @@ double CSpreadPannerBase::CalculateWeights(CartesianPosition position)
 		// if the direction is to the right (x > 0) then reflect to the left to be in the same hemisphere are the circular cap
 		positionBasis[0] = positionBasis[0] > 0. ? -positionBasis[0] : positionBasis[0];
 		std::vector<double> closestCircle({ m_circularCapPosition.x, m_circularCapPosition.y, m_circularCapPosition.z });
-		distance = std::acos(dotProduct(positionBasis, closestCircle)) * RAD2DEG - 0.5 * m_height;
+		// Sometimes the dot product of the 2 unit vectors can be greater than one, which leads to a nan from acos()
+		// so it is capped to 1
+		double dotProd = std::min(dotProduct(positionBasis, closestCircle), 1.);
+		distance = std::acos(dotProd) * RAD2DEG - 0.5 * m_height;
 	}
 
 	// Calculate the weight based on the distance from the "stadium"

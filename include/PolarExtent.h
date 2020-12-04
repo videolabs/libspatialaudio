@@ -43,7 +43,7 @@ protected:
 	std::vector<std::vector<double>> m_virtualSourcePanningVectors;
 
 	// The number of virtual source positions
-	const int m_nVirtualSources = 1500;
+	int m_nVirtualSources;
 	// The weights to be applied to the virtual sources
 	std::vector<double> m_weights;
 
