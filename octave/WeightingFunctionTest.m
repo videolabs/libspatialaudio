@@ -6,17 +6,39 @@ clc
 nPoints = 1500;
 
 % The width and height of the weighting function in degrees
-width = 360;
-height = 360;
+width = 90;
+height = 0;
 % The fade out distance in degrees
 fade_out = 10;
 
 % virtual source positions
-virtualSourcePos = fibonacciSphere(nPoints);
+%virtualSourcePos = fibonacciSphere(nPoints);
+nRows = 37;
+el = linspace(-90,90,nRows);
+
+perimiter_centre = 2 * pi;
+virtualSourcePos = [];
+for iEl = 1:length(el)
+    radius = cos(el(iEl)/180*pi);
+    perimiter = 2 * pi * radius;
+    
+    nPoints = round((perimiter / perimiter_centre) * 2 * (nRows - 1));
+    if nPoints == 0
+        nPoints = 1;
+    end
+    
+    az = linspace(0,360-360/nPoints,nPoints);
+    for iAz = 1:length(az)
+        [posTmp(1),posTmp(2),posTmp(3)] = cart([az(iAz), el(iEl), 1.0]);
+        virtualSourcePos = [virtualSourcePos; posTmp];
+    end
+end
+nPoints = size(virtualSourcePos,1);
+
 [azOrig,elOrig,~] = pol(virtualSourcePos);
 
 % panning direction where +ve y is the front and +ve x is the right, as defined in ADM standard
-position = [0;1;1];
+position = [0;1;0];
 position = position/norm(position);
 
 % Calculate the rotation matrix to go from a position to the panning direction basis

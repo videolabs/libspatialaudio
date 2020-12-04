@@ -28,23 +28,27 @@ axis([-180, 180, -90, 90])
 
 %% Compare this to the algorithm used by libear
 nRows = 37;
-el = linspace(-90,90,nRows)/180*pi;
+el = linspace(-90,90,nRows);
 
-    perimiter_centre = 2 * pi;
-    positions = [];
-    for iEl = 1:length(el)
-      radius = cos(el(iEl));
-      perimiter = 2 * pi * radius;
-
-      nPoints = round((perimiter / perimiter_centre) * 2 * (nRows - 1));
-   
-      az = linspace(0,360,nPoints + 1)/180*pi;
-      for iAz = 1:length(az)
-        positions = [positions; sph2cart(az(iAz), el(iEl), 1.0)];
-      end
+perimiter_centre = 2 * pi;
+positions = [];
+for iEl = 1:length(el)
+    radius = cos(el(iEl)/180*pi);
+    perimiter = 2 * pi * radius;
+    
+    nPoints = round((perimiter / perimiter_centre) * 2 * (nRows - 1));
+    if nPoints == 0
+        nPoints = 1;
+    end
+    
+    az = linspace(0,360-360/nPoints,nPoints);
+    for iAz = 1:length(az)
+        [posTmp(1),posTmp(2),posTmp(3)] = cart([az(iAz), el(iEl), 1.0]);
+        positions = [positions; posTmp];
+    end
 end
 
-polarPositions = cart2sph(positions(:,1),positions(:,2),positions(:,3));
+[polarPositions(:,1), polarPositions(:,2), polarPositions(:,3)] = pol([positions(:,1),positions(:,2),positions(:,3)]);
 
 figure(1)
 subplot(1,2,2)
@@ -57,7 +61,7 @@ zlabel('z')
 
 figure(2)
 subplot(1,2,2)
-plot(polarPositions(:,1)/pi*180,polarPositions(:,2)/pi*180,'.','MarkerSize',20)
+plot(polarPositions(:,1),polarPositions(:,2),'.','MarkerSize',20)
 xlabel('azimuth (degrees)')
 ylabel('elevation (degrees)')
 axis([-180, 180, -90, 90])
