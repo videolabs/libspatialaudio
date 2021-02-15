@@ -145,6 +145,8 @@ namespace admrender {
 		StreamInformation m_channelInformation;
 
 		Layout m_outputLayout;
+		// Index map to go from the output array excluding LFE to the full array with LFE
+		std::vector<unsigned int> m_mapNoLfeToLfe;
 
 		// Vector holding the last unique set metadata for each object in the stream
 		std::vector<ObjectMetadata> m_objectMetadata;

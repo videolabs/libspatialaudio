@@ -189,7 +189,7 @@ static inline bool testPointSourcePanner()
 			velVec.x = 0.;
 			velVec.y = 0.;
 			velVec.z = 0.;
-			for (int i = 0; i < numCh; ++i)
+			for (unsigned int i = 0; i < numCh; ++i)
 			{
 				CartesianPosition speakerDirections = PolarToCartesian(layoutNoLFE.channels[i].polarPosition);
 				velVec = velVec + CartesianPosition{ gains[i] * speakerDirections.x, gains[i] * speakerDirections.y,gains[i] * speakerDirections.z, };
