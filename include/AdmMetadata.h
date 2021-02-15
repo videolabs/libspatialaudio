@@ -196,7 +196,7 @@ namespace admrender {
 		double depth = 0.0;
 		// Jump position to determine how the gains are interpolated
 		JumpPosition jumpPosition;
-		// The track index of the object (starting from 0)
+		// The track index (starting from 0)
 		unsigned int trackInd = 0;
 		std::vector<PolarExclusionZone> zoneExclusionPolar;
 		// Screen reference for screen scaling
@@ -244,7 +244,7 @@ namespace admrender {
 		std::string speakerLabel = {};
 		// The position of the loudspeaker
 		DirectSpeakerPolarPosition polarPosition;
-		// The track index of the object (starting from 0)
+		// The track index (starting from 0)
 		unsigned int trackInd = 0;
 		// audioPackFormatID
 		std::vector<std::string> audioPackFormatID;
