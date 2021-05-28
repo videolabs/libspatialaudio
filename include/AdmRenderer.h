@@ -197,10 +197,14 @@ namespace admrender {
 		void ClearHoaBuffer();
 
 		/**
-			Find the element of a vector matching the input. If the track types do not match or no matching
+			Find the element of a vector matching the input key. If the track types do not match or no matching
+			elements then returns -1
+		*/
+		int GetMatchingKey(std::vector<std::pair<unsigned int, TypeDefinition>>, unsigned int nElement, TypeDefinition trackType);
+		/**
+			Find the element of a vector matching the input index. If the track types do not match or no matching
 			elements then returns -1
 		*/
 		int GetMatchingIndex(std::vector<std::pair<unsigned int, TypeDefinition>>, unsigned int nElement, TypeDefinition trackType);
 	};
-
 }

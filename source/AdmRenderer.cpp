@@ -225,7 +225,7 @@ namespace admrender {
 		toPolar(metadata);
 
 		// Map from the track index to the corresponding panner index
-		int nObjectInd = GetMatchingIndex(m_pannerTrackInd, metadata.trackInd, TypeDefinition::Objects);
+		int nObjectInd = GetMatchingKey(m_pannerTrackInd, metadata.trackInd, TypeDefinition::Objects);
 
 		if (nObjectInd == -1) // this track was not declared at construction. Stopping here.
 		{
@@ -437,9 +437,9 @@ namespace admrender {
 			std::fill(m_speakerOutDiffuse[iCh].begin(), m_speakerOutDiffuse[iCh].end(), 0.f);
 	}
 
-	int CAdmRenderer::GetMatchingIndex(std::vector<std::pair<unsigned int, TypeDefinition>> vector, unsigned int nElement, TypeDefinition trackType)
+	int CAdmRenderer::GetMatchingKey(std::vector<std::pair<unsigned int, TypeDefinition>> vector, unsigned int nElement, TypeDefinition trackType)
 	{
-		// Map from the track index to the corresponding panner index
+		// Map from the track index to the corresponding panner key
 		int nInd = 0;
 		for (unsigned int i = 0; i < vector.size(); i++)
 			if (vector[i].first == nElement && vector[i].second == trackType) {
@@ -447,6 +447,22 @@ namespace admrender {
 				return nInd;
 			}
 
+		return -1;
+	}
+
+	int CAdmRenderer::GetMatchingIndex(std::vector<std::pair<unsigned int, TypeDefinition>> vector, unsigned int nElement, TypeDefinition trackType)
+	{
+		// Map from the track index to the corresponding panner index
+		int nInd = 0;
+		for (unsigned int i = 0; i < vector.size(); i++)
+		{
+			if (vector[i].second == trackType)
+			{
+				if (vector[i].first == nElement)
+					return nInd;
+				nInd++;
+			}
+		}
 		return -1;
 	}
 
