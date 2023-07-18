@@ -37,7 +37,7 @@ unsigned CAmbisonicBase::GetChannelCount()
     return m_nChannelCount;
 }
 
-bool CAmbisonicBase::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
+bool CAmbisonicBase::Configure(unsigned nOrder, bool b3D, unsigned /*nMisc*/)
 {
     m_nOrder = nOrder;
     m_b3D = b3D;
