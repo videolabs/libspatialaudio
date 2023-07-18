@@ -61,10 +61,9 @@ void CAmbisonicSource::Refresh()
     if(m_b3D)
     {
         // Uses ACN channel ordering and SN3D normalization scheme (AmbiX format)
-        if(m_nOrder >= 0)
-        {
+        /* (m_nOrder >= 0) (always true) */
             m_pfCoeff[0] = 1.f * m_pfOrderWeights[0]; // W
-        }
+
         if(m_nOrder >= 1)
         {
             m_pfCoeff[1] = (fSinAzim * fCosElev) * m_pfOrderWeights[1]; // Y
@@ -93,10 +92,9 @@ void CAmbisonicSource::Refresh()
     }
     else
     {
-        if(m_nOrder >= 0)
-        {
+        /* (m_nOrder >= 0) (always true) */
             m_pfCoeff[0] = m_pfOrderWeights[0];
-        }
+
         if(m_nOrder >= 1)
         {
             m_pfCoeff[1] = (fCosAzim * fCosElev) * m_pfOrderWeights[1];
