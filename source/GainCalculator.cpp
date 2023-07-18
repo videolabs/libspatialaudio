@@ -198,11 +198,11 @@ namespace admrender {
 			for (int iSpk = 0; iSpk < (int)m_nCh; ++iSpk)
 			{
 				// Find the first set with non-excluded speakers
-				for (int iSet = 0; iSet < m_downmixMapping[iSpk].size(); ++iSet)
+				for (size_t iSet = 0; iSet < m_downmixMapping[iSpk].size(); ++iSet)
 				{
 					std::vector<unsigned int> notExcludedElements;
 					std::vector<unsigned int> setElements(m_downmixMapping[iSpk][iSet].begin(), m_downmixMapping[iSpk][iSet].end());
-					for (int i = 0; i < setElements.size(); ++i)
+					for (size_t i = 0; i < setElements.size(); ++i)
 						if (!isExcluded[setElements[i]])
 							notExcludedElements.push_back(setElements[i]);
 					int numNotExcluded = (int)notExcludedElements.size();
