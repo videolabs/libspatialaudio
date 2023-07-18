@@ -33,7 +33,7 @@ namespace admrender {
 		m_RenderLayout = outputTarget;
 		// Set the order to be used for the HOA rendering
 		m_HoaOrder = hoaOrder;
-		if (m_HoaOrder > 3 || m_HoaOrder < 0)
+		if (m_HoaOrder > 3)
 			return false; // only accepts orders 0 to 3
 		// Set the maximum number of samples expected in a frame
 		m_nSamples = nSamples;
