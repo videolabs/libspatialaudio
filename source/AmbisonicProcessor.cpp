@@ -29,7 +29,7 @@ CAmbisonicProcessor::~CAmbisonicProcessor()
         delete [] m_pfTempSample;
 }
 
-bool CAmbisonicProcessor::Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, unsigned nMisc)
+bool CAmbisonicProcessor::Configure(unsigned nOrder, bool b3D, unsigned /*nBlockSize*/, unsigned nMisc)
 {
     bool success = CAmbisonicBase::Configure(nOrder, b3D, nMisc);
     if(!success)

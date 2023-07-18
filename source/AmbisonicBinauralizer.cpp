@@ -389,6 +389,7 @@ HRTF *CAmbisonicBinauralizer::getHRTF(unsigned nSampleRate, std::string HRTFPath
 #else
 # ifdef HAVE_MIT_HRTF
     p_hrtf = new MIT_HRTF(nSampleRate);
+    (void)HRTFPath;
 # else
 # error At least MySOFA or MIT_HRTF need to be enabled
 # endif
