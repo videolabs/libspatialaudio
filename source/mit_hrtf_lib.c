@@ -385,7 +385,7 @@ int mit_hrtf_findAzimuthFor40Elev(int azimuth)
         return 174;
     else
         return 180;
-};
+}
 
 
 
