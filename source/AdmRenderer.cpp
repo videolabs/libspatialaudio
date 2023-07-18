@@ -172,7 +172,7 @@ namespace admrender {
 
 		// If the output layout has an LFE then get its index
 
-		for (int iSpk = 0; iSpk < m_outputLayout.channels.size(); ++iSpk)
+		for (size_t iSpk = 0; iSpk < m_outputLayout.channels.size(); ++iSpk)
 			if (!m_outputLayout.channels[iSpk].isLFE)
 				m_mapNoLfeToLfe.push_back(iSpk);
 

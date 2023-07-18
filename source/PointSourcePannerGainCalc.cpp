@@ -51,7 +51,7 @@ CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(Layout layout)
 
 	// Get the positions of all of the loudspeakers
 	std::vector<PolarPosition> positions;
-	for (int i = 0; i < m_outputLayout.channels.size(); ++i)
+	for (size_t i = 0; i < m_outputLayout.channels.size(); ++i)
 	{
 		m_downmixMapping.push_back(i); // one-to-one downmix mapping
 		positions.push_back(m_outputLayout.channels[i].polarPosition);
@@ -73,18 +73,18 @@ CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(Layout layout)
 		virtualSpkInd.push_back(nOutputCh + nExtraSpk - 1);
 
 	// Add the extra speakers to the list of positions
-	for (int i = 0; i < m_extraSpeakersLayout.channels.size(); ++i)
+	for (size_t i = 0; i < m_extraSpeakersLayout.channels.size(); ++i)
 		positions.push_back(m_extraSpeakersLayout.channels[i].polarPosition);
 
 	// Go through all the facets of the hull to create the required RegionHandlers
 	unsigned int nFacets = (unsigned int)hull.size();
-	for (unsigned int iFacet = 0; iFacet < nFacets; ++iFacet)
+	for (size_t iFacet = 0; iFacet < nFacets; ++iFacet)
 	{
 		unsigned int nVertices = (unsigned int)hull[iFacet].size();
 		// Check if the facet contains one of the virtual speakers
 		bool hasVirtualSpeaker = false;
 		for (unsigned int i = 0; i < nVertices; ++i)
-			for (int iVirt = 0; iVirt < virtualSpkInd.size(); ++iVirt)
+			for (size_t iVirt = 0; iVirt < virtualSpkInd.size(); ++iVirt)
 				if (hull[iFacet][i] == virtualSpkInd[iVirt])
 					hasVirtualSpeaker = true;
 		if (!hasVirtualSpeaker)
@@ -92,14 +92,14 @@ CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(Layout layout)
 			if (nVertices == 4)
 			{
 				std::vector<PolarPosition> facetPositions;
-				for (int i = 0; i < 4; ++i)
+				for (size_t i = 0; i < 4; ++i)
 					facetPositions.push_back(positions[hull[iFacet][i]]);
 				m_regions.quadRegions.push_back(QuadRegion(hull[iFacet], facetPositions));
 			}
 			else if (nVertices == 3)
 			{
 				std::vector<PolarPosition> facetPositions;
-				for (int i = 0; i < 3; ++i)
+				for (size_t i = 0; i < 3; ++i)
 					facetPositions.push_back(positions[hull[iFacet][i]]);
 				m_regions.triplets.push_back(Triplet(hull[iFacet], facetPositions));
 			}
@@ -107,10 +107,10 @@ CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(Layout layout)
 	}
 	// Loop through all facets to find those that contain a virtual speaker. If they do, add their
 	// indices to a list and then create a virtualNgon for the corresponding set
-	for (int iVirt = 0; iVirt < virtualSpkInd.size(); ++iVirt)
+	for (size_t iVirt = 0; iVirt < virtualSpkInd.size(); ++iVirt)
 	{
 		std::set<unsigned int> virtualNgonVertInds;
-		for (unsigned int iFacet = 0; iFacet < nFacets; ++iFacet)
+		for (size_t iFacet = 0; iFacet < nFacets; ++iFacet)
 		{
 			unsigned int nVertices = (unsigned int)hull[iFacet].size();
 			// Check if the facet contains one of the virtual speakers
@@ -128,7 +128,7 @@ CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(Layout layout)
 		virtualNgonVertInds.erase(virtualSpkInd[iVirt]);
 		std::vector<PolarPosition> ngonPositions;
 		std::vector<unsigned int> ngonInds(virtualNgonVertInds.begin(), virtualNgonVertInds.end());
-		for (int i = 0; i < ngonInds.size(); ++i)
+		for (size_t i = 0; i < ngonInds.size(); ++i)
 		{
 			ngonPositions.push_back(positions[ngonInds[i]]);
 		}
@@ -192,39 +192,39 @@ std::vector<double> CPointSourcePannerGainCalc::_CalculateGains(CartesianPositio
 	directionUnitVec = { position.x / vecNorm, position.y / vecNorm,position.z / vecNorm };
 
 	// Loop through all of the regions until one is found that is not zero gain
-	for (int iNgon = 0; iNgon < m_regions.virtualNgons.size(); ++iNgon)
+	for (size_t iNgon = 0; iNgon < m_regions.virtualNgons.size(); ++iNgon)
 	{
 		std::vector<double> nGonGains = m_regions.virtualNgons[iNgon].CalculateGains(directionUnitVec);
 		if (norm(nGonGains) > tol) // if the gains are not zero then map them to the output gains
 		{
 			std::vector<unsigned int> nGonInds = m_regions.virtualNgons[iNgon].m_channelInds;
-			for (int iGain = 0; iGain < nGonGains.size(); ++iGain)
+			for (size_t iGain = 0; iGain < nGonGains.size(); ++iGain)
 				gains[m_downmixMapping[nGonInds[iGain]]] += nGonGains[iGain];
 
 			return gains;
 		}
 	}
 	// Loop through the triplets Ngons
-	for (int iTriplet = 0; iTriplet < m_regions.triplets.size(); ++iTriplet)
+	for (size_t iTriplet = 0; iTriplet < m_regions.triplets.size(); ++iTriplet)
 	{
 		std::vector<double> tripletGains = m_regions.triplets[iTriplet].CalculateGains(directionUnitVec);
 		if (norm(tripletGains) > tol) // if the gains are not zero then map them to the output gains
 		{
 			std::vector<unsigned int> tripletInds = m_regions.triplets[iTriplet].m_channelInds;
-			for (int iGain = 0; iGain < tripletGains.size(); ++iGain)
+			for (size_t iGain = 0; iGain < tripletGains.size(); ++iGain)
 				gains[m_downmixMapping[tripletInds[iGain]]] += tripletGains[iGain];
 
 			return gains;
 		}
 	}
 	// Loop through the triplets Ngons
-	for (int iQuad = 0; iQuad < m_regions.quadRegions.size(); ++iQuad)
+	for (size_t iQuad = 0; iQuad < m_regions.quadRegions.size(); ++iQuad)
 	{
 		std::vector<double> quadGains = m_regions.quadRegions[iQuad].CalculateGains(directionUnitVec);
 		if (norm(quadGains) > tol) // if the gains are not zero then map them to the output gains
 		{
 			std::vector<unsigned int> quadInds = m_regions.quadRegions[iQuad].m_channelInds;
-			for (int iGain = 0; iGain < quadGains.size(); ++iGain)
+			for (unsigned int iGain = 0; iGain < quadGains.size(); ++iGain)
 				gains[m_downmixMapping[quadInds[iGain]]] += quadGains[iGain];
 
 			return gains;
@@ -267,7 +267,7 @@ Layout CPointSourcePannerGainCalc::CalculateExtraSpeakersLayout(Layout layout)
 	}
 
 	PolarPosition position;
-	for (int iMid = 0; iMid < midLayerSet.size(); ++iMid)
+	for (size_t iMid = 0; iMid < midLayerSet.size(); ++iMid)
 	{
 		auto name = layout.channels[midLayerSet[iMid]].name;
 		double azimuth = layout.channels[midLayerSet[iMid]].polarPositionNominal.azimuth;
@@ -281,7 +281,7 @@ Layout CPointSourcePannerGainCalc::CalculateExtraSpeakersLayout(Layout layout)
 			extraSpeakers.channels.push_back({ name,position,position,false });
 		}
 	}
-	for (int iMid = 0; iMid < midLayerSet.size(); ++iMid)
+	for (size_t iMid = 0; iMid < midLayerSet.size(); ++iMid)
 	{
 		auto name = layout.channels[midLayerSet[iMid]].name;
 		double azimuth = layout.channels[midLayerSet[iMid]].polarPositionNominal.azimuth;
