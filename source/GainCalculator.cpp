@@ -235,12 +235,12 @@ namespace admrender {
 		: m_outputLayout(getLayoutWithoutLFE(outputLayoutNoLFE))
 		, m_nCh((unsigned int)m_outputLayout.channels.size())
 		, m_pspGainCalculator(getLayoutWithoutLFE(outputLayoutNoLFE))
-		, m_channelLockHandler(getLayoutWithoutLFE(outputLayoutNoLFE))
-		, m_zoneExclusionHandler(getLayoutWithoutLFE(outputLayoutNoLFE))
 		, m_extentPanner(m_pspGainCalculator)
 		, m_ambiExtentPanner(outputLayoutNoLFE.hoaOrder)
 		, m_screenScale(outputLayoutNoLFE.reproductionScreen, getLayoutWithoutLFE(outputLayoutNoLFE))
 		, m_screenEdgeLock(outputLayoutNoLFE.reproductionScreen, getLayoutWithoutLFE(outputLayoutNoLFE))
+		, m_channelLockHandler(getLayoutWithoutLFE(outputLayoutNoLFE))
+		, m_zoneExclusionHandler(getLayoutWithoutLFE(outputLayoutNoLFE))
 	{
 	}
 
