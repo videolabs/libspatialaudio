@@ -82,7 +82,7 @@ namespace admrender {
 		CScreenScaleHandler m_screenScale;
 		CScreenEdgeLock m_screenEdgeLock;
 
-		ChannelLockHandler channelLockHandler;
-		ZoneExclusionHandler zoneExclusionHandler;
+		ChannelLockHandler m_channelLockHandler;
+		ZoneExclusionHandler m_zoneExclusionHandler;
 	};
 } // namespace admrenderer

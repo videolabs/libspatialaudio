@@ -232,7 +232,7 @@ namespace admrender {
 
 	//===================================================================================================================================
 	CGainCalculator::CGainCalculator(Layout outputLayoutNoLFE) : m_pspGainCalculator(getLayoutWithoutLFE(outputLayoutNoLFE)),
-		channelLockHandler(getLayoutWithoutLFE(outputLayoutNoLFE)), zoneExclusionHandler(getLayoutWithoutLFE(outputLayoutNoLFE)),
+		m_channelLockHandler(getLayoutWithoutLFE(outputLayoutNoLFE)), m_zoneExclusionHandler(getLayoutWithoutLFE(outputLayoutNoLFE)),
 		m_extentPanner(m_pspGainCalculator), m_ambiExtentPanner(outputLayoutNoLFE.hoaOrder),
 		m_screenScale(outputLayoutNoLFE.reproductionScreen, getLayoutWithoutLFE(outputLayoutNoLFE)),
 		m_screenEdgeLock(outputLayoutNoLFE.reproductionScreen, getLayoutWithoutLFE(outputLayoutNoLFE))
@@ -260,7 +260,7 @@ namespace admrender {
 		position = m_screenEdgeLock.HandleVector(position, metadata.screenEdgeLock, metadata.cartesian);
 
 		// Apply channelLock to modify the position of the source, if required
-		position = channelLockHandler.handle(metadata.channelLock, position);
+		position = m_channelLockHandler.handle(metadata.channelLock, position);
 
 		// Apply divergence
 		auto divergedData = divergedPositionsAndGains(metadata.objectDivergence.value, metadata.objectDivergence.azimuthRange, position);
@@ -301,7 +301,7 @@ namespace admrender {
 
 			// Zone exclusion downmix
 			// See Rec. ITU-R BS.2127-0 sec. 7.3.12, pg 60
-			gains = zoneExclusionHandler.handle(metadata.zoneExclusionPolar, gains);
+			gains = m_zoneExclusionHandler.handle(metadata.zoneExclusionPolar, gains);
 		}
 
 		// Apply the overall gain to the spatialisation gains
