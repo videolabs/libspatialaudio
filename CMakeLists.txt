@@ -63,6 +63,8 @@ list(APPEND headers
     include/Tools.h
     source/kiss_fft/kiss_fft.h
     source/kiss_fft/kiss_fftr.h
+    include/dsp/IIRFilter.h
+    include/dsp/LinkwitzRileyIIR.h
 )
 
 list(APPEND sources
@@ -95,6 +97,8 @@ list(APPEND sources
     source/PolarExtent.cpp
     source/RegionHandlers.cpp
     source/Screen.cpp
+    source/dsp/IIRFilter.cpp
+    source/dsp/LinkwitzRileyIIR.cpp
 )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -102,7 +106,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 find_package(MySofa QUIET)
 set(HAVE_MYSOFA ${MYSOFA_FOUND})
 
-include_directories(include include/hrtf source source/kiss_fft ${PROJECT_BINARY_DIR})
+include_directories(include include/dsp include/hrtf source source/kiss_fft ${PROJECT_BINARY_DIR})
 
 if(MYSOFA_FOUND)
     include_directories(${MYSOFA_INCLUDE_DIRS})
