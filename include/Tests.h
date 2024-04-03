@@ -13,6 +13,10 @@
 #pragma once
 
 #include <assert.h>
+#include <iostream>
+#include "LoudspeakerLayouts.h"
+#include "LinkwitzRileyIIR.h"
+#include "AdmRenderer.h"
 
 /**
 	Get the gain vector for a signal routed directed to a specified speaker in the layout
@@ -374,4 +378,69 @@ static inline bool testGainCalculator()
 	assert(compareGainVectors(diffuseGains, pspDiffuse));
 
 	return true;
+}
+
+/** Test the Linkwitz-Riley filter sums to flat magnitude
+*/
+void testLinkwitzRileyFilter()
+{
+	CLinkwitzRileyIIR lrIIR;
+
+	unsigned int sampleRate = 48000;
+	const unsigned int nSamples = 256;
+	const int nCh = 2;
+	// Set up the signal for 2 seconds worth
+	float** pIn = new float* [nCh];
+	float** pOutLP = new float* [nCh];
+	float** pOutHP = new float* [nCh];
+	for (int iCh = 0; iCh < nCh; ++iCh)
+	{
+		pIn[iCh] = new float[nSamples];
+		pOutLP[iCh] = new float[nSamples];
+		pOutHP[iCh] = new float[nSamples];
+		for (int iSample = 0; iSample < nSamples; ++iSample)
+		{
+			pIn[iCh][iSample] = iSample == 0 ? 1.f : 0.f;
+			pOutLP[iCh][iSample] = 0.f;
+			pOutHP[iCh][iSample] = 0.f;
+		}
+	}
+
+	lrIIR.Configure(nCh, sampleRate, 500.f);
+	lrIIR.Process(pIn, pOutLP, pOutHP, nSamples);
+
+	float** pSum = new float* [nCh];
+	for (int iCh = 0; iCh < nCh; ++iCh)
+	{
+		pSum[iCh] = new float[nSamples];
+		for (int iSample = 0; iSample < nSamples; ++iSample)
+		{
+			pSum[iCh][iSample] = pOutLP[iCh][iSample] + pOutHP[iCh][iSample];
+		}
+	}
+
+	// Check the IR
+	kiss_fftr_cfg st = kiss_fftr_alloc(nSamples, 0, 0, 0);
+	kiss_fft_cpx* out = (kiss_fft_cpx*)malloc(sizeof(kiss_fft_cpx) * (nSamples / 2 + 1));
+	kiss_fftr(st, pSum[0], (kiss_fft_cpx*)out);
+	for (int iSample = 0; iSample < nSamples / 2 + 1; ++iSample)
+	{
+		float mag = std::sqrt(out[iSample].r * out[iSample].r + out[iSample].i * out[iSample].i);
+		assert(std::abs(20.f * std::log10(mag)) < 1e-3); // Less that 0.001dB deviation
+	}
+	free(out);
+	free(st);
+
+	// Deallocate
+	for (int iCh = 0; iCh < nCh; ++iCh)
+	{
+		delete[] pIn[iCh];
+		delete[] pOutLP[iCh];
+		delete[] pOutHP[iCh];
+		delete[] pSum[iCh];
+	}
+	delete[] pIn;
+	delete[] pOutLP;
+	delete[] pOutHP;
+	delete[] pSum;
 }
