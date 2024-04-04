@@ -75,8 +75,6 @@ public:
 protected:
     CAmbisonicDecoder m_AmbDecoder;
 
-    CAmbisonicOptimFilters shelfFilters;
-
     unsigned m_nBlockSize;
     unsigned m_nSampleRate;
     unsigned m_nTaps;

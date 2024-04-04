@@ -26,6 +26,7 @@ CAmbisonicBinauralizer::CAmbisonicBinauralizer()
     , m_pIFFT_cfg(nullptr, kiss_fftr_free)
 {
     m_nBlockSize = 0;
+    m_nSampleRate = 0;
     m_nTaps = 0;
     m_nFFTSize = 0;
     m_nFFTBins = 0;
@@ -42,10 +43,6 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
 {
     bool success = CAmbisonicBase::Configure(nOrder, b3D, 0);
     if (!success)
-        return false;
-
-    bool bShelfConfig = shelfFilters.Configure(nOrder, b3D, nBlockSize, nSampleRate);
-    if (!bShelfConfig)
         return false;
 
     m_nSampleRate = nSampleRate;
@@ -154,22 +151,38 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
         fMax = val > fMax ? val : fMax;
     }
 
+    // Optimisation filters to pre-process the FIR filters with basic/max-rE gains
+    CAmbisonicOptimFilters shelfFilters;
+    bool bShelfConfig = shelfFilters.Configure(nOrder, b3D, m_nTaps, nSampleRate);
+    if (!bShelfConfig)
+        return false;
+
     //Normalize to pre-defined value
     float fUpperSample = 1.f;
     float fScaler = fUpperSample / fMax;
     fScaler *= 0.35f;
     for(niEar = 0; niEar < 2; niEar++)
     {
+        CBFormat firOptim;
+        firOptim.Configure(nOrder, b3D, m_nTaps);
         for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
         {
             for(niTap = 0; niTap < m_nTaps; niTap++)
             {
                 ppfAccumulator[niEar][niChannel][niTap] *= fScaler;
             }
+            // Make a copy of the FIR filter for optimisation filtering
+            firOptim.InsertStream(ppfAccumulator[niEar][niChannel], niChannel, m_nTaps);
         }
+
+        // Apply psychoacoustic optimisation to the binaural decoder filters
+        shelfFilters.Process(&firOptim, m_nTaps);
+        // Copy the optimised filters back to buffers
+        for (niChannel = 0; niChannel < m_nChannelCount; niChannel++)
+            firOptim.ExtractStream(ppfAccumulator[niEar][niChannel], niChannel, m_nTaps);
     }
 
-    //Convert frequency domain filters
+    // Convert frequency domain filters
     for(niEar = 0; niEar < 2; niEar++)
     {
         for(niChannel = 0; niChannel < m_nChannelCount; niChannel++)
@@ -198,13 +211,10 @@ void CAmbisonicBinauralizer::Reset()
 {
     memset(m_pfOverlap[0].data(), 0, m_nOverlapLength * sizeof(float));
     memset(m_pfOverlap[1].data(), 0, m_nOverlapLength * sizeof(float));
-
-    shelfFilters.Refresh();
 }
 
 void CAmbisonicBinauralizer::Refresh()
 {
-    shelfFilters.Refresh();
 }
 
 void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
@@ -220,9 +230,6 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
     unsigned niChannel = 0;
     unsigned ni = 0;
     kiss_fft_cpx cpTemp;
-
-    // Apply psychoacoustic optimisation filters
-    shelfFilters.Process(pBFSrc, nSamples);
 
     /* If CPU load needs to be reduced then perform the convolution for each of the Ambisonics/spherical harmonic
     decompositions of the loudspeakers HRTFs for the left ear. For the left ear the results of these convolutions
