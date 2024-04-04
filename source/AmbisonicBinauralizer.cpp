@@ -352,7 +352,7 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
 
 void CAmbisonicBinauralizer::ArrangeSpeakers()
 {
-    unsigned nSpeakerSetUp;
+    Amblib_SpeakerSetUps nSpeakerSetUp;
     //How many speakers will be needed? Add one for right above the listener
     unsigned nSpeakers = OrderToSpeakers(m_nOrder, m_b3D);
     //Custom speaker setup
@@ -360,12 +360,12 @@ void CAmbisonicBinauralizer::ArrangeSpeakers()
     if (m_nOrder <= 1)
     {
         std::cout << "Getting first order cube" << std::endl;
-        nSpeakerSetUp = kAmblib_Cube2;
+        nSpeakerSetUp = Amblib_SpeakerSetUps::kAmblib_Cube2;
     }
     else
     {
         std::cout << "Getting second/third order dodecahedron" << std::endl;
-        nSpeakerSetUp = kAmblib_Dodecahedron;
+        nSpeakerSetUp = Amblib_SpeakerSetUps::kAmblib_Dodecahedron;
     }
 
     m_AmbDecoder.Configure(m_nOrder, m_b3D, m_nBlockSize, nSpeakerSetUp, nSpeakers);
