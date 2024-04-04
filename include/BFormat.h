@@ -99,6 +99,7 @@ protected:
     friend class CAmbisonicBinauralizer;
     friend class CAmbisonicZoomer;
     friend class CAmbisonicShelfFilters;
+    friend class CAmbisonicOptimFilters;
 };
 
 #endif //_BFORMAT_H

@@ -35,6 +35,7 @@ list(APPEND headers
     include/AmbisonicPsychoacousticFilters.h
     include/Ambisonics.h
     include/AmbisonicShelfFilters.h
+    include/AmbisonicOptimFilters.h
     include/AmbisonicSource.h
     include/AmbisonicSpeaker.h
     include/AmbisonicTypesDefinesCommons.h
@@ -77,6 +78,7 @@ list(APPEND sources
     source/AmbisonicBinauralizer.cpp
     source/AmbisonicSource.cpp
     source/AmbisonicShelfFilters.cpp
+    source/AmbisonicOptimFilters.cpp
     source/hrtf/mit_hrtf.cpp
     source/hrtf/sofa_hrtf.cpp
     source/BFormat.cpp

@@ -157,7 +157,7 @@ namespace admrender {
 			}
 		}
 
-		bool bHoaDecoderConfig = m_hoaDecoder.Configure(hoaOrder, true, nSamples, ambiLayout);
+		bool bHoaDecoderConfig = m_hoaDecoder.Configure(hoaOrder, true, nSamples, nSampleRate, ambiLayout);
 		if (!bHoaDecoderConfig)
 			return false;
 

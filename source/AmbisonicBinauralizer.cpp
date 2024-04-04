@@ -40,9 +40,15 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
                                        unsigned& tailLength,
                                        std::string HRTFPath)
 {
-    bool bShelfConfig = shelfFilters.Configure(nOrder, b3D, nBlockSize, 0);
+    bool success = CAmbisonicBase::Configure(nOrder, b3D, 0);
+    if (!success)
+        return false;
+
+    bool bShelfConfig = shelfFilters.Configure(nOrder, b3D, nBlockSize, nSampleRate);
     if (!bShelfConfig)
         return false;
+
+    m_nSampleRate = nSampleRate;
 
     //Iterators
     unsigned niEar = 0;
@@ -68,7 +74,6 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
     //What do we need to scale the result of the iFFT by
     m_fFFTScaler = 1.f / m_nFFTSize;
 
-    CAmbisonicBase::Configure(nOrder, b3D, 0);
     //Position speakers and recalculate coefficients
     ArrangeSpeakers();
 
@@ -368,7 +373,7 @@ void CAmbisonicBinauralizer::ArrangeSpeakers()
         nSpeakerSetUp = Amblib_SpeakerSetUps::kAmblib_Dodecahedron;
     }
 
-    m_AmbDecoder.Configure(m_nOrder, m_b3D, m_nBlockSize, nSpeakerSetUp, nSpeakers);
+    m_AmbDecoder.Configure(m_nOrder, m_b3D, m_nBlockSize, m_nSampleRate , nSpeakerSetUp, nSpeakers);
 
     //Calculate all the speaker coefficients
     m_AmbDecoder.Refresh();
