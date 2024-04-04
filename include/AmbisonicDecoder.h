@@ -22,7 +22,7 @@
 #include "AmbisonicSpeaker.h"
 #include "AmbisonicShelfFilters.h"
 
-enum Amblib_SpeakerSetUps
+enum class Amblib_SpeakerSetUps
 {
     kAmblib_CustomSpeakerSetUp = -1,
     ///2D Speaker Setup
@@ -55,7 +55,7 @@ public:
         Else, if using one of the default configurations, nSpeakers does not
         need to be specified. Function returns true if successful.
     */
-    bool Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, int nSpeakerSetUp, unsigned nSpeakers = 0);
+    bool Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, Amblib_SpeakerSetUps nSpeakerSetUp, unsigned nSpeakers = 0);
     /**
         Resets all the speakers.
     */
@@ -72,7 +72,7 @@ public:
         Returns the current speaker setup, which is a ::SpeakerSetUps
         enumeration.
     */
-    int GetSpeakerSetUp();
+    Amblib_SpeakerSetUps GetSpeakerSetUp();
     /**
         Returns the number of speakers in the current speaker setup.
     */
@@ -116,7 +116,7 @@ public:
     bool GetPresetLoaded();
 
 protected:
-    void SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers = 1);
+    void SpeakerSetUp(Amblib_SpeakerSetUps nSpeakerSetUp, unsigned nSpeakers = 1);
 
     /**
         Checks if the current speaker arrangement is one that has a pre-defined
@@ -130,7 +130,7 @@ protected:
     */
     void LoadDecoderPreset();
 
-    int m_nSpeakerSetUp;
+    Amblib_SpeakerSetUps m_nSpeakerSetUp;
     unsigned m_nSpeakers;
     CAmbisonicSpeaker* m_pAmbSpeakers;
     bool m_bPresetLoaded;

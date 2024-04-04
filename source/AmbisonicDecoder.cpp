@@ -20,7 +20,7 @@
 
 CAmbisonicDecoder::CAmbisonicDecoder()
 {
-    m_nSpeakerSetUp = 0;
+    m_nSpeakerSetUp = Amblib_SpeakerSetUps::kAmblib_Mono;
     m_nSpeakers = 0;
     m_pAmbSpeakers = nullptr;
     m_bPresetLoaded = false;
@@ -32,9 +32,9 @@ CAmbisonicDecoder::~CAmbisonicDecoder()
         delete [] m_pAmbSpeakers;
 }
 
-bool CAmbisonicDecoder::Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, int nSpeakerSetUp, unsigned nSpeakers)
+bool CAmbisonicDecoder::Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, Amblib_SpeakerSetUps nSpeakerSetUp, unsigned nSpeakers)
 {
-    bool success = CAmbisonicBase::Configure(nOrder, b3D, nSpeakerSetUp);
+    bool success = CAmbisonicBase::Configure(nOrder, b3D, 0);
     if(!success)
         return false;
     // Set up the ambisonic shelf filters
@@ -78,7 +78,7 @@ void CAmbisonicDecoder::Process(CBFormat* pBFSrc, unsigned nSamples, float** ppf
     }
 }
 
-int CAmbisonicDecoder::GetSpeakerSetUp()
+Amblib_SpeakerSetUps CAmbisonicDecoder::GetSpeakerSetUp()
 {
     return m_nSpeakerSetUp;
 }
@@ -123,7 +123,7 @@ bool CAmbisonicDecoder::GetPresetLoaded()
     return m_bPresetLoaded;
 }
 
-void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
+void CAmbisonicDecoder::SpeakerSetUp(Amblib_SpeakerSetUps nSpeakerSetUp, unsigned nSpeakers)
 {
     m_nSpeakerSetUp = nSpeakerSetUp;
 
@@ -138,7 +138,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
 
     switch(m_nSpeakerSetUp)
     {
-    case kAmblib_CustomSpeakerSetUp:
+    case Amblib_SpeakerSetUps::kAmblib_CustomSpeakerSetUp:
         m_nSpeakers = nSpeakers;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
@@ -146,13 +146,13 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
             m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
         }
         break;
-    case kAmblib_Mono:
+    case Amblib_SpeakerSetUps::kAmblib_Mono:
         m_nSpeakers = 1;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[0].SetPosition(polPosition);
         break;
-    case kAmblib_Stereo:
+    case Amblib_SpeakerSetUps::kAmblib_Stereo:
         m_nSpeakers = 2;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(30.f);
@@ -162,7 +162,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
         m_pAmbSpeakers[1].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[1].SetPosition(polPosition);
         break;
-    case kAmblib_LCR:
+    case Amblib_SpeakerSetUps::kAmblib_LCR:
         m_nSpeakers = 3;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(30.f);
@@ -175,7 +175,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
         m_pAmbSpeakers[2].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[2].SetPosition(polPosition);
         break;
-    case kAmblib_Quad:
+    case Amblib_SpeakerSetUps::kAmblib_Quad:
         m_nSpeakers = 4;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(45.f);
@@ -191,7 +191,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
         m_pAmbSpeakers[3].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[3].SetPosition(polPosition);
         break;
-    case kAmblib_50:
+    case Amblib_SpeakerSetUps::kAmblib_50:
         m_nSpeakers = 5;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(30.f);
@@ -210,7 +210,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
         m_pAmbSpeakers[4].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[4].SetPosition(polPosition);
         break;
-    case kAmblib_70:
+    case Amblib_SpeakerSetUps::kAmblib_70:
         m_nSpeakers = 7;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(30.f);
@@ -235,7 +235,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
         m_pAmbSpeakers[6].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[6].SetPosition(polPosition);
         break;
-    case kAmblib_51:
+    case Amblib_SpeakerSetUps::kAmblib_51:
         m_nSpeakers = 6;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(30.f);
@@ -257,7 +257,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
         m_pAmbSpeakers[5].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[5].SetPosition(polPosition);
         break;
-    case kAmblib_71:
+    case Amblib_SpeakerSetUps::kAmblib_71:
         m_nSpeakers = 8;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(30.f);
@@ -285,7 +285,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
         m_pAmbSpeakers[7].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[7].SetPosition(polPosition);
         break;
-    case kAmblib_Pentagon:
+    case Amblib_SpeakerSetUps::kAmblib_Pentagon:
         m_nSpeakers = 5;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
@@ -295,7 +295,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
-    case kAmblib_Hexagon:
+    case Amblib_SpeakerSetUps::kAmblib_Hexagon:
         m_nSpeakers = 6;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
@@ -305,7 +305,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
-    case kAmblib_HexagonWithCentre:
+    case Amblib_SpeakerSetUps::kAmblib_HexagonWithCentre:
         m_nSpeakers = 6;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
@@ -315,7 +315,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
-    case kAmblib_Octagon:
+    case Amblib_SpeakerSetUps::kAmblib_Octagon:
         m_nSpeakers = 8;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
@@ -325,7 +325,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
-    case kAmblib_Decadron:
+    case Amblib_SpeakerSetUps::kAmblib_Decadron:
         m_nSpeakers = 10;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
@@ -335,7 +335,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
-    case kAmblib_Dodecadron:
+    case Amblib_SpeakerSetUps::kAmblib_Dodecadron:
         m_nSpeakers = 12;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
@@ -345,7 +345,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
-    case kAmblib_Cube:
+    case Amblib_SpeakerSetUps::kAmblib_Cube:
         m_nSpeakers = 8;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fElevation = DegreesToRadians(45.f);
@@ -363,7 +363,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
-    case kAmblib_Dodecahedron:
+    case Amblib_SpeakerSetUps::kAmblib_Dodecahedron:
         // This arrangement is used for second and third orders
         m_nSpeakers = 20;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
@@ -461,7 +461,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
         m_pAmbSpeakers[19].Configure(m_nOrder, m_b3D, 0);
         m_pAmbSpeakers[19].SetPosition(polPosition);
         break;
-    case kAmblib_Cube2:
+    case Amblib_SpeakerSetUps::kAmblib_Cube2:
         // This configuration is a standard for first order decoding
         m_nSpeakers = 8;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
@@ -480,7 +480,7 @@ void CAmbisonicDecoder::SpeakerSetUp(int nSpeakerSetUp, unsigned nSpeakers)
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
-    case kAmblib_MonoCustom:
+    case Amblib_SpeakerSetUps::kAmblib_MonoCustom:
         m_nSpeakers = 17;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = 0.f;
@@ -511,7 +511,7 @@ void CAmbisonicDecoder::CheckSpeakerSetUp()
 {
     // If the speaker set up is defined as a custom layout then check if it matches
     // one with a preset
-    if (m_nSpeakerSetUp == kAmblib_CustomSpeakerSetUp)
+    if (m_nSpeakerSetUp == Amblib_SpeakerSetUps::kAmblib_CustomSpeakerSetUp)
     {
         int speakerMatchCount = 0;
         float azimuthStereo[] = { 30.f, -30.f };
@@ -523,7 +523,7 @@ void CAmbisonicDecoder::CheckSpeakerSetUp()
         switch (GetSpeakerCount())
         {
         case 1: // Mono speaker setup
-            m_nSpeakerSetUp = kAmblib_Mono;
+            m_nSpeakerSetUp = Amblib_SpeakerSetUps::kAmblib_Mono;
             break;
         case 2:
             for (int iSpeaker = 0; iSpeaker < 2; ++iSpeaker)
@@ -534,7 +534,7 @@ void CAmbisonicDecoder::CheckSpeakerSetUp()
                         speakerMatchCount++;
             }
             if (speakerMatchCount == 2)
-                m_nSpeakerSetUp = kAmblib_Stereo;
+                m_nSpeakerSetUp = Amblib_SpeakerSetUps::kAmblib_Stereo;
             break;
         case 5: // 5.0
             for (int iSpeaker = 0; iSpeaker < 5; ++iSpeaker)
@@ -545,7 +545,7 @@ void CAmbisonicDecoder::CheckSpeakerSetUp()
                         speakerMatchCount++;
             }
             if (speakerMatchCount == 5)
-                m_nSpeakerSetUp = kAmblib_50;
+                m_nSpeakerSetUp = Amblib_SpeakerSetUps::kAmblib_50;
             break;
         case 6: // 5.1
             for (int iSpeaker = 0; iSpeaker < 6; ++iSpeaker)
@@ -556,7 +556,7 @@ void CAmbisonicDecoder::CheckSpeakerSetUp()
                         speakerMatchCount++;
             }
             if (speakerMatchCount == 6)
-                m_nSpeakerSetUp = kAmblib_51;
+                m_nSpeakerSetUp = Amblib_SpeakerSetUps::kAmblib_51;
             break;
         case 7:
             for (int iSpeaker = 0; iSpeaker < 7; ++iSpeaker)
@@ -567,7 +567,7 @@ void CAmbisonicDecoder::CheckSpeakerSetUp()
                         speakerMatchCount++;
             }
             if (speakerMatchCount == 7)
-                m_nSpeakerSetUp = kAmblib_70;
+                m_nSpeakerSetUp = Amblib_SpeakerSetUps::kAmblib_70;
             break;
         case 8:
             for (int iSpeaker = 0; iSpeaker < 8; ++iSpeaker)
@@ -578,7 +578,7 @@ void CAmbisonicDecoder::CheckSpeakerSetUp()
                         speakerMatchCount++;
             }
             if (speakerMatchCount == 8)
-                m_nSpeakerSetUp = kAmblib_71;
+                m_nSpeakerSetUp = Amblib_SpeakerSetUps::kAmblib_71;
             break;
         default:
             break;
@@ -592,12 +592,12 @@ void CAmbisonicDecoder::LoadDecoderPreset()
     int nAmbiComponents = OrderToComponents(m_nOrder, m_b3D);
     switch (m_nSpeakerSetUp)
     {
-    case kAmblib_Mono:
+    case Amblib_SpeakerSetUps::kAmblib_Mono:
         // Use the coefficients set based on the speaker position.
         // Preset loaded
         m_bPresetLoaded = true;
         break;
-    case kAmblib_Stereo:
+    case Amblib_SpeakerSetUps::kAmblib_Stereo:
         // Load the stereo decoder preset
         for (int iSpeaker = 0; iSpeaker < 2; ++iSpeaker)
             for (int iCoeff = 0; iCoeff < nAmbiComponents; ++iCoeff)
@@ -607,7 +607,7 @@ void CAmbisonicDecoder::LoadDecoderPreset()
         // Preset loaded
         m_bPresetLoaded = true;
         break;
-    case kAmblib_50:
+    case Amblib_SpeakerSetUps::kAmblib_50:
         // Load the 5.0 decoder preset
         for (int iSpeaker = 0; iSpeaker < 5; ++iSpeaker)
             for (int iCoeff = 0; iCoeff < nAmbiComponents; ++iCoeff)
@@ -622,7 +622,7 @@ void CAmbisonicDecoder::LoadDecoderPreset()
         // Preset loaded
         m_bPresetLoaded = true;
         break;
-    case kAmblib_70:
+    case Amblib_SpeakerSetUps::kAmblib_70:
         // Load the 7.0 decoder preset
         for (int iSpeaker = 0; iSpeaker < 7; ++iSpeaker)
             for (int iCoeff = 0; iCoeff < nAmbiComponents; ++iCoeff)
@@ -637,7 +637,7 @@ void CAmbisonicDecoder::LoadDecoderPreset()
         // Preset loaded
         m_bPresetLoaded = true;
         break;
-    case kAmblib_51:
+    case Amblib_SpeakerSetUps::kAmblib_51:
         // Load the 5.1 decoder preset
         for (int iSpeaker = 0; iSpeaker < 6; ++iSpeaker)
             for (int iCoeff = 0; iCoeff < nAmbiComponents; ++iCoeff)
@@ -652,7 +652,7 @@ void CAmbisonicDecoder::LoadDecoderPreset()
         // Preset loaded
         m_bPresetLoaded = true;
         break;
-    case kAmblib_71:
+    case Amblib_SpeakerSetUps::kAmblib_71:
         // Load the 7.1 decoder preset
         for (int iSpeaker = 0; iSpeaker < 8; ++iSpeaker)
             for (int iCoeff = 0; iCoeff < nAmbiComponents; ++iCoeff)
