@@ -45,37 +45,37 @@ namespace admrender {
 			return false;
 
 		// Set up the output layout
-		unsigned int ambiLayout = kAmblib_Stereo;
+		Amblib_SpeakerSetUps ambiLayout = Amblib_SpeakerSetUps::kAmblib_Stereo;
 		switch (m_RenderLayout)
 		{
 		case OutputLayout::Stereo:
-			ambiLayout = kAmblib_Stereo;
+			ambiLayout = Amblib_SpeakerSetUps::kAmblib_Stereo;
 			m_outputLayout = GetMatchingLayout("0+2+0");
 			break;
 		case OutputLayout::Quad:
-			ambiLayout = kAmblib_Quad;
+			ambiLayout = Amblib_SpeakerSetUps::kAmblib_Quad;
 			m_outputLayout = GetMatchingLayout("0+4+0");
 			break;
 		case OutputLayout::FivePointOne:
-			ambiLayout = kAmblib_51;
+			ambiLayout = Amblib_SpeakerSetUps::kAmblib_51;
 			m_outputLayout = GetMatchingLayout("0+5+0");
 			break;
 		case OutputLayout::FivePointZero:
-			ambiLayout = kAmblib_50;
+			ambiLayout = Amblib_SpeakerSetUps::kAmblib_50;
 			m_outputLayout = GetMatchingLayout("0+5+0");
 			m_outputLayout.hasLFE = false;
 			break;
 		case OutputLayout::SevenPointOne:
-			ambiLayout = kAmblib_71;
+			ambiLayout = Amblib_SpeakerSetUps::kAmblib_71;
 			m_outputLayout = GetMatchingLayout("0+7+0");
 			break;
 		case OutputLayout::SevenPointZero:
-			ambiLayout = kAmblib_70;
+			ambiLayout = Amblib_SpeakerSetUps::kAmblib_70;
 			m_outputLayout = GetMatchingLayout("0+7+0");
 			m_outputLayout.hasLFE = false;
 			break;
 		case OutputLayout::Binaural:
-			ambiLayout = kAmblib_Dodecahedron;
+			ambiLayout = Amblib_SpeakerSetUps::kAmblib_Dodecahedron;
 			// This is only used in the setting the decorrelator when using binaural output
 			switch (hoaOrder)
 			{
