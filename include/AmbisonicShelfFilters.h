@@ -21,14 +21,12 @@
 #include "kiss_fftr.h"
 #include "AmbisonicPsychoacousticFilters.h"
 
-/// Ambisonic processor.
-
-/** This object is used to rotate the BFormat signal around all three axes.
-    Orientation structs are used to define the the soundfield's orientation. */
-
-class CAmbisonicShelfFilters;
-
-class CAmbisonicShelfFilters : public CAmbisonicBase
+/** This class applies frequency dependent basic & max-rE optimisation to a B-format signal using linear phase FIR filters.
+ *  This class is deprecated in favour of AmbisonicOptimFilters, which uses LinkwitzRiley IIR filters to apply frequency dependent gains.
+ */
+class
+    [[deprecated("This class is deprecated. Please use CAmbisonicOptimFilters class instead.")]]
+CAmbisonicShelfFilters : public CAmbisonicBase
 {
 public:
     CAmbisonicShelfFilters();

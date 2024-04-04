@@ -17,6 +17,7 @@
 #include "AmbisonicDecoder.h"
 #include "AmbisonicDecoderPresets.h"
 #include <iostream>
+#include <assert.h>
 
 CAmbisonicDecoder::CAmbisonicDecoder()
 {
@@ -32,13 +33,13 @@ CAmbisonicDecoder::~CAmbisonicDecoder()
         delete [] m_pAmbSpeakers;
 }
 
-bool CAmbisonicDecoder::Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, Amblib_SpeakerSetUps nSpeakerSetUp, unsigned nSpeakers)
+bool CAmbisonicDecoder::Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, unsigned sampleRate, Amblib_SpeakerSetUps nSpeakerSetUp, unsigned nSpeakers)
 {
     bool success = CAmbisonicBase::Configure(nOrder, b3D, 0);
     if(!success)
         return false;
     // Set up the ambisonic shelf filters
-    shelfFilters.Configure(nOrder, b3D, nBlockSize, 0);
+    shelfFilters.Configure(nOrder, b3D, nBlockSize, sampleRate);
 
     SpeakerSetUp(nSpeakerSetUp, nSpeakers);
     Refresh();
