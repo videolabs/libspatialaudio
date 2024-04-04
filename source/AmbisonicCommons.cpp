@@ -113,3 +113,11 @@ char ComponentToChannelLabel(unsigned nComponent, bool b3D)
 
     return cLabel;
 }
+
+unsigned ComponentPositionToDegree(unsigned nComponent, bool b3D)
+{
+    if (b3D)
+        return (unsigned)floorf(sqrtf((float)nComponent));
+    else
+        return (unsigned)floorf((nComponent + 1.f) * 0.5f);
+}

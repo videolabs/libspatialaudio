@@ -91,4 +91,9 @@ unsigned OrderToSpeakers(unsigned nOrder, bool b3D);
 */
 char ComponentToChannelLabel(unsigned nComponent, bool b3D);
 
+/**
+    Get the degree that the channel corresponds to. E.g. Channel 0 belongs to degree 0, 1-to-3 belong to degree 1, 4-to-8 belong to degree 2
+*/
+unsigned ComponentPositionToDegree(unsigned nComponent, bool b3D);
+
 #endif //_AMBISONICCOMMONS_H
