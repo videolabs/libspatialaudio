@@ -444,3 +444,31 @@ void testLinkwitzRileyFilter()
 	delete[] pOutHP;
 	delete[] pSum;
 }
+
+/** Test the psychoacoustic optimisation filters
+*/
+void testOptimFilters()
+{
+	CAmbisonicOptimFilters optFilters;
+
+	CBFormat inputSignal;
+	unsigned nSamples = 128;
+	unsigned order = 3;
+	bool b3D = true;
+	unsigned sampleRate = 48000;
+	inputSignal.Configure(order, b3D, nSamples);
+	inputSignal.Reset();
+
+	optFilters.Configure(order, b3D, nSamples, sampleRate);
+
+	std::vector<float> impulse(nSamples, 0.f);
+	std::vector<std::vector<float>> output(inputSignal.GetChannelCount(), std::vector<float>(nSamples, 0.f));
+	impulse[0] = 1.f;
+	for (auto i = 0; i < inputSignal.GetChannelCount(); ++i)
+		inputSignal.InsertStream(impulse.data(), i, nSamples);
+
+	optFilters.Process(&inputSignal, nSamples);
+
+	for (auto i = 0; i < inputSignal.GetChannelCount(); ++i)
+		inputSignal.ExtractStream(output[i].data(), i, nSamples);
+}
