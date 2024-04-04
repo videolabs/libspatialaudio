@@ -464,11 +464,49 @@ void testOptimFilters()
 	std::vector<float> impulse(nSamples, 0.f);
 	std::vector<std::vector<float>> output(inputSignal.GetChannelCount(), std::vector<float>(nSamples, 0.f));
 	impulse[0] = 1.f;
-	for (auto i = 0; i < inputSignal.GetChannelCount(); ++i)
+	for (unsigned i = 0; i < inputSignal.GetChannelCount(); ++i)
 		inputSignal.InsertStream(impulse.data(), i, nSamples);
 
 	optFilters.Process(&inputSignal, nSamples);
 
-	for (auto i = 0; i < inputSignal.GetChannelCount(); ++i)
+	for (unsigned i = 0; i < inputSignal.GetChannelCount(); ++i)
 		inputSignal.ExtractStream(output[i].data(), i, nSamples);
+}
+
+/** Test the binaural decoder
+*/
+void testBinauralDecoder()
+{
+	unsigned nSamples = 128;
+	unsigned order = 1;
+	bool b3D = true;
+	unsigned sampleRate = 48000;
+	unsigned tailLength = 0;
+
+	CAmbisonicBinauralizer ambiBin;
+	bool success = ambiBin.Configure(order, b3D, sampleRate, nSamples, tailLength);
+	assert(success);
+
+	CBFormat inputSignal;
+	inputSignal.Configure(order, b3D, nSamples);
+	inputSignal.Reset();
+	std::vector<float> impulse(nSamples, 0.f);
+	std::vector<std::vector<float>> output(inputSignal.GetChannelCount(), std::vector<float>(nSamples, 0.f));
+	impulse[0] = 1.f;
+	// Encoded at 90deg
+	inputSignal.InsertStream(impulse.data(), 0, nSamples);
+	inputSignal.InsertStream(impulse.data(), 1, nSamples);
+
+	float** binOut = new float*[2];
+	for (int iEar = 0; iEar < 2; ++iEar)
+		binOut[iEar] = new float[nSamples];
+
+	ambiBin.Process(&inputSignal, binOut, nSamples);
+
+	for (unsigned iSamp = 0; iSamp < nSamples; ++iSamp)
+		std::cout << binOut[0][iSamp] << ", " << binOut[1][iSamp] << std::endl;
+
+	for (int iEar = 0; iEar < 2; ++iEar)
+		delete binOut[iEar];
+	delete[] binOut;
 }
