@@ -39,13 +39,15 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
                                        unsigned nSampleRate,
                                        unsigned nBlockSize,
                                        unsigned& tailLength,
-                                       std::string HRTFPath)
+                                       std::string HRTFPath,
+                                       bool lowCpuMode)
 {
     bool success = CAmbisonicBase::Configure(nOrder, b3D, 0);
     if (!success)
         return false;
 
     m_nSampleRate = nSampleRate;
+    m_useSymHead = lowCpuMode;
 
     //Iterators
     unsigned niEar = 0;
@@ -243,10 +245,7 @@ void CAmbisonicBinauralizer::Process(CBFormat* pBFSrc,
     decompositions of the virtual loudspeaker array HRTFs.
     This has the effect of assuming a completel symmetric head. */
 
-    /* TODO: This bool flag should be either an automatic or user option depending on CPU. It should be 'true' if
-    CPU load needs to be limited */
-    bool bLowCPU = true;
-    if(bLowCPU){
+    if(m_useSymHead){
         // Perform the convolutions for the left ear and generate the right ear from a modified accumulation of these channels
         niEar = 0;
         memset(m_pfScratchBufferA.data(), 0, m_nFFTSize * sizeof(float));
