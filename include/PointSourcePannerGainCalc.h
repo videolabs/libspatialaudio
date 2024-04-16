@@ -24,7 +24,7 @@
 class CPointSourcePannerGainCalc
 {
 public:
-	CPointSourcePannerGainCalc(Layout layout);
+	CPointSourcePannerGainCalc(const Layout& layout);
 	~CPointSourcePannerGainCalc();
 
 	/**
@@ -58,7 +58,7 @@ private:
 		This currently works for the supported arrays: 0+5+0, 0+4+0, 0+7+0
 		See Rec. ITU-R BS.2127-0 pg. 27
 	*/
-	Layout CalculateExtraSpeakersLayout(Layout layout);
+	Layout CalculateExtraSpeakersLayout(const Layout& layout);
 
 	/**
 		Calculate the gains for the panning layout. In most cases this will be the same

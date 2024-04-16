@@ -26,7 +26,7 @@ public:
 	/*
 		Set the gain vector target and the time in samples to interpolate to it
 	*/
-	void SetGainVector(std::vector<double> newGainVec, unsigned int interpTimeInSamples);
+	void SetGainVector(const std::vector<double>& newGainVec, unsigned int interpTimeInSamples);
 
 	/*
 		Apply the gains to the mono input signal and _add_ them to the output buffer

@@ -17,7 +17,7 @@
 #include<string>
 #include <map>
 
-CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(Layout layout)
+CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(const Layout& layout)
 {
 	// if the layout is HOA then don't go any further because this panner is intended for loudspeaker arrays
 	if (layout.isHoa)
@@ -234,7 +234,7 @@ std::vector<double> CPointSourcePannerGainCalc::_CalculateGains(CartesianPositio
 	return gains;
 }
 
-Layout CPointSourcePannerGainCalc::CalculateExtraSpeakersLayout(Layout layout)
+Layout CPointSourcePannerGainCalc::CalculateExtraSpeakersLayout(const Layout& layout)
 {
 	Layout extraSpeakers;
 	unsigned int nSpeakers = (unsigned int)layout.channels.size();

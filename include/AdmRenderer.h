@@ -85,7 +85,7 @@ namespace admrender {
 
 			Returns true if everything is configured correctly. Otherwise, returns false.
 		*/
-		bool Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath = "", std::vector<Screen> reproductionScreen = std::vector<Screen>{});
+		bool Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, const StreamInformation& channelInfo, std::string HRTFPath = "", std::vector<Screen> reproductionScreen = std::vector<Screen>{});
 
 		/**
 			Add an audio Object to be rendered
@@ -93,7 +93,7 @@ namespace admrender {
 			Inputs: pIn - Pointer to audio
 					channelInd - channel index in the ADM
 		*/
-		void AddObject(float* pIn, unsigned int nSamples, ObjectMetadata metadata, unsigned int nOffset = 0);
+		void AddObject(float* pIn, unsigned int nSamples, const ObjectMetadata& metadata, unsigned int nOffset = 0);
 
 		/**
 			Adds an HOA stream to be rendered
@@ -102,7 +102,7 @@ namespace admrender {
 					nSamples - number of samples in the block
 					metadata - the HOA metadata
 		*/
-		void AddHoa(float** pHoaIn, unsigned int nSamples, HoaMetadata metadata, unsigned int nOffset = 0);
+		void AddHoa(float** pHoaIn, unsigned int nSamples, const HoaMetadata& metadata, unsigned int nOffset = 0);
 
 		/**
 			Adds an DirectSpeaker stream to be rendered
@@ -111,7 +111,7 @@ namespace admrender {
 					nSamples - number of samples in the block
 					metadata - the DirectSpeaker metadata
 		*/
-		void AddDirectSpeaker(float* pDirSpkIn, unsigned int nSamples, DirectSpeakerMetadata metadata, unsigned int nOffset = 0);
+		void AddDirectSpeaker(float* pDirSpkIn, unsigned int nSamples, const DirectSpeakerMetadata& metadata, unsigned int nOffset = 0);
 
 		/**
 			Adds a binaural signal to the output. If the output type was not set to Binaural at startup
@@ -153,6 +153,9 @@ namespace admrender {
 		// A map from the channel index to the object index in the order the objects were listed
 		// in the stream at configuration
 		std::map<int, int> m_channelToObjMap;
+
+		// Object metadata for internal use when converting to polar coordinates
+		ObjectMetadata m_objMetaDataTmp;
 
 		// The channel indices of the tracks that can use a point source panner
 		std::vector<std::pair<unsigned int, TypeDefinition>> m_pannerTrackInd;
@@ -200,7 +203,7 @@ namespace admrender {
 			Find the element of a vector matching the input. If the track types do not match or no matching
 			elements then returns -1
 		*/
-		int GetMatchingIndex(std::vector<std::pair<unsigned int, TypeDefinition>>, unsigned int nElement, TypeDefinition trackType);
+		int GetMatchingIndex(const std::vector<std::pair<unsigned int, TypeDefinition>>& vector, unsigned int nElement, TypeDefinition trackType);
 	};
 
 }

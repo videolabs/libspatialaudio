@@ -46,7 +46,7 @@ namespace admrender {
 		/**
 			Calculate the gain vector once the appropriate loudspeakers have been exlcuded
 		*/
-		std::vector<double> handle(std::vector<PolarExclusionZone> exclusionZones, std::vector<double> gains);
+		std::vector<double> handle(const std::vector<PolarExclusionZone>& exclusionZones, const std::vector<double>& gains);
 
 	private:
 		unsigned int m_nCh = 0;
@@ -54,7 +54,7 @@ namespace admrender {
 		std::vector<std::vector<std::set<unsigned int>>> m_downmixMapping;
 		std::vector<std::vector<unsigned int>> m_downmixMatrix;
 
-		int GetLayerPriority(std::string inputChannelName, std::string outputChannelName);
+		int GetLayerPriority(const std::string& inputChannelName, const std::string& outputChannelName);
 	};
 
 	class CGainCalculator
@@ -67,7 +67,7 @@ namespace admrender {
 			Calculate the panning (loudspeaker or HOA) gains to apply to a
 			mono signal for spatialisation based on the input metadata
 		*/
-		void CalculateGains(ObjectMetadata metadata, std::vector<double>& directGains, std::vector<double>& diffuseGains);
+		void CalculateGains(const ObjectMetadata& metadata, std::vector<double>& directGains, std::vector<double>& diffuseGains);
 
 	private:
 		// The output layout

@@ -64,7 +64,7 @@ public:
 	/*
 		Returns a list of the channel names in order.
 	*/
-	std::vector<std::string> channelNames()
+	std::vector<std::string> channelNames() const
 	{
 		std::vector<std::string> channelNames;
 		for (unsigned int iCh = 0; iCh < channels.size(); ++iCh)

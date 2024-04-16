@@ -32,7 +32,7 @@ Triplet::Triplet(std::vector<unsigned int> chanInds, std::vector<PolarPosition> 
 	m_inverseDirections = inverseMatrix(unitVectors);
 }
 
-std::vector<double> Triplet::CalculateGains(std::vector<double> directionUnitVec)
+std::vector<double> Triplet::CalculateGains(const std::vector<double>& directionUnitVec)
 {
 	std::vector<double> gains(3, 0.);
 
@@ -79,7 +79,7 @@ VirtualNgon::VirtualNgon(std::vector<unsigned int> chanInds, std::vector<PolarPo
 	}
 }
 
-std::vector<double> VirtualNgon::CalculateGains(std::vector<double> directionUnitVec)
+std::vector<double> VirtualNgon::CalculateGains(const std::vector<double>& directionUnitVec)
 {
 	std::vector<double> gains(m_nCh, 0.);
 
@@ -148,7 +148,7 @@ QuadRegion::QuadRegion(std::vector<unsigned int> chanInds, std::vector<PolarPosi
 	m_polynomialXProdY = CalculatePolyXProdTerms({ m_quadVertices[1],m_quadVertices[2],m_quadVertices[3],m_quadVertices[0] });
 }
 
-double QuadRegion::GetPanningValue(std::vector<double> directionUnitVec, std::vector<std::vector<double>> xprodTerms)
+double QuadRegion::GetPanningValue(const std::vector<double>& directionUnitVec, std::vector<std::vector<double>> xprodTerms)
 {
 	// Take the dot product with the direction vector to get the polynomial terms
 	double a = dotProduct(xprodTerms[0], directionUnitVec);
@@ -181,7 +181,7 @@ double QuadRegion::GetPanningValue(std::vector<double> directionUnitVec, std::ve
 	return -1.; // if no gain was found between 0 and 1 then return -1
 }
 
-std::vector<double> QuadRegion::CalculateGains(std::vector<double> directionUnitVec)
+std::vector<double> QuadRegion::CalculateGains(const std::vector<double>& directionUnitVec)
 {
 	std::vector<double> gains_tmp(4, 0.);
 	std::vector<double> gains(4, 0.);
@@ -216,7 +216,7 @@ std::vector<double> QuadRegion::CalculateGains(std::vector<double> directionUnit
 	return gains;
 }
 
-std::vector<std::vector<double>> QuadRegion::CalculatePolyXProdTerms(std::vector<CartesianPosition> quadVertices)
+std::vector<std::vector<double>> QuadRegion::CalculatePolyXProdTerms(const std::vector<CartesianPosition>& quadVertices)
 {
 	// See ITU Rec. ITU-R BS.2127-0 pg 24 last equation
 	std::vector<double> p1 = { quadVertices[0].x,quadVertices[0].y,quadVertices[0].z };

@@ -30,7 +30,7 @@ namespace admrender {
 	{
 	}
 
-	bool CAdmDirectSpeakersGainCalc::isLFE(DirectSpeakerMetadata metadata)
+	bool CAdmDirectSpeakersGainCalc::isLFE(const DirectSpeakerMetadata& metadata)
 	{
 		// See Rec. ITU-R BS.2127-0 sec. 8.2
 		if (metadata.channelFrequency.lowPass.size() > 0)
@@ -46,7 +46,7 @@ namespace admrender {
 		return false;
 	}
 
-	int CAdmDirectSpeakersGainCalc::findClosestWithinBounds(DirectSpeakerPolarPosition direction, double tol)
+	int CAdmDirectSpeakersGainCalc::findClosestWithinBounds(const DirectSpeakerPolarPosition& direction, double tol)
 	{
 		// See Rec. ITU-R BS.2127-0 sec 8.5
 		std::vector<unsigned int> withinBounds;
@@ -120,7 +120,7 @@ namespace admrender {
 		return -1;
 	}
 
-	std::vector<double> CAdmDirectSpeakersGainCalc::calculateGains(DirectSpeakerMetadata metadata)
+	std::vector<double> CAdmDirectSpeakersGainCalc::calculateGains(const DirectSpeakerMetadata& metadata)
 	{
 		std::vector<double> gains(m_nCh, 0.);
 

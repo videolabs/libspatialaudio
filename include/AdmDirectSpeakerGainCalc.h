@@ -35,7 +35,7 @@ namespace admrender {
 		/**
 			Calculate the gain vector corresponding to the metadata input
 		*/
-		std::vector<double> calculateGains(DirectSpeakerMetadata metadata);
+		std::vector<double> calculateGains(const DirectSpeakerMetadata& metadata);
 
 	private:
 		unsigned int m_nCh = 0;
@@ -44,13 +44,13 @@ namespace admrender {
 
 		CScreenEdgeLock m_screenEdgeLock;
 
-		bool isLFE(DirectSpeakerMetadata metadata);
+		bool isLFE(const DirectSpeakerMetadata& metadata);
 
 		/**
 			Find the closest speaker in the layout within the tolerance bounds
 			set
 		*/
-		int findClosestWithinBounds(DirectSpeakerPolarPosition direction, double tol);
+		int findClosestWithinBounds(const DirectSpeakerPolarPosition& direction, double tol);
 
 		/**
 			Determine if a given mapping rule applies for input layout, speaker label and output layout.
