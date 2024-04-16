@@ -33,6 +33,7 @@ list(APPEND headers
     include/AmbisonicMicrophone.h
     include/AmbisonicProcessor.h
     include/AmbisonicPsychoacousticFilters.h
+    include/AmbisonicRotator.h
     include/Ambisonics.h
     include/AmbisonicShelfFilters.h
     include/AmbisonicOptimFilters.h
@@ -74,6 +75,7 @@ list(APPEND sources
     source/AmbisonicCommons.cpp
     source/mit_hrtf_lib.c
     source/AmbisonicProcessor.cpp
+    source/AmbisonicRotator.cpp
     source/AmbisonicDecoder.cpp
     source/AmbisonicBinauralizer.cpp
     source/AmbisonicSource.cpp
