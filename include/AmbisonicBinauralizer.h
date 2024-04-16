@@ -47,7 +47,8 @@ public:
                            unsigned nSampleRate,
                            unsigned nBlockSize,
                            unsigned& tailLength,
-                           std::string HRTFPath = "");
+                           std::string HRTFPath = "",
+                           bool lowCpuMode = true);
     /**
         Resets members.
     */
@@ -74,6 +75,8 @@ public:
 
 protected:
     CAmbisonicDecoder m_AmbDecoder;
+
+    bool m_useSymHead = true;
 
     unsigned m_nBlockSize;
     unsigned m_nSampleRate;
