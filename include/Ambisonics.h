@@ -26,6 +26,7 @@
 #include "AmbisonicEncoderDist.h"
 #include "AmbisonicDecoder.h"
 #include "AmbisonicProcessor.h"
+#include "AmbisonicRotator.h"
 #include "AmbisonicBinauralizer.h"
 #include "AmbisonicZoomer.h"
 #include "AmbisonicDecoderPresets.h"

@@ -21,6 +21,7 @@
 #include<algorithm>
 #include <iostream>
 #include <vector>
+#include "assert.h"
 
 #include "Coordinates.h"
 
@@ -273,6 +274,25 @@ static inline std::vector<std::vector<double>> multiplyMat(std::vector<std::vect
 				ret[i][j] += A[i][k] * B[k][j];
 
 	return ret;
+}
+
+template<typename T>
+static inline void multiplyMat(const std::vector<std::vector<T>>& A, const std::vector<std::vector<T>>& B, std::vector<std::vector<T>>& C)
+{
+	size_t rowsA = A.size();
+	size_t colsA = A[0].size();
+	size_t colsB = B[0].size();
+	assert(C.size() == rowsA && C[0].size() == colsB); // Destination matrix C must match the size of the product of A and B
+
+	// Clear the destination matrix
+	for (size_t i = 0; i < rowsA; ++i)
+		for (size_t j = 0; j < colsB; ++j)
+			C[i][j] = 0.f;
+
+	for (size_t i = 0; i < rowsA; ++i)
+		for (size_t j = 0; j < colsB; ++j)
+			for (size_t k = 0; k < colsA; ++k)
+				C[i][j] += A[i][k] * B[k][j];
 }
 /**
 	Multiply a matrix to a vector y = Ax;
