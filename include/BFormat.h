@@ -96,6 +96,7 @@ protected:
     friend class CAmbisonicSpeaker;
     friend class CAmbisonicMicrophone;
     friend class CAmbisonicProcessor;
+    friend class CAmbisonicRotator;
     friend class CAmbisonicBinauralizer;
     friend class CAmbisonicZoomer;
     friend class CAmbisonicShelfFilters;

@@ -111,7 +111,9 @@ private:
 /** This object is used to rotate the BFormat signal around all three axes.
     Orientation structs are used to define the the soundfield's orientation. */
 
-class CAmbisonicProcessor : public CAmbisonicBase
+class
+    [[deprecated("This class is deprecated. Please use CAmbisonicRotator class instead.")]]
+CAmbisonicProcessor : public CAmbisonicBase
 {
 public:
     CAmbisonicProcessor();

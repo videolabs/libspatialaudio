@@ -510,3 +510,61 @@ void testBinauralDecoder()
 		delete binOut[iEar];
 	delete[] binOut;
 }
+
+/** Test sound field rotation */
+void testRotation()
+{
+	unsigned nSamples = 128;
+	unsigned order = 3;
+	bool b3D = true;
+	unsigned sampleRate = 48000;
+	float fadeTime = 0.5f * 1000.f * (float)nSamples / (float)sampleRate;
+
+	CAmbisonicRotator ambiRot;
+	ambiRot.Configure(order, b3D, nSamples, sampleRate, fadeTime);
+
+	CBFormat inputSignal;
+	inputSignal.Configure(order, b3D, nSamples);
+	inputSignal.Reset();
+	std::vector<float> ones(nSamples, 1.f);
+	// Encoded the all-ones signal to HOA
+	PolarPoint srcPos;
+	srcPos.fAzimuth = 0.25f * 3.14159f;
+	srcPos.fElevation = 0.25f * 3.14159f;
+	srcPos.fDistance = 1.f;
+	CAmbisonicEncoder ambiEnc;
+	ambiEnc.Configure(order, b3D, 0);
+	ambiEnc.SetPosition(srcPos);
+	ambiEnc.Refresh();
+	ambiEnc.Process(ones.data(), nSamples, &inputSignal);
+	CBFormat originalSig;
+	originalSig.Configure(order, b3D, nSamples);
+	originalSig = inputSignal;
+
+	// Set the orientation just before processing to ensure cross-fade is triggered
+	RotationOrientation ori = { 0.33f * 3.14159f, 0.33f * 3.14159f, 0.33f * 3.14159f };
+	ambiRot.SetOrientation(ori);
+
+	// Process using both processors
+	ambiRot.Process(&inputSignal, nSamples);
+
+	std::vector<std::vector<float>> outStream(inputSignal.GetChannelCount(), std::vector<float>(nSamples, 0.f))
+		, origSig(inputSignal.GetChannelCount(), std::vector<float>(nSamples, 0.f));
+
+	for (unsigned iCh = 0; iCh < inputSignal.GetChannelCount(); ++iCh)
+	{
+		inputSignal.ExtractStream(outStream[iCh].data(), iCh, nSamples);
+		originalSig.ExtractStream(origSig[iCh].data(), iCh, nSamples);
+	}
+
+	for (unsigned iSamp = 0; iSamp < nSamples; ++iSamp)
+	{
+		std::cout << iSamp << ": ";
+		for (unsigned iCh = 0; iCh < inputSignal.GetChannelCount(); ++iCh)
+		{
+			std::cout << origSig[iCh][iSamp] << "/" << outStream[iCh][iSamp] << ", ";
+		}
+		std::cout << std::endl;
+	}
+
+}
