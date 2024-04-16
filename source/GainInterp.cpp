@@ -20,7 +20,7 @@ CGainInterp::~CGainInterp()
 {
 }
 
-void CGainInterp::SetGainVector(std::vector<double> newGainVec, unsigned int interpTimeInSamples)
+void CGainInterp::SetGainVector(const std::vector<double>& newGainVec, unsigned int interpTimeInSamples)
 {
 	if (m_targetGainVec != newGainVec)
 	{

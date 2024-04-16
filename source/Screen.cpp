@@ -28,7 +28,7 @@ CScreenScaleHandler::~CScreenScaleHandler()
 
 }
 
-CartesianPosition CScreenScaleHandler::handle(CartesianPosition position, bool screenRef, std::vector<Screen> referenceScreen, bool cartesian)
+CartesianPosition CScreenScaleHandler::handle(CartesianPosition position, bool screenRef, const std::vector<Screen>& referenceScreen, bool cartesian)
 {
 	if (screenRef && m_repScreenSet)
 	{
