@@ -23,7 +23,7 @@
 	Returns the order of a set of points in an anti-clockwise direction.
 	The points should be form a Quad or Ngon and be roughly co-planar
 */
-static inline std::vector<unsigned int> getNgonVectexOrder(std::vector<PolarPosition> polarPositions, PolarPosition centrePosition)
+static inline std::vector<unsigned int> getNgonVectexOrder(const std::vector<PolarPosition>& polarPositions, PolarPosition centrePosition)
 {
 	unsigned int nVertices = (unsigned int)polarPositions.size();
 	double rotMat[9] = { 0. };
@@ -77,7 +77,7 @@ class Triplet : public RegionHandler
 public:
 	Triplet(std::vector<unsigned int> chanInds, std::vector<PolarPosition> polPos);
 
-	std::vector<double> CalculateGains(std::vector<double> directionUnitVec);
+	std::vector<double> CalculateGains(const std::vector<double>& directionUnitVec);
 
 private:
 	// Inverse of the matrix holding the triplet unit vectors
@@ -94,7 +94,7 @@ class VirtualNgon : public RegionHandler
 public:
 	VirtualNgon(std::vector<unsigned int> chanInds, std::vector<PolarPosition> polPos, PolarPosition centrePosition);
 
-	std::vector<double> CalculateGains(std::vector<double> directionUnitVec);
+	std::vector<double> CalculateGains(const std::vector<double>& directionUnitVec);
 
 private:
 	std::vector<Triplet> m_triplets;
@@ -112,12 +112,12 @@ class QuadRegion : public RegionHandler
 public:
 	QuadRegion(std::vector<unsigned int> chanInds, std::vector<PolarPosition> polPos);
 
-	double GetPanningValue(std::vector<double> directionUnitVec, std::vector<std::vector<double>> xprodTerms);
+	double GetPanningValue(const std::vector<double>& directionUnitVec, std::vector<std::vector<double>> xprodTerms);
 
-	std::vector<double> CalculateGains(std::vector<double> directionUnitVec);
+	std::vector<double> CalculateGains(const std::vector<double>& directionUnitVec);
 
 private:
-	std::vector<std::vector<double>> CalculatePolyXProdTerms(std::vector<CartesianPosition> quadVertices);
+	std::vector<std::vector<double>> CalculatePolyXProdTerms(const std::vector<CartesianPosition>& quadVertices);
 
 	// The coordinates of the vertices in anti-clockwise order start from the bottom left.
 	std::vector<CartesianPosition> m_quadVertices;

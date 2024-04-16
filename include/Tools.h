@@ -36,7 +36,7 @@
 	+ve Y = front
 	+ve Z = up
 */
-static inline std::vector<double> CartesianToPolar(std::vector<double> v)
+static inline std::vector<double> CartesianToPolar(const std::vector<double>& v)
 {
 	double x = v[0];
 	double y = v[1];
@@ -73,7 +73,7 @@ static inline PolarPosition CartesianToPolar(DirectSpeakerCartesianPosition cart
 	0 el = front, +ve el = up
 	Angles are expected in degrees.
 */
-static inline std::vector<double> PolarToCartesian(std::vector<double> polar)
+static inline std::vector<double> PolarToCartesian(const std::vector<double>& polar)
 {
 	double az = DEG2RAD * polar[0];
 	double el = DEG2RAD * polar[1];
@@ -107,7 +107,7 @@ static inline CartesianPosition PolarToCartesian(DirectSpeakerPolarPosition pola
 /**
 	Returns the norm of a vector
 */
-static inline double norm(std::vector<double> vec)
+static inline double norm(const std::vector<double>& vec)
 {
 	double vecNorm = 0.;
 	for (size_t i = 0; i < vec.size(); ++i)
@@ -193,7 +193,7 @@ static inline double relativeAngle(double x, double y)
 /**
 	Returns the element-wise sum of two vectors of the same length
 */
-static inline std::vector<double> vecSum(std::vector<double> a, std::vector<double> b)
+static inline std::vector<double> vecSum(const std::vector<double>& a, const std::vector<double>& b)
 {
 	std::vector<double> c(a.size(), 0.);
 	std::transform(a.begin(), a.end(), b.begin(), c.begin(), std::plus<double>());
@@ -202,7 +202,7 @@ static inline std::vector<double> vecSum(std::vector<double> a, std::vector<doub
 /**
 	Subtracts vector b from vector a in an element-wise manner. Returns a-b
 */
-static inline std::vector<double> vecSubtract(std::vector<double> a, std::vector<double> b)
+static inline std::vector<double> vecSubtract(const std::vector<double>& a, const std::vector<double>& b)
 {
 	std::vector<double> c(a.size(), 0.);
 	std::transform(a.begin(), a.end(), b.begin(), c.begin(), std::minus<double>());
@@ -211,14 +211,14 @@ static inline std::vector<double> vecSubtract(std::vector<double> a, std::vector
 /**
 	Returns the dot-product of two 3D vector
 */
-static inline double dotProduct(std::vector<double> a, std::vector<double> b)
+static inline double dotProduct(const std::vector<double>& a, const std::vector<double>& b)
 {
 	return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 /**
 	Returns the cross-product of two 3D vector
 */
-static inline std::vector<double> crossProduct(std::vector<double> a, std::vector<double> b)
+static inline std::vector<double> crossProduct(const std::vector<double>& a, const std::vector<double>& b)
 {
 	std::vector<double> c(3, 0.);
 
@@ -261,7 +261,7 @@ static inline bool insideAngleRange(double x, double startAngle, double endAngle
 /**
 	Multiply two matrices
 */
-static inline std::vector<std::vector<double>> multiplyMat(std::vector<std::vector<double>> A, std::vector<std::vector<double>> B)
+static inline std::vector<std::vector<double>> multiplyMat(const std::vector<std::vector<double>>& A, const std::vector<std::vector<double>>& B)
 {
 	size_t rowsA = A.size();
 	size_t colsA = A[0].size();
@@ -297,7 +297,7 @@ static inline void multiplyMat(const std::vector<std::vector<T>>& A, const std::
 /**
 	Multiply a matrix to a vector y = Ax;
 */
-static inline std::vector<double> multiplyMatVec(std::vector<std::vector<double>> A, std::vector<double> x)
+static inline std::vector<double> multiplyMatVec(const std::vector<std::vector<double>>& A, const std::vector<double>& x)
 {
 	size_t rowsA = A.size();
 	size_t colsA = A[0].size();
@@ -312,7 +312,7 @@ static inline std::vector<double> multiplyMatVec(std::vector<std::vector<double>
 /**
 	Calculate the inverse of a square matrix of size 2x2
 */
-static inline std::vector<std::vector<double>> inverseMatrix2x2(std::vector<std::vector<double>> mat)
+static inline std::vector<std::vector<double>> inverseMatrix2x2(const std::vector<std::vector<double>>& mat)
 {
 	double a = mat[0][0];
 	double b = mat[0][1];
@@ -325,7 +325,7 @@ static inline std::vector<std::vector<double>> inverseMatrix2x2(std::vector<std:
 /**
 	Calculate the inverse of a square matrix
 */
-static inline std::vector<std::vector<double>> inverseMatrix(std::vector<std::vector<double>> mat)
+static inline std::vector<std::vector<double>> inverseMatrix(const std::vector<std::vector<double>>& mat)
 {
 	size_t matSize = mat.size();
 
@@ -425,7 +425,7 @@ static inline double clamp(double val, double minVal, double maxVal)
 	The elements of fromVals should be ascending order.
 	If the input val is outside the range defined in fromVals then it is returned unchanged
 */
-static inline double interp(double val, std::vector<double> fromVals, std::vector<double> toVals)
+static inline double interp(double val, const std::vector<double>& fromVals, const std::vector<double>& toVals)
 {
 	int nPieces = (int)fromVals.size();
 	for(int iPiece = 0; iPiece < nPieces-1; ++iPiece)

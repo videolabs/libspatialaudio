@@ -25,7 +25,7 @@
 
 	See Rec. ITU-R BS.2127-0 sec. 7.3.2 pg 41 for more details
 */
-static inline std::pair<double, double> CompensatePosition(double az, double el, Layout layout)
+static inline std::pair<double, double> CompensatePosition(double az, double el, const Layout& layout)
 {
 	auto speakerNames = layout.channelNames();
 	if (std::find(speakerNames.begin(), speakerNames.end(), std::string("U+045")) != speakerNames.end())
@@ -53,7 +53,7 @@ public:
 		Scales a position depending on the reproduction screen and the reference screen
 		See Rec. ITU-R BS.2127-0 sec. 7.3.3 pg 40 for more details
 	*/
-	CartesianPosition handle(CartesianPosition position, bool screenRef, std::vector<Screen> referenceScreen, bool cartesian);
+	CartesianPosition handle(CartesianPosition position, bool screenRef, const std::vector<Screen>& referenceScreen, bool cartesian);
 
 private:
 	Layout m_layout;

@@ -258,24 +258,25 @@ namespace admrender {
 
 		See Rec. ITU-R BS.2127-0 sec. 10 pg 68.
 	*/
-	static inline void toPolar(ObjectMetadata& metadataBlock)
+	static inline void toPolar(const ObjectMetadata& inMetadataBlock, ObjectMetadata& outMetadataBlock)
 	{
-		if (metadataBlock.cartesian)
+		outMetadataBlock = inMetadataBlock;
+		if (inMetadataBlock.cartesian)
 		{
 			// Update the position and the extent
-			auto posWhd = ExtentCartToPolar(metadataBlock.cartesianPosition.x, metadataBlock.cartesianPosition.y, metadataBlock.cartesianPosition.z,
-				metadataBlock.width, metadataBlock.height, metadataBlock.depth);
-			metadataBlock.polarPosition = posWhd.first;
-			metadataBlock.width = posWhd.second[0];
-			metadataBlock.height = posWhd.second[1];
-			metadataBlock.depth = posWhd.second[2];
+			auto posWhd = ExtentCartToPolar(inMetadataBlock.cartesianPosition.x, inMetadataBlock.cartesianPosition.y, inMetadataBlock.cartesianPosition.z,
+				inMetadataBlock.width, inMetadataBlock.height, inMetadataBlock.depth);
+			outMetadataBlock.polarPosition = posWhd.first;
+			outMetadataBlock.width = posWhd.second[0];
+			outMetadataBlock.height = posWhd.second[1];
+			outMetadataBlock.depth = posWhd.second[2];
 
 			// Convert the divergence according to Rec. ITU-R BS.2127-0 sec. 10.3 pg.73
 			// TODO: The equation given in this section gives strange results. Need to double check it
 			// does not have a mistake.
 
 			// Unflag as cartesian
-			metadataBlock.cartesian = false;
+			outMetadataBlock.cartesian = false;
 		}
 	}
 }

@@ -27,7 +27,7 @@ namespace admrender {
 	{
 	}
 
-	bool CAdmRenderer::Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, StreamInformation channelInfo, std::string HRTFPath, std::vector<Screen> reproductionScreen)
+	bool CAdmRenderer::Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, const StreamInformation& channelInfo, std::string HRTFPath, std::vector<Screen> reproductionScreen)
 	{
 		// Set the output layout
 		m_RenderLayout = outputTarget;
@@ -219,13 +219,13 @@ namespace admrender {
 		}
 	}
 
-	void CAdmRenderer::AddObject(float* pIn, unsigned int nSamples, ObjectMetadata metadata, unsigned int nOffset)
+	void CAdmRenderer::AddObject(float* pIn, unsigned int nSamples, const ObjectMetadata& metadata, unsigned int nOffset)
 	{
 		// convert from cartesian to polar metadata (if required)
-		toPolar(metadata);
+		toPolar(metadata, m_objMetaDataTmp);
 
 		// Map from the track index to the corresponding panner index
-		int nObjectInd = GetMatchingIndex(m_pannerTrackInd, metadata.trackInd, TypeDefinition::Objects);
+		int nObjectInd = GetMatchingIndex(m_pannerTrackInd, m_objMetaDataTmp.trackInd, TypeDefinition::Objects);
 
 		if (nObjectInd == -1) // this track was not declared at construction. Stopping here.
 		{
@@ -235,15 +235,15 @@ namespace admrender {
 
 		// Check if the metadata has changed
 		int iObj = m_channelToObjMap[nObjectInd];
-		bool newMetadata = !(metadata == m_objectMetadata[iObj]);
+		bool newMetadata = !(m_objMetaDataTmp == m_objectMetadata[iObj]);
 		if (newMetadata)
 		{
 			// Store the metadata
-			m_objectMetadata[iObj] = metadata;
+			m_objectMetadata[iObj] = m_objMetaDataTmp;
 			// Calculate a new gain vector with this metadata
 			std::vector<double> directGainsNoLFE;
 			std::vector<double> diffuseGainsNoLFE;
-			m_objectGainCalc->CalculateGains(metadata, directGainsNoLFE, diffuseGainsNoLFE);
+			m_objectGainCalc->CalculateGains(m_objMetaDataTmp, directGainsNoLFE, diffuseGainsNoLFE);
 
 			// Apply scattering to the diffuse gains when output is binaural
 			if (m_RenderLayout == OutputLayout::Binaural)
@@ -270,10 +270,10 @@ namespace admrender {
 
 			// Get the interpolation time
 			unsigned int interpLength = 0;
-			if (metadata.jumpPosition.flag)
-				interpLength = metadata.jumpPosition.interpolationLength;
+			if (m_objMetaDataTmp.jumpPosition.flag)
+				interpLength = m_objMetaDataTmp.jumpPosition.interpolationLength;
 			else
-				interpLength = metadata.blockLength;
+				interpLength = m_objMetaDataTmp.blockLength;
 
 			// Set the gains in the interpolators
 			m_gainInterpDirect[iObj].SetGainVector(directGains, interpLength);
@@ -292,7 +292,7 @@ namespace admrender {
 		}
 	}
 
-	void CAdmRenderer::AddHoa(float** pHoaIn, unsigned int nSamples, HoaMetadata metadata, unsigned int nOffset)
+	void CAdmRenderer::AddHoa(float** pHoaIn, unsigned int nSamples, const HoaMetadata& metadata, unsigned int nOffset)
 	{
 		if (metadata.normalization != "SN3D")
 		{
@@ -311,7 +311,7 @@ namespace admrender {
 		}
 	}
 
-	void CAdmRenderer::AddDirectSpeaker(float* pDirSpkIn, unsigned int nSamples, DirectSpeakerMetadata metadata, unsigned int nOffset)
+	void CAdmRenderer::AddDirectSpeaker(float* pDirSpkIn, unsigned int nSamples, const DirectSpeakerMetadata& metadata, unsigned int nOffset)
 	{
 		// If no matching output speaker then pan using the point source panner
 		// Set the position of the source from the metadata
@@ -437,7 +437,7 @@ namespace admrender {
 			std::fill(m_speakerOutDiffuse[iCh].begin(), m_speakerOutDiffuse[iCh].end(), 0.f);
 	}
 
-	int CAdmRenderer::GetMatchingIndex(std::vector<std::pair<unsigned int, TypeDefinition>> vector, unsigned int nElement, TypeDefinition trackType)
+	int CAdmRenderer::GetMatchingIndex(const std::vector<std::pair<unsigned int, TypeDefinition>>& vector, unsigned int nElement, TypeDefinition trackType)
 	{
 		// Map from the track index to the corresponding panner index
 		int nInd = 0;

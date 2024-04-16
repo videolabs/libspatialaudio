@@ -149,7 +149,7 @@ namespace admrender {
 	{
 	}
 
-	int ZoneExclusionHandler::GetLayerPriority(std::string inputChannelName, std::string outputChannelName)
+	int ZoneExclusionHandler::GetLayerPriority(const std::string& inputChannelName, const std::string& outputChannelName)
 	{
 		std::map<char, int> layerIndex = { {'B',0},{'M',1},{'U',2},{'T',3} };
 		int inIndex = layerIndex[inputChannelName[0]];
@@ -160,7 +160,7 @@ namespace admrender {
 		return layerPriority[inIndex][outIndex];
 	}
 
-	std::vector<double> ZoneExclusionHandler::handle(std::vector<PolarExclusionZone> exclusionZones, std::vector<double> gains)
+	std::vector<double> ZoneExclusionHandler::handle(const std::vector<PolarExclusionZone>& exclusionZones, const std::vector<double>& gains)
 	{
 		double tol = 1e-6;
 
@@ -248,7 +248,7 @@ namespace admrender {
 	{
 	}
 
-	void CGainCalculator::CalculateGains(ObjectMetadata metadata, std::vector<double>& directGains, std::vector<double>& diffuseGains)
+	void CGainCalculator::CalculateGains(const ObjectMetadata& metadata, std::vector<double>& directGains, std::vector<double>& diffuseGains)
 	{
 		std::vector<double> gains(m_nCh, 0.);
 
