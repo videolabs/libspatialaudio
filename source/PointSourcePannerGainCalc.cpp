@@ -19,10 +19,6 @@
 
 CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(const Layout& layout)
 {
-	// if the layout is HOA then don't go any further because this panner is intended for loudspeaker arrays
-	if (layout.isHoa)
-		return;
-
 	// Store the output layout
 	m_outputLayout = getLayoutWithoutLFE(layout);
 	std::string layoutName = m_outputLayout.name;
@@ -48,6 +44,14 @@ CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(const Layout& layout)
 	else if (layoutName == "0+7+0")
 		hull = HULL_0_7_0;
 	unsigned int nOutputCh = (unsigned int)m_outputLayout.channels.size();
+
+	// Allocate temp gains based on the size of the internal layout used (0+5+0 when outputting stereo)
+	m_gainsTmp.resize(m_outputLayout.channels.size(), 0.);
+	m_directionUnitVec.resize(3, 0.);
+
+	// if the layout is HOA then don't go any further because this panner is intended for loudspeaker arrays
+	if (layout.isHoa)
+		return;
 
 	// Get the positions of all of the loudspeakers
 	std::vector<PolarPosition> positions;
@@ -135,45 +139,56 @@ CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(const Layout& layout)
 		m_regions.virtualNgons.push_back(VirtualNgon(ngonInds, ngonPositions, positions[virtualSpkInd[iVirt]]));
 	}
 
+	for (size_t iNgon = 0; iNgon < m_regions.virtualNgons.size(); ++iNgon)
+	{
+		auto nVerts = m_regions.virtualNgons[iNgon].m_polarPositions.size();
+		if (nVerts > m_nGonGains.size())
+			m_nGonGains.resize(nVerts);
+	}
+	m_tripletGains.resize(3, 0.);
+	m_quadGains.resize(4, 0.);
 }
 
 CPointSourcePannerGainCalc::~CPointSourcePannerGainCalc()
 {
 }
 
-std::vector<double> CPointSourcePannerGainCalc::CalculateGains(PolarPosition direction)
+void CPointSourcePannerGainCalc::CalculateGains(PolarPosition direction, std::vector<double>& gains)
 {
-	return CalculateGains(PolarToCartesian(direction));
+	return CalculateGains(PolarToCartesian(direction), gains);
 }
 
-std::vector<double> CPointSourcePannerGainCalc::CalculateGains(CartesianPosition position)
+void CPointSourcePannerGainCalc::CalculateGains(CartesianPosition position, std::vector<double>& gains)
 {
-	std::vector<double> gains = _CalculateGains(position);
 	if (m_isStereo) // then downmix from 0+5+0 to 0+2+0
 	{
+		assert(gains.size() == 2);
+		CalculateGainsFromRegions(position, m_gainsTmp);
+
+		gains[0] = 0.;
+		gains[1] = 0.;
 		// See Rec. ITU-R BS.2127-0 6.1.2.4 (page 2.5) for downmix method 
 		double stereoDownmix[2][5] = { {1.,0.,1. / sqrt(3.),1. / sqrt(2.),0.}, {0.,1.,1. / sqrt(3.),0.,1. / sqrt(2.)} };
-		std::vector<double> gainsStereo(2, 0.);
 		for (int i = 0; i < 2; ++i)
 			for (int j = 0; j < 5; ++j)
-				gainsStereo[i] += stereoDownmix[i][j] * gains[j];
+				gains[i] += stereoDownmix[i][j] * m_gainsTmp[j];
 		double a_front;
 		int i = 0;
 		for (i = 0; i < 3; ++i)
-			a_front = std::max(a_front, gains[i]);
+			a_front = std::max(a_front, m_gainsTmp[i]);
 		double a_rear;
 		for (i = 3; i < 5; ++i)
-			a_rear = std::max(a_rear, gains[i]);
+			a_rear = std::max(a_rear, m_gainsTmp[i]);
 		double r = a_rear / (a_front + a_rear);
-		double gainNormalisation = std::pow(0.5, r / 2.) / norm(gainsStereo);
+		double gainNormalisation = std::pow(0.5, r / 2.) / norm(gains);
 
-		gainsStereo[0] *= gainNormalisation;
-		gainsStereo[1] *= gainNormalisation;
-
-		return gainsStereo;
+		gains[0] *= gainNormalisation;
+		gains[1] *= gainNormalisation;
 	}
 	else
-		return gains;
+	{
+		CalculateGainsFromRegions(position, gains);
+	}
 }
 
 unsigned int CPointSourcePannerGainCalc::getNumChannels()
@@ -181,57 +196,66 @@ unsigned int CPointSourcePannerGainCalc::getNumChannels()
 	return m_isStereo ? 2 : (unsigned int)m_outputLayout.channels.size();
 }
 
-std::vector<double> CPointSourcePannerGainCalc::_CalculateGains(CartesianPosition position)
+void CPointSourcePannerGainCalc::CalculateGainsFromRegions(CartesianPosition position, std::vector<double>& gains)
 {
 	double tol = 1e-6;
-	std::vector<double> gains(m_outputLayout.channels.size(), 0.);
+
+	assert(gains.size() == m_outputLayout.channels.size()); // Gains vector length must match the number of channels
+	for (size_t i = 0; i < gains.size(); ++i)
+		gains[i] = 0.;
 
 	// get the unit vector in the target direction
-	std::vector<double> directionUnitVec(3, 0.);
 	double vecNorm = norm(position);
-	directionUnitVec = { position.x / vecNorm, position.y / vecNorm,position.z / vecNorm };
+	m_directionUnitVec[0] = position.x / vecNorm;
+	m_directionUnitVec[1] = position.y / vecNorm;
+	m_directionUnitVec[2] = position.z / vecNorm;
+
+	for (double& g : m_nGonGains)
+		g = 0.;
+	for (double& g : m_tripletGains)
+		g = 0.;
+	for (double& g : m_quadGains)
+		g = 0.;
 
 	// Loop through all of the regions until one is found that is not zero gain
 	for (size_t iNgon = 0; iNgon < m_regions.virtualNgons.size(); ++iNgon)
 	{
-		std::vector<double> nGonGains = m_regions.virtualNgons[iNgon].CalculateGains(directionUnitVec);
-		if (norm(nGonGains) > tol) // if the gains are not zero then map them to the output gains
+		m_regions.virtualNgons[iNgon].CalculateGains(m_directionUnitVec, m_nGonGains);
+		if (norm(m_nGonGains) > tol) // if the gains are not zero then map them to the output gains
 		{
-			std::vector<unsigned int> nGonInds = m_regions.virtualNgons[iNgon].m_channelInds;
-			for (size_t iGain = 0; iGain < nGonGains.size(); ++iGain)
-				gains[m_downmixMapping[nGonInds[iGain]]] += nGonGains[iGain];
+			std::vector<unsigned int>& nGonInds = m_regions.virtualNgons[iNgon].m_channelInds;
+			for (size_t iGain = 0; iGain < m_nGonGains.size(); ++iGain)
+				gains[m_downmixMapping[nGonInds[iGain]]] += m_nGonGains[iGain];
 
-			return gains;
+			return;
 		}
 	}
 	// Loop through the triplets Ngons
 	for (size_t iTriplet = 0; iTriplet < m_regions.triplets.size(); ++iTriplet)
 	{
-		std::vector<double> tripletGains = m_regions.triplets[iTriplet].CalculateGains(directionUnitVec);
-		if (norm(tripletGains) > tol) // if the gains are not zero then map them to the output gains
+		m_regions.triplets[iTriplet].CalculateGains(m_directionUnitVec, m_tripletGains);
+		if (norm(m_tripletGains) > tol) // if the gains are not zero then map them to the output gains
 		{
-			std::vector<unsigned int> tripletInds = m_regions.triplets[iTriplet].m_channelInds;
-			for (size_t iGain = 0; iGain < tripletGains.size(); ++iGain)
-				gains[m_downmixMapping[tripletInds[iGain]]] += tripletGains[iGain];
+			std::vector<unsigned int>& tripletInds = m_regions.triplets[iTriplet].m_channelInds;
+			for (size_t iGain = 0; iGain < m_tripletGains.size(); ++iGain)
+				gains[m_downmixMapping[tripletInds[iGain]]] += m_tripletGains[iGain];
 
-			return gains;
+			return;
 		}
 	}
 	// Loop through the triplets Ngons
 	for (size_t iQuad = 0; iQuad < m_regions.quadRegions.size(); ++iQuad)
 	{
-		std::vector<double> quadGains = m_regions.quadRegions[iQuad].CalculateGains(directionUnitVec);
-		if (norm(quadGains) > tol) // if the gains are not zero then map them to the output gains
+		m_regions.quadRegions[iQuad].CalculateGains(m_directionUnitVec, m_quadGains);
+		if (norm(m_quadGains) > tol) // if the gains are not zero then map them to the output gains
 		{
-			std::vector<unsigned int> quadInds = m_regions.quadRegions[iQuad].m_channelInds;
-			for (unsigned int iGain = 0; iGain < quadGains.size(); ++iGain)
-				gains[m_downmixMapping[quadInds[iGain]]] += quadGains[iGain];
+			std::vector<unsigned int>& quadInds = m_regions.quadRegions[iQuad].m_channelInds;
+			for (unsigned int iGain = 0; iGain < m_quadGains.size(); ++iGain)
+				gains[m_downmixMapping[quadInds[iGain]]] += m_quadGains[iGain];
 
-			return gains;
+			return;
 		}
 	}
-
-	return gains;
 }
 
 Layout CPointSourcePannerGainCalc::CalculateExtraSpeakersLayout(const Layout& layout)

@@ -65,6 +65,8 @@ static inline bool testDirectSpeakers()
 	layout.reproductionScreen[0].widthAzimuth = screenWidth;
 	admrender::CAdmDirectSpeakersGainCalc gainCalc(layout);
 	CPointSourcePannerGainCalc psp(layout);
+	size_t nCh = layout.channels.size();
+	size_t nChNoLfe = getLayoutWithoutLFE(layout).channels.size();
 
 	std::vector<std::string> speakerNamePrefixes = { "", "urn:itu:bs:2051:0:speaker:", "urn:itu:bs:2051:1:speaker:" };
 
@@ -73,7 +75,8 @@ static inline bool testDirectSpeakers()
 		// Test that the signal is routed to the correct loudspeaker based on the name of a speaker in the array
 		std::string speakerLabel = "M+030";
 		metadata.speakerLabel = p + speakerLabel;
-		auto gName = gainCalc.calculateGains(metadata);
+		std::vector<double> gName(nCh);
+		gainCalc.calculateGains(metadata, gName);
 		auto gNameTest = getDirectGain(speakerLabel, layout);
 		bool bName = gName == gNameTest;
 		assert(bName);
@@ -82,7 +85,8 @@ static inline bool testDirectSpeakers()
 		// This should use the mapping rules
 		speakerLabel = "U+180";
 		metadata.speakerLabel = p + speakerLabel;
-		auto gMapping = gainCalc.calculateGains(metadata);
+		std::vector<double> gMapping(nCh);
+		gainCalc.calculateGains(metadata, gMapping);
 		auto gMappingTest = std::vector<double>{ 0.,0.,0.,0.,1. / std::sqrt(2.),1. / std::sqrt(2.),0.,0. };
 		bool bMapping = gMapping == gMappingTest;
 		assert(bMapping);
@@ -91,7 +95,8 @@ static inline bool testDirectSpeakers()
 	// Test that the signal is routed to the LFE if the low-pass frequency has been set < 200 Hz
 	metadata.channelFrequency.lowPass.push_back(100.);
 	metadata.speakerLabel = "";
-	auto gFreq = gainCalc.calculateGains(metadata);
+	std::vector<double> gFreq(nCh);
+	gainCalc.calculateGains(metadata, gFreq);
 	auto gFreqTest = getDirectGain("LFE1", layout);
 	bool bFreq = gFreq == gFreqTest;
 	assert(bFreq);
@@ -102,7 +107,8 @@ static inline bool testDirectSpeakers()
 	for (auto& lfe : lfeNames)
 	{
 		metadata.speakerLabel = lfe;
-		auto gLFE = gainCalc.calculateGains(metadata);
+		std::vector<double> gLFE(nCh);
+		gainCalc.calculateGains(metadata, gLFE);
 		auto gLFETest = getDirectGain("LFE1", layout);
 		bool bLFE = gFreq == gLFETest;
 		assert(bLFE);
@@ -112,7 +118,8 @@ static inline bool testDirectSpeakers()
 	metadata.audioPackFormatID.clear();
 	std::string speakerLabel = "M-030";
 	metadata.speakerLabel = speakerLabel;
-	auto gNoPackMatch = gainCalc.calculateGains(metadata);
+	std::vector<double> gNoPackMatch(nCh);
+	gainCalc.calculateGains(metadata, gNoPackMatch);
 	auto gNoPackMatchTest = getDirectGain(speakerLabel, layout);
 	bool bNoPackMatch = gNoPackMatch == gNoPackMatchTest;
 	assert(bNoPackMatch);
@@ -121,8 +128,11 @@ static inline bool testDirectSpeakers()
 	speakerLabel = "";
 	metadata.speakerLabel = speakerLabel;
 	metadata.screenEdgeLock.horizontal = admrender::ScreenEdgeLock::LEFT;
-	auto gEdgeLock = gainCalc.calculateGains(metadata);
-	auto gEdgeLockTest = insertLFE(psp.CalculateGains(PolarPosition{ screenWidth/2.,0.,1. }), layout);
+	std::vector<double> gEdgeLock(nCh);
+	gainCalc.calculateGains(metadata, gEdgeLock);
+	std::vector<double> gEdgeLockTestTmp(nChNoLfe);
+	psp.CalculateGains(PolarPosition{ screenWidth / 2.,0.,1. }, gEdgeLockTestTmp);
+	auto gEdgeLockTest = insertLFE(gEdgeLockTestTmp, layout);
 	bool bEdgeLock = compareGainVectors(gEdgeLock, gEdgeLockTest);
 	assert(bEdgeLock);
 
@@ -133,7 +143,8 @@ static inline bool testDirectSpeakers()
 	metadata.polarPosition.elevation = 5.;
 	metadata.polarPosition.distance = 1.;
 	metadata.polarPosition.bounds.push_back({ 25.,35.,-10.,10.,0.9,1.1 });
-	auto gBounds = gainCalc.calculateGains(metadata);
+	std::vector<double> gBounds(nCh);
+	gainCalc.calculateGains(metadata, gBounds);
 	auto gBoundsTest = getDirectGain("M+030", layout);
 	bool bBounds = compareGainVectors(gBounds, gBoundsTest);
 	assert(bBounds);
@@ -144,8 +155,11 @@ static inline bool testDirectSpeakers()
 	metadata.polarPosition.distance = 1.;
 	metadata.polarPosition.bounds.clear();
 	metadata.polarPosition.bounds.push_back({ 27.,29.,-10.,10.,0.9,1.1 });
-	auto gNoBounds = gainCalc.calculateGains(metadata);
-	auto gNoBoundsTest = insertLFE(psp.CalculateGains(PolarPosition{ metadata.polarPosition.azimuth,metadata.polarPosition.elevation,metadata.polarPosition.distance }), layout);
+	std::vector<double> gNoBounds(nCh);
+	gainCalc.calculateGains(metadata, gNoBounds);
+	std::vector<double> gNoBoundsTestTmp(nChNoLfe);
+	psp.CalculateGains(PolarPosition{ metadata.polarPosition.azimuth,metadata.polarPosition.elevation,metadata.polarPosition.distance }, gNoBoundsTestTmp);
+	auto gNoBoundsTest = insertLFE(gNoBoundsTestTmp, layout);
 	bool bNoBounds = compareGainVectors(gNoBounds, gNoBoundsTest);
 	assert(bNoBounds);
 
@@ -155,15 +169,19 @@ static inline bool testDirectSpeakers()
 	metadata.polarPosition.distance = 1.;
 	metadata.polarPosition.bounds.clear();
 	metadata.polarPosition.bounds.push_back({ 0.,30.,0.,0.,1.,1. });
-	auto gTwoBounds = gainCalc.calculateGains(metadata);
+	std::vector<double> gTwoBounds(nCh);
+	gainCalc.calculateGains(metadata, gTwoBounds);
 	auto gTwoBoundsTest = getDirectGain("M+030", layout);
 	bool bTwoBounds = compareGainVectors(gTwoBounds, gTwoBoundsTest);
 	assert(bTwoBounds);
 
 	// Test fallback panning with the PSP
 	metadata.polarPosition = { 10., 5., 1. };
-	auto gFallback = gainCalc.calculateGains(metadata);
-	auto gFallbackTest = insertLFE(psp.CalculateGains(PolarPosition{ metadata.polarPosition.azimuth,metadata.polarPosition.elevation,metadata.polarPosition.distance }), layout);
+	std::vector<double> gFallback(nCh);
+	gainCalc.calculateGains(metadata, gFallback);
+	std::vector<double> gFallbackTmp(nChNoLfe);
+	psp.CalculateGains(PolarPosition{ metadata.polarPosition.azimuth,metadata.polarPosition.elevation,metadata.polarPosition.distance }, gFallbackTmp);
+	auto gFallbackTest = insertLFE(gFallbackTmp, layout);
 	bool bFallback = compareGainVectors(gFallback, gFallbackTest);
 	assert(bFallback);
 
@@ -178,13 +196,20 @@ static inline bool testPointSourcePanner()
 	// Loop through all layouts
 	for (auto& layout : speakerLayouts)
 	{
+		if (layout.name == "1OA" || layout.name == "2OA" || layout.name == "3OA")
+			continue;
+
 		auto layoutNoLFE = getLayoutWithoutLFE(layout);
 		CPointSourcePannerGainCalc psp(layout);
+
+		auto nCh = layout.channels.size();
+		auto nChNoLfe = layoutNoLFE.channels.size();
 
 		for (double az = 0.; az <= 360.; az += 5.)
 		{
 			auto position = PolarToCartesian(PolarPosition{ az, 0., 1. });
-			auto gains = psp.CalculateGains(position);
+			std::vector<double> gains(nChNoLfe);
+			psp.CalculateGains(position, gains);
 			auto gainSum = std::accumulate(gains.begin(), gains.end(), 0.);
 			auto numCh = psp.getNumChannels();
 
@@ -208,12 +233,9 @@ static inline bool testPointSourcePanner()
 			velVec.y /= velVecNorm;
 			velVec.z /= velVecNorm;
 
-			// Check the direction matches with the intput position
-			if (layout.name != "0+2+0" && layout.name != "1OA"
-				&& layout.name != "2OA" && layout.name != "3OA")
-			{
+			// Check the direction matches with the input position
+			if (layout.name != "0+2+0")
 				assert(norm(position - velVec) < 1e-5);
-			}
 		}
 	}
 
@@ -235,15 +257,18 @@ static inline bool testGainCalculator()
 	layout.reproductionScreen[0].widthAzimuth = screenWidth;
 	admrender::CGainCalculator gainCalc(layout);
 	CPointSourcePannerGainCalc psp(layout);
+	auto nCh = getLayoutWithoutLFE(layout).channels.size();
 
-	std::vector<double> directGains, diffuseGains;
+	std::vector<double> directGains(nCh), diffuseGains(nCh);
 
 	// Test the panning without any other metadata parameters set
 	metadata.polarPosition.azimuth = 28.;
 	metadata.polarPosition.elevation = 5.;
 	metadata.polarPosition.distance = 1.;
 	gainCalc.CalculateGains(metadata, directGains, diffuseGains);
-	assert(compareGainVectors(directGains, psp.CalculateGains(metadata.polarPosition)));
+	std::vector<double> directGainsTest(nCh);
+	psp.CalculateGains(metadata.polarPosition, directGainsTest);
+	assert(compareGainVectors(directGains, directGainsTest));
 
 	// Test the screen scaling
 	// First test a source on the edge of the screen moves
@@ -252,7 +277,8 @@ static inline bool testGainCalculator()
 	metadata.polarPosition.elevation = 0.;
 	metadata.polarPosition.distance = 1.;
 	gainCalc.CalculateGains(metadata, directGains, diffuseGains);
-	assert(compareGainVectors(directGains, psp.CalculateGains(PolarPosition{ screenWidth / 2.,0.,1. })));
+	psp.CalculateGains(PolarPosition{ screenWidth / 2.,0.,1. }, directGainsTest);
+	assert(compareGainVectors(directGains, directGainsTest));
 
 	// Test the case where the reference screen was not in the centre but the reproduction one is
 	metadata.referenceScreen.clear();
@@ -261,7 +287,7 @@ static inline bool testGainCalculator()
 	metadata.referenceScreen[0].widthAzimuth = 60.;
 	metadata.polarPosition = { 30.,0.,1. };
 	gainCalc.CalculateGains(metadata, directGains, diffuseGains);
-	assert(compareGainVectors(directGains, getDirectGain("M+000", layout)));
+	assert(compareGainVectors(insertLFE(directGains, layout), getDirectGain("M+000", layout)));
 
 	// Test the case where the reference screen was in the centre but the reproduction screen is not
 	metadata.referenceScreen.clear();
@@ -273,7 +299,7 @@ static inline bool testGainCalculator()
 	layoutScreenScaling.reproductionScreen[0].centrePolarPosition = { 30.,0.,1. };
 	admrender::CGainCalculator gainCalcScrnScale(layoutScreenScaling);
 	gainCalcScrnScale.CalculateGains(metadata, directGains, diffuseGains);
-	assert(compareGainVectors(directGains, getDirectGain("M+030", layout)));
+	assert(compareGainVectors(insertLFE(directGains, layout), getDirectGain("M+030", layout)));
 
 	// Switch off screen scaling
 	metadata.screenRef = false;
@@ -281,13 +307,14 @@ static inline bool testGainCalculator()
 	// Test screen edge lock - left
 	metadata.screenEdgeLock.horizontal = admrender::ScreenEdgeLock::LEFT;
 	gainCalc.CalculateGains(metadata, directGains, diffuseGains);
-	auto gainsEdge = psp.CalculateGains(PolarPosition{ screenWidth / 2.,0.,1. });
+	std::vector<double> gainsEdge(nCh);
+	psp.CalculateGains(PolarPosition{ screenWidth / 2.,0.,1. }, gainsEdge);
 	assert(compareGainVectors(directGains, gainsEdge));
 
 	// Test screen edge lock - right
 	metadata.screenEdgeLock.horizontal = admrender::ScreenEdgeLock::RIGHT;
 	gainCalc.CalculateGains(metadata, directGains, diffuseGains);
-	gainsEdge = psp.CalculateGains(PolarPosition{ -screenWidth / 2.,0.,1. });
+	psp.CalculateGains(PolarPosition{ -screenWidth / 2.,0.,1. }, gainsEdge);
 	assert(compareGainVectors(directGains, gainsEdge));
 
 	metadata.screenEdgeLock.horizontal = admrender::ScreenEdgeLock::NO_HOR;
@@ -296,13 +323,13 @@ static inline bool testGainCalculator()
 	metadata.screenEdgeLock.vertical = admrender::ScreenEdgeLock::TOP;
 	gainCalc.CalculateGains(metadata, directGains, diffuseGains);
 	double screenTopEdge = RAD2DEG * std::atan(std::tan(DEG2RAD * 0.5 * screenWidth) / layout.reproductionScreen[0].aspectRatio);
-	gainsEdge = psp.CalculateGains(PolarPosition{ 0.,screenTopEdge,1. });
+	psp.CalculateGains(PolarPosition{ 0.,screenTopEdge,1. }, gainsEdge);
 	assert(compareGainVectors(directGains, gainsEdge));
 
 	// Test screen edge lock - bottom
 	metadata.screenEdgeLock.vertical = admrender::ScreenEdgeLock::BOTTOM;
 	gainCalc.CalculateGains(metadata, directGains, diffuseGains);
-	gainsEdge = psp.CalculateGains(PolarPosition{ 0.,-screenTopEdge,1. });
+	psp.CalculateGains(PolarPosition{ 0.,-screenTopEdge,1. }, gainsEdge);
 	assert(compareGainVectors(directGains, gainsEdge));
 
 
@@ -366,7 +393,8 @@ static inline bool testGainCalculator()
 	// Test the diffuseness parameter
 	metadata.diffuse = 0.25;
 	gainCalc.CalculateGains(metadata, directGains, diffuseGains);
-	auto pspGains = psp.CalculateGains(metadata.polarPosition);
+	std::vector<double> pspGains(nCh);
+	psp.CalculateGains(metadata.polarPosition, pspGains);
 	auto pspDirect = pspGains;
 	auto pspDiffuse = pspGains;
 	for (int i = 0; i < (int)pspGains.size(); ++i)

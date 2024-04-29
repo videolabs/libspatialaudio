@@ -18,6 +18,11 @@ namespace admrender {
 	{
 		m_layout = layout;
 		m_nCh = (unsigned int)layout.channels.size();
+		m_l2norm.reserve(m_nCh);
+		m_closestSpeakersInd.reserve(m_nCh);
+		m_equalDistanceSpeakers.reserve(m_nCh);
+		m_tuple.resize(m_nCh, std::vector<double>(4, 0.));
+		m_tupleSorted.resize(m_nCh, std::vector<double>(4, 0.));
 	}
 
 	ChannelLockHandler::~ChannelLockHandler()
@@ -34,8 +39,8 @@ namespace admrender {
 		double tol = 1e-10;
 
 		// Calculate the l-2 norm between the normalised real speaker directions and the source position.
-		std::vector<double> l2norm;
-		std::vector<unsigned int> closestSpeakersInd;
+		m_l2norm.resize(0);
+		m_closestSpeakersInd.resize(0);
 		for (unsigned int iCh = 0; iCh < m_nCh; ++iCh)
 		{
 			PolarPosition speakerPosition = m_layout.channels[iCh].polarPosition;
@@ -43,49 +48,53 @@ namespace admrender {
 			// positions in layout" so normalise the distance
 			speakerPosition.distance = 1.;
 			CartesianPosition speakerCartPosition = PolarToCartesian(speakerPosition);
-			std::vector<double> differenceVector = { speakerCartPosition.x - position.x, speakerCartPosition.y - position.y, speakerCartPosition.z - position.z };
-			double differenceNorm = norm(differenceVector);
+			double differenceVector[3] = {speakerCartPosition.x - position.x, speakerCartPosition.y - position.y, speakerCartPosition.z - position.z};
+			double differenceNorm = norm(differenceVector, 3);
 			// If the speaker is within the range 
 			if (differenceNorm < maxDistance)
 			{
-				closestSpeakersInd.push_back(iCh);
-				l2norm.push_back(differenceNorm);
+				m_closestSpeakersInd.push_back(iCh);
+				m_l2norm.push_back(differenceNorm);
 			}
 		}
-		unsigned int nSpeakersInRange = (unsigned int)closestSpeakersInd.size();
+		unsigned int nSpeakersInRange = (unsigned int)m_closestSpeakersInd.size();
 		// If no speakers are in range then return the original direction
 		if (nSpeakersInRange == 0)
 			return position;
 		else if (nSpeakersInRange == 1) // if there is a unique speaker in range then return that direction
-			return PolarToCartesian(m_layout.channels[closestSpeakersInd[0]].polarPosition);
+			return PolarToCartesian(m_layout.channels[m_closestSpeakersInd[0]].polarPosition);
 		else if (nSpeakersInRange > 1)
 		{
 			// Find the minimum l-2 norm from the speakers within range
-			double minL2Norm = *std::min_element(l2norm.begin(), l2norm.end());
+			double minL2Norm = *std::min_element(m_l2norm.begin(), m_l2norm.end());
 			// Find all the speakers that are within tolerance of this minimum value
-			std::vector<unsigned int> equalDistanceSpeakers;
-			for (unsigned int iNorm = 0; iNorm < l2norm.size(); ++iNorm)
-				if (l2norm[iNorm] > minL2Norm - tol && l2norm[iNorm] < minL2Norm + tol)
+			m_equalDistanceSpeakers.resize(0);
+			for (unsigned int iNorm = 0; iNorm < m_l2norm.size(); ++iNorm)
+				if (m_l2norm[iNorm] > minL2Norm - tol && m_l2norm[iNorm] < minL2Norm + tol)
 				{
-					equalDistanceSpeakers.push_back(closestSpeakersInd[iNorm]);
+					m_equalDistanceSpeakers.push_back(m_closestSpeakersInd[iNorm]);
 				}
 			// If only one of the speakers in range is within tol of the minimum then return that direction
-			if (equalDistanceSpeakers.size() == 1)
-				return PolarToCartesian(m_layout.channels[equalDistanceSpeakers[0]].polarPosition);
+			if (m_equalDistanceSpeakers.size() == 1)
+				return PolarToCartesian(m_layout.channels[m_equalDistanceSpeakers[0]].polarPosition);
 			else // if not, find the closest by lexicographic comparison of the tuple {|az|,az,|el|,el}
 			{
-				std::vector<std::vector<double>> tuple;
-				for (auto& t : equalDistanceSpeakers)
+				m_activeTuples = 0;
+				for (auto& t : m_equalDistanceSpeakers)
 				{
 					double az = m_layout.channels[t].polarPosition.azimuth;
 					double el = m_layout.channels[t].polarPosition.elevation;
-					tuple.push_back({ abs(az), az, abs(el), el });
+					m_tuple[m_activeTuples][0] = std::abs(az);
+					m_tuple[m_activeTuples][1] = az;
+					m_tuple[m_activeTuples][2] = std::abs(el);
+					m_tuple[m_activeTuples][3] = el;
+					m_tupleSorted[m_activeTuples] = m_tuple[m_activeTuples];
+					m_activeTuples += 1;
 				}
-				auto tupleSorted = tuple;
-				sort(tupleSorted.begin(), tupleSorted.end());
-				for (unsigned int iTuple = 0; iTuple < tuple.size(); ++iTuple)
-					if (tuple[iTuple] == tupleSorted[0])
-						return PolarToCartesian(m_layout.channels[equalDistanceSpeakers[iTuple]].polarPosition);
+				sort(m_tupleSorted.begin(), m_tupleSorted.begin() + m_activeTuples);
+				for (int iTuple = 0; iTuple < m_activeTuples; ++iTuple)
+					if (m_tuple[iTuple] == m_tupleSorted[0])
+						return PolarToCartesian(m_layout.channels[m_equalDistanceSpeakers[iTuple]].polarPosition);
 			}
 		}
 
@@ -107,6 +116,7 @@ namespace admrender {
 		}
 
 		// Determine the speaker groups. See Rec. ITU-R BS.2127-0 sec. 7.3.12.2.1 pg. 62
+		int maxTupleSize = 0;
 		for (unsigned int iSpk = 0; iSpk < m_nCh; ++iSpk)
 		{
 			std::vector<std::vector<double>> tuples;
@@ -133,7 +143,10 @@ namespace admrender {
 			for (unsigned int iTuple = 0; iTuple < tuples.size(); ++iTuple)
 				for (unsigned int i = 0; i < tuples.size(); ++i)
 					if (tuples[iTuple] == tupleSorted[i])
+					{
 						tupleOrder[i].insert(iTuple);
+						maxTupleSize = std::max(maxTupleSize, (int)tupleOrder[i].size());
+					}
 
 			std::vector<std::set<unsigned int>>::iterator ip;
 
@@ -143,6 +156,13 @@ namespace admrender {
 
 			m_downmixMapping.push_back(tupleOrder);
 		}
+
+		m_D.resize(m_nCh);
+		for (int i = 0; i < m_nCh; ++i)
+			m_D[i].resize(m_nCh, 0.);
+		m_isExcluded.resize(m_nCh, false);
+		m_gainsTmp.resize(m_nCh);
+		m_setElements.resize(maxTupleSize);
 	}
 
 	ZoneExclusionHandler::~ZoneExclusionHandler()
@@ -160,15 +180,15 @@ namespace admrender {
 		return layerPriority[inIndex][outIndex];
 	}
 
-	std::vector<double> ZoneExclusionHandler::handle(const std::vector<PolarExclusionZone>& exclusionZones, const std::vector<double>& gains)
+	void ZoneExclusionHandler::handle(const std::vector<PolarExclusionZone>& exclusionZones, std::vector<double>& gainInOut)
 	{
 		double tol = 1e-6;
 
-		// Downmix matrix
-		std::vector<std::vector<double>> D(m_nCh, std::vector<double>(m_nCh, 0.));
+		assert(gainInOut.size() == m_nCh);
 
 		// Find the set of excluded speakers
-		std::vector<bool> isExcluded(m_nCh, false);
+		for (int i = 0; i < m_nCh; ++i)
+			m_isExcluded[i] = false;
 		int nCountExcluded = 0;
 		for (unsigned int iZone = 0; iZone < exclusionZones.size(); ++iZone)
 		{
@@ -180,17 +200,20 @@ namespace admrender {
 				double el = m_layout.channels[iSpk].polarPositionNominal.elevation;
 				if ((zone.minElevation - tol < el && el < zone.maxElevation + tol) && (el > 90 - tol || insideAngleRange(az, zone.minAzimuth, zone.maxAzimuth)))
 				{
-					isExcluded[iSpk] = true;
+					m_isExcluded[iSpk] = true;
 					nCountExcluded++;
 				}
 			}
 		}
 
+		// Clear the downmix matrix
+		for (int i = 0; i < (int)m_nCh; ++i)
+			for (int j = 0; j < (int)m_nCh; ++j)
+				m_D[i][j] = 0.;
+
 		if (nCountExcluded == (int)m_nCh || nCountExcluded == 0)
 		{
-			// If all or none of the speakers are exlcuded then set the downmix matrix to the identity matrix
-			for (int i = 0; i < (int)m_nCh; ++i)
-				D[i][i] = 1.;
+			return; // No change to the gain vector
 		}
 		else
 		{
@@ -200,34 +223,35 @@ namespace admrender {
 				// Find the first set with non-excluded speakers
 				for (size_t iSet = 0; iSet < m_downmixMapping[iSpk].size(); ++iSet)
 				{
-					std::vector<unsigned int> notExcludedElements;
-					std::vector<unsigned int> setElements(m_downmixMapping[iSpk][iSet].begin(), m_downmixMapping[iSpk][iSet].end());
-					for (size_t i = 0; i < setElements.size(); ++i)
-						if (!isExcluded[setElements[i]])
-							notExcludedElements.push_back(setElements[i]);
-					int numNotExcluded = (int)notExcludedElements.size();
+					m_notExcludedElements.resize(0);
+					m_setElements.resize(m_downmixMapping[iSet][iSpk].size());
+					int i = 0;
+					for (auto it = m_downmixMapping[iSet][iSpk].begin(); it != m_downmixMapping[iSet][iSpk].end(); ++it)
+						m_setElements[i++] = *it;
+					for (size_t iEl = 0; iEl < m_setElements.size(); ++iEl)
+						if (!m_isExcluded[m_setElements[iEl]])
+							m_notExcludedElements.push_back(m_setElements[iEl]);
+					int numNotExcluded = (int)m_notExcludedElements.size();
 					if (numNotExcluded > 0)
 					{
 						// Fill the downmix matrix D
-						for (int i = 0; i < numNotExcluded; ++i)
-							D[notExcludedElements[i]][iSpk] = 1. / (double)numNotExcluded;
+						for (int iEl = 0; iEl < numNotExcluded; ++iEl)
+							m_D[m_notExcludedElements[iEl]][iSpk] = 1. / (double)numNotExcluded;
 						break;
 					}
 				}
 			}
+			// Calculate the downmixed output gain vector
+			for (int i = 0; i < (int)m_nCh; ++i)
+				m_gainsTmp[i] = gainInOut[i];
+			for (int i = 0; i < (int)m_nCh; ++i)
+			{
+				double g_tmp = 0.;
+				for (unsigned int j = 0; j < m_nCh; ++j)
+					g_tmp += m_D[i][j] * m_gainsTmp[j] * m_gainsTmp[j];
+				gainInOut[i] = sqrt(g_tmp);
+			}
 		}
-
-		// Calculate the downmixed output gain vector
-		std::vector<double> outGains(m_nCh, 0.);
-		for (int i = 0; i < (int)m_nCh; ++i)
-		{
-			double g_tmp = 0.;
-			for (unsigned int j = 0; j < m_nCh; ++j)
-				g_tmp += D[i][j] * gains[j] * gains[j];
-			outGains[i] = sqrt(g_tmp);
-		}
-
-		return outGains;
 	}
 
 	//===================================================================================================================================
@@ -241,7 +265,14 @@ namespace admrender {
 		, m_screenEdgeLock(outputLayoutNoLFE.reproductionScreen, getLayoutWithoutLFE(outputLayoutNoLFE))
 		, m_channelLockHandler(getLayoutWithoutLFE(outputLayoutNoLFE))
 		, m_zoneExclusionHandler(getLayoutWithoutLFE(outputLayoutNoLFE))
+		, m_gains(m_nCh, 0.)
 	{
+		// There can be up to 3 diverged positions/gains
+		m_divergedPos.reserve(3);
+		m_divergedGains.reserve(3);
+		m_gains_for_each_pos.resize(3);
+		for (int i = 0; i < 3; ++i)
+			m_gains_for_each_pos[i].resize(m_nCh);
 	}
 
 	CGainCalculator::~CGainCalculator()
@@ -250,7 +281,7 @@ namespace admrender {
 
 	void CGainCalculator::CalculateGains(const ObjectMetadata& metadata, std::vector<double>& directGains, std::vector<double>& diffuseGains)
 	{
-		std::vector<double> gains(m_nCh, 0.);
+		assert(directGains.size() == m_nCh && diffuseGains.size() == m_nCh); // Gain vectors must already be of the expected size
 
 		if (metadata.cartesian)
 			std::cerr << "Cartesian panning path is not implemented." << std::endl;
@@ -266,49 +297,47 @@ namespace admrender {
 		position = m_channelLockHandler.handle(metadata.channelLock, position);
 
 		// Apply divergence
-		auto divergedData = divergedPositionsAndGains(metadata.objectDivergence.value, metadata.objectDivergence.azimuthRange, position);
-		auto diverged_positions = divergedData.first;
-		auto diverged_gains = divergedData.second;
+		divergedPositionsAndGains(metadata.objectDivergence.value, metadata.objectDivergence.azimuthRange, position, m_divergedPos, m_divergedGains);
+		auto& diverged_positions = m_divergedPos;
+		auto& diverged_gains = m_divergedGains;
 		unsigned int nDivergedGains = (unsigned int)diverged_gains.size();
 
 		if (m_outputLayout.isHoa)
 		{
 			// Calculate the new gains to be applied
-			std::vector<std::vector<double>> gains_for_each_pos(nDivergedGains);
 			for (unsigned int iGain = 0; iGain < nDivergedGains; ++iGain)
-				gains_for_each_pos[iGain] = m_ambiExtentPanner.handle(diverged_positions[iGain], metadata.width, metadata.height, metadata.depth);
+				m_ambiExtentPanner.handle(diverged_positions[iGain], metadata.width, metadata.height, metadata.depth, m_gains_for_each_pos[iGain]);
 
 			for (unsigned int i = 0; i < m_nCh; ++i)
 			{
 				double g_tmp = 0.;
 				for (unsigned int j = 0; j < nDivergedGains; ++j)
-					g_tmp += diverged_gains[j] * gains_for_each_pos[j][i];
-				gains[i] = g_tmp;
+					g_tmp += diverged_gains[j] * m_gains_for_each_pos[j][i];
+				m_gains[i] = g_tmp;
 			}
 		}
 		else
 		{	
 			// Calculate the new gains to be applied
-			std::vector<std::vector<double>> gains_for_each_pos(nDivergedGains);
 			for (unsigned int iGain = 0; iGain < nDivergedGains; ++iGain)
-				gains_for_each_pos[iGain] = m_extentPanner.handle(diverged_positions[iGain], metadata.width, metadata.height, metadata.depth);
+				m_extentPanner.handle(diverged_positions[iGain], metadata.width, metadata.height, metadata.depth, m_gains_for_each_pos[iGain]);
 
 			// Power summation of the gains when playback is to loudspeakers,
 			for (unsigned int i = 0; i < m_nCh; ++i)
 			{
 				double g_tmp = 0.;
 				for (unsigned int j = 0; j < nDivergedGains; ++j)
-					g_tmp += diverged_gains[j] * gains_for_each_pos[j][i] * gains_for_each_pos[j][i];
-				gains[i] = sqrt(g_tmp);
+					g_tmp += diverged_gains[j] * m_gains_for_each_pos[j][i] * m_gains_for_each_pos[j][i];
+				m_gains[i] = sqrt(g_tmp);
 			}
 
 			// Zone exclusion downmix
 			// See Rec. ITU-R BS.2127-0 sec. 7.3.12, pg 60
-			gains = m_zoneExclusionHandler.handle(metadata.zoneExclusionPolar, gains);
+			m_zoneExclusionHandler.handle(metadata.zoneExclusionPolar, m_gains);
 		}
 
 		// Apply the overall gain to the spatialisation gains
-		for (auto& g : gains)
+		for (auto& g : m_gains)
 			g *= metadata.gain;
 
 		// Calculate the direct and diffuse gains
@@ -316,8 +345,8 @@ namespace admrender {
 		double directCoefficient = std::sqrt(1. - metadata.diffuse);
 		double diffuseCoefficient = std::sqrt(metadata.diffuse);
 
-		directGains = gains;
-		diffuseGains = gains;
+		directGains = m_gains;
+		diffuseGains = m_gains;
 		for (auto& g : directGains)
 			g *= directCoefficient;
 		for (auto& g : diffuseGains)

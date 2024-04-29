@@ -20,7 +20,7 @@
 class CGainInterp
 {
 public:
-	CGainInterp();
+	CGainInterp(unsigned int nCh);
 	~CGainInterp();
 
 	/*
@@ -31,7 +31,7 @@ public:
 	/*
 		Apply the gains to the mono input signal and _add_ them to the output buffer
 	*/
-	void ProcessAccumul(float* pIn, std::vector<std::vector<float>>& ppOut, unsigned int nSamples, unsigned int nOffset);
+	void ProcessAccumul(const float* pIn, std::vector<std::vector<float>>& ppOut, unsigned int nSamples, unsigned int nOffset);
 
 	/*
 		Resets the gain interpolator by setting the gain vector to the target and making sure there is no interpolation processing

@@ -36,74 +36,56 @@
 	+ve Y = front
 	+ve Z = up
 */
-static inline std::vector<double> CartesianToPolar(const std::vector<double>& v)
-{
-	double x = v[0];
-	double y = v[1];
-	double z = v[2];
-	double azimuth = -RAD2DEG * atan2(x, y);
-	double elevation = RAD2DEG * atan2(z, sqrt(x * x + y * y));
-	double distance = sqrt(x * x + y * y + z * z);
-
-	return{ azimuth, elevation,distance };
-}
 static inline PolarPosition CartesianToPolar(CartesianPosition cartesian)
 {
+	PolarPosition sphCoords;
 	double x = cartesian.x;
 	double y = cartesian.y;
 	double z = cartesian.z;
-	std::vector<double> polarPosition = CartesianToPolar(std::vector<double>{ x, y, z });
+	sphCoords.azimuth = -RAD2DEG * std::atan2(x, y);
+	sphCoords.elevation = RAD2DEG * std::atan2(z, std::sqrt(x * x + y * y));
+	sphCoords.distance = std::sqrt(x * x + y * y + z * z);
 
-	return { polarPosition[0],polarPosition[1],polarPosition[2] };
+	return sphCoords;
 };
-/*
-static inline PolarPosition CartesianToPolar(DirectSpeakerCartesianPosition cartesian)
+static inline void CartesianToPolar(const std::vector<double>& cartVec, std::vector<double>& polVec)
 {
-	double x = cartesian.x;
-	double y = cartesian.y;
-	double z = cartesian.z;
-	std::vector<double> polarPosition = CartesianToPolar(std::vector<double>{ x,y,z });
-
-	return { polarPosition[0],polarPosition[1],polarPosition[2] };
+	CartesianPosition cartPos = { cartVec[0],cartVec[1],cartVec[2] };
+	auto sphPos = CartesianToPolar(cartPos);
+	polVec[0] = sphPos.azimuth;
+	polVec[1] = sphPos.elevation;
+	polVec[2] = sphPos.distance;
 };
-*/
+
 /**
 	Convert from polar to cartesian coordinates. See Rec. ITU-R BS.2127-0 pg 33 for conversions used.
 	0 az = front, +ve az = anti-clockwise
 	0 el = front, +ve el = up
 	Angles are expected in degrees.
 */
-static inline std::vector<double> PolarToCartesian(const std::vector<double>& polar)
+static inline CartesianPosition PolarToCartesian(PolarPosition polar)
+{
+	CartesianPosition cartCoords;
+
+	double az = DEG2RAD * polar.azimuth;
+	double el = DEG2RAD * polar.elevation;
+	double d = polar.distance;
+	cartCoords.x = sin(-az) * cos(el) * d;
+	cartCoords.y = cos(-az) * cos(el) * d;
+	cartCoords.z = sin(el) * d;
+
+	return cartCoords;
+};
+static inline void PolarToCartesian(const std::vector<double>& polar, std::vector<double>& cartesian)
 {
 	double az = DEG2RAD * polar[0];
 	double el = DEG2RAD * polar[1];
 	double d = polar[2];
-	double x = sin(-az) * cos(el) * d;
-	double y = cos(-az) * cos(el) * d;
-	double z = sin(el) * d;
-
-	return { x,y,z };
+	cartesian[0] = std::sin(-az) * std::cos(el) * d;
+	cartesian[1] = std::cos(-az) * std::cos(el) * d;
+	cartesian[2] = std::sin(el) * d;
 };
-static inline CartesianPosition PolarToCartesian(PolarPosition polar)
-{
-	double az = polar.azimuth;
-	double el = polar.elevation;
-	double d = polar.distance;
-	std::vector<double> cart = PolarToCartesian(std::vector<double> {az, el, d});
 
-	return {cart[0],cart[1],cart[2]};
-};
-/*
-static inline CartesianPosition PolarToCartesian(DirectSpeakerPolarPosition polar)
-{
-	double az = polar.azimuth;
-	double el = polar.elevation;
-	double d = polar.distance;
-	std::vector<double> cart = PolarToCartesian(std::vector<double> {az, el, d});
-
-	return { cart[0],cart[1],cart[2] };
-};
-*/
 /**
 	Returns the norm of a vector
 */
@@ -119,6 +101,16 @@ static inline double norm(CartesianPosition vec)
 {
 	return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
+
+static inline double norm(const double* vec, int n)
+ {
+ 	double vecNorm = 0.;
+ 	for (int i = 0; i < n; ++i)
+ 		vecNorm += vec[i] * vec[i];
+ 	vecNorm = std::sqrt(vecNorm);
+ 	return vecNorm;
+ }
+ 
 /**
 	Returns a rotation matrix for given yaw, pitch, roll (in degrees)
 */
@@ -297,17 +289,19 @@ static inline void multiplyMat(const std::vector<std::vector<T>>& A, const std::
 /**
 	Multiply a matrix to a vector y = Ax;
 */
-static inline std::vector<double> multiplyMatVec(const std::vector<std::vector<double>>& A, const std::vector<double>& x)
+static inline void multiplyMatVec(const std::vector<std::vector<double>>& A, const std::vector<double>& x, std::vector<double>& y)
 {
 	size_t rowsA = A.size();
 	size_t colsA = A[0].size();
-	std::vector<double> ret(rowsA, 0.);
+
+	assert(y.size() == rowsA);
+
+	for (size_t i = 0; i < colsA; ++i)
+		y[i] = 0.;
 
 	for (size_t i = 0; i < rowsA; ++i)
-			for (size_t k = 0; k < colsA; ++k)
-				ret[i] += A[i][k] * x[k];
-
-	return ret;
+		for (size_t k = 0; k < colsA; ++k)
+			y[i] += A[i][k] * x[k];
 }
 /**
 	Calculate the inverse of a square matrix of size 2x2
@@ -353,10 +347,9 @@ static inline std::vector<std::vector<double>> inverseMatrix(const std::vector<s
 /**
 	Get the diverged source positions and directions
 */
-static inline std::pair<std::vector<CartesianPosition>, std::vector<double>> divergedPositionsAndGains(double divergenceValue, double divergenceAzRange, CartesianPosition position)
+static inline void divergedPositionsAndGains(double divergenceValue, double divergenceAzRange, CartesianPosition position, std::vector<CartesianPosition>& divergedPos, std::vector<double>& divergedGains)
 {
-	std::vector<CartesianPosition> diverged_positions;
-	std::vector<double> diverged_gains;
+	assert(divergedPos.capacity() == 3 && divergedGains.capacity() == 3); // Must be able to hold up to 3 positions/gains
 
 	PolarPosition polarDirection = CartesianToPolar(position);
 
@@ -364,53 +357,90 @@ static inline std::pair<std::vector<CartesianPosition>, std::vector<double>> div
 	double d = polarDirection.distance;
 	// if the divergence value is zero then return the original direction and a gain of 1
 	if (x == 0.)
-		return { std::vector<CartesianPosition>{position},std::vector<double>{1.} };
+	{
+		divergedPos.resize(1);
+		divergedGains.resize(1);
+		divergedPos[0] = position;
+		divergedGains[0] = 1.;
+		return;
+	}
 
 	// If there is any divergence then calculate the gains and directions
 	// Calculate gains using Rec. ITU-R BS.2127-0 sec. 7.3.7.1
-	diverged_gains.resize(3, 0.);
-	diverged_gains[0] = (1. - x) / (x + 1.);
+	assert(divergedGains.capacity() >= 3);
+	divergedGains.resize(3, 0.);
+	divergedGains[0] = (1. - x) / (x + 1.);
 	double glr = x / (x + 1.);
-	diverged_gains[1] = glr;
-	diverged_gains[2] = glr;
+	divergedGains[1] = glr;
+	divergedGains[2] = glr;
 
-	std::vector<std::vector<double>> cartPositions(3);
-	cartPositions[0] = { d,0.,0. };
+	double cartPositions[3][3];
+	cartPositions[0][0] = d;
+	cartPositions[0][1] = 0.;
+	cartPositions[0][2] = 0.;
 	auto cartesianTmp = PolarToCartesian(PolarPosition{ x * divergenceAzRange,0.,d });
-	cartPositions[1] = { cartesianTmp.y,-cartesianTmp.x,cartesianTmp.z };
+	cartPositions[1][0] = cartesianTmp.y;
+	cartPositions[1][1] = -cartesianTmp.x;
+	cartPositions[1][2] = cartesianTmp.z;
 	cartesianTmp = PolarToCartesian(PolarPosition{ -x * divergenceAzRange,0.,d });
-	cartPositions[2] = { cartesianTmp.y,-cartesianTmp.x,cartesianTmp.z };
+	cartPositions[2][0] = cartesianTmp.y;
+	cartPositions[2][1] = -cartesianTmp.x;
+	cartPositions[2][2] = cartesianTmp.z;
 
 	// Rotate them so that the centre position is in specified input direction
 	double rotMat[9] = { 0. };
 	getRotationMatrix(polarDirection.azimuth, -polarDirection.elevation, 0., &rotMat[0]);
-	diverged_positions.resize(3);
+	divergedPos.resize(3);
 	for (int iDiverge = 0; iDiverge < 3; ++iDiverge)
 	{
-		std::vector<double> directionRotated(3, 0.);
+		double directionRotated[3] = { 0. };
 		for (int i = 0; i < 3; ++i)
 			for (int j = 0; j < 3; ++j)
 				directionRotated[i] += rotMat[3 * i + j] * cartPositions[iDiverge][j];
-		diverged_positions[iDiverge] = CartesianPosition{ -directionRotated[1],directionRotated[0],directionRotated[2] };
+		divergedPos[iDiverge] = CartesianPosition{ -directionRotated[1],directionRotated[0],directionRotated[2] };
 	}
-
-	return { diverged_positions, diverged_gains };
 }
 /**
 	Get the rotation matrix required to convert a point from one coordinate system to another.
 
 	See Rec. ITU-R BS.2127-0 sec. 6.8
 */
-static inline std::vector<std::vector<double>> LocalCoordinateSystem(double azInDegrees, double elInDegrees)
+static inline void LocalCoordinateSystem(double azInDegrees, double elInDegrees, double (&rotMat)[3][3])
 {
-	std::vector<std::vector<double>> rotMat;
-	rotMat.resize(3);
+	CartesianPosition cartPos;
+	PolarPosition polPos;
 
-	rotMat[0] = PolarToCartesian(std::vector<double>{azInDegrees - 90., 0., 1.});
-	rotMat[1] = PolarToCartesian(std::vector<double>{azInDegrees, elInDegrees, 1.});
-	rotMat[2] = PolarToCartesian(std::vector<double>{azInDegrees, elInDegrees + 90., 1.});
+	polPos.azimuth = azInDegrees - 90.;
+	polPos.elevation = 0.;
+	polPos.distance = 1.;
+	cartPos = PolarToCartesian(polPos);
+	rotMat[0][0] = cartPos.x;
+	rotMat[0][1] = cartPos.y;
+	rotMat[0][2] = cartPos.z;
 
-	return rotMat;
+	polPos.azimuth = azInDegrees;
+	polPos.elevation = elInDegrees;
+	cartPos = PolarToCartesian(polPos);
+	rotMat[1][0] = cartPos.x;
+	rotMat[1][1] = cartPos.y;
+	rotMat[1][2] = cartPos.z;
+
+	polPos.azimuth = azInDegrees;
+	polPos.elevation = elInDegrees + 90.;
+	cartPos = PolarToCartesian(polPos);
+	rotMat[2][0] = cartPos.x;
+	rotMat[2][1] = cartPos.y;
+	rotMat[2][2] = cartPos.z;
+}
+static inline void LocalCoordinateSystem(double azInDegrees, double elInDegrees, std::vector<std::vector<double>>& rotMat)
+{
+	double rotMatTmp[3][3] = { {rotMat[0][0],rotMat[0][1],rotMat[0][2]},
+		{rotMat[1][0],rotMat[1][1],rotMat[1][2]},
+		{rotMat[2][0],rotMat[2][1],rotMat[2][2]} };
+	LocalCoordinateSystem(azInDegrees, elInDegrees, rotMatTmp);
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 3; ++j)
+			rotMat[i][j] = rotMatTmp[i][j];
 }
 /**
 	Clamp a value between a minimum and a maximum
@@ -437,4 +467,13 @@ static inline double interp(double val, const std::vector<double>& fromVals, con
 		}
 
 	return val;
+}
+/** Returns true if string1 contains string2. This check is case sensitive
+ * @param string1	The string to be checked
+ * @param string2	The substring to check for
+ * @return			Returns true if string1 contains string2
+ */
+static inline bool stringContains(const std::string& string1, const std::string& string2)
+{
+	return string1.find(string2) != std::string::npos;
 }

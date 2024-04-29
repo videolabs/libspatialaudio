@@ -35,14 +35,20 @@ namespace admrender {
 		/**
 			Calculate the gain vector corresponding to the metadata input
 		*/
-		std::vector<double> calculateGains(const DirectSpeakerMetadata& metadata);
+		void calculateGains(const DirectSpeakerMetadata& metadata, std::vector<double>& gainsOut);
 
 	private:
 		unsigned int m_nCh = 0;
 		Layout m_layout;
 		CPointSourcePannerGainCalc m_pointSourcePannerGainCalc;
 
+		// Temp vector holding the point-source panner gains
+		std::vector<double> m_gainsPSP;
+
 		CScreenEdgeLock m_screenEdgeLock;
+
+		// Labels for LFE channels to use in isLFE and avoid allocations to the heap by using temp strings
+		std::vector<std::string> m_lfeLabels = { "LFE1", "LFE2" };
 
 		bool isLFE(const DirectSpeakerMetadata& metadata);
 

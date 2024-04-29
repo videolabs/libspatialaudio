@@ -82,8 +82,8 @@ private:
 	/**
 		Read and write data to delay lines
 	*/
-	void WriteToDelayLine(float* pDelayLine, float* pIn, int nWritePos, int nSamples);
-	void ReadFromDelayLine(float* pDelayLine, float* pOut, int nReadPos, int nSamples);
+	void WriteToDelayLine(float* pDelayLine, const float* pIn, int nWritePos, int nSamples);
+	void ReadFromDelayLine(const float* pDelayLine, float* pOut, int nReadPos, int nSamples);
 
 	/**
 		Calculate decorrelation filters using the method described in Rec. ITU-R BS.2127-0 sec. 7.4

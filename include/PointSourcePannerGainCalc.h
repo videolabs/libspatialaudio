@@ -31,8 +31,8 @@ public:
 		Calculate the gains to be applied to a mono signal in order to place it in the target
 		speaker layout
 	*/
-	std::vector<double> CalculateGains(CartesianPosition directionUnitVec);
-	std::vector<double> CalculateGains(PolarPosition directionUnitVec);
+	void CalculateGains(CartesianPosition directionUnitVec, std::vector<double>& gainsOut);
+	void CalculateGains(PolarPosition directionUnitVec, std::vector<double>& gainsOut);
 
 	/**
 		Get the number of loudspeakers set in the targetLayout
@@ -53,6 +53,17 @@ private:
 	// All of the region handlers for the different types
 	LayoutRegions m_regions;
 
+	// A temp vector holding gains to be downmixed to stereo output
+	std::vector<double> m_gainsTmp;
+
+	// A temp vector holding the source position unit vector
+	std::vector<double> m_directionUnitVec;
+
+	// Temp vectors holding the gains for different regions
+	std::vector<double> m_nGonGains;
+	std::vector<double> m_tripletGains;
+	std::vector<double> m_quadGains;
+
 	/**
 		Return the extra loudspeakers needed to fill in the gaps in the array.
 		This currently works for the supported arrays: 0+5+0, 0+4+0, 0+7+0
@@ -64,5 +75,5 @@ private:
 		Calculate the gains for the panning layout. In most cases this will be the same
 		as the output layout but in the case of 0+2+0 the panning layout is 0+5+0
 	*/
-	std::vector<double> _CalculateGains(CartesianPosition directionUnitVec);
+	void CalculateGainsFromRegions(CartesianPosition directionUnitVec, std::vector<double>& gainsOut);
 };

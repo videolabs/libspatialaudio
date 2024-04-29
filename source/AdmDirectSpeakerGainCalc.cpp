@@ -24,6 +24,7 @@ namespace admrender {
 	{
 		m_layout = layoutWithLFE;
 		m_nCh = (unsigned int)m_layout.channels.size();
+		m_gainsPSP.resize(getLayoutWithoutLFE(layoutWithLFE).channels.size(), 0.);
 	}
 
 	CAdmDirectSpeakersGainCalc::~CAdmDirectSpeakersGainCalc()
@@ -37,9 +38,9 @@ namespace admrender {
 			if (metadata.channelFrequency.lowPass[0] <= 200.)
 				return true;
 
-		std::string nominalLabel = GetNominalSpeakerLabel(metadata.speakerLabel);
-		if (nominalLabel == std::string("LFE1") ||
-			nominalLabel == std::string("LFE2"))
+		const std::string& nominalLabel = GetNominalSpeakerLabel(metadata.speakerLabel);
+		if (stringContains(nominalLabel, m_lfeLabels[0]) ||
+			stringContains(nominalLabel, m_lfeLabels[1]))
 		{
 			return true;
 		}
@@ -120,21 +121,21 @@ namespace admrender {
 		return -1;
 	}
 
-	std::vector<double> CAdmDirectSpeakersGainCalc::calculateGains(const DirectSpeakerMetadata& metadata)
+	void CAdmDirectSpeakersGainCalc::calculateGains(const DirectSpeakerMetadata& metadata, std::vector<double>& gains)
 	{
-		std::vector<double> gains(m_nCh, 0.);
+		assert(gains.size() == m_nCh); // Gain vector length must match the number of channels
 
 		// is the current channel an LFE
 		bool isLfeChannel = isLFE(metadata);
 
-		std::string nominalSpeakerLabel = GetNominalSpeakerLabel(metadata.speakerLabel);
+		const std::string& nominalSpeakerLabel = GetNominalSpeakerLabel(metadata.speakerLabel);
 
 		if (metadata.audioPackFormatID.size() > 0)
 		{
 			auto ituPack = ituPackNames.find(metadata.audioPackFormatID[0]);
 			if (ituPack != ituPackNames.end()) // if the audioPackFormat is in the list of ITU packs
 			{
-				std::string layoutName = ituPack->second;
+				const std::string& layoutName = ituPack->second;
 
 				for (const MappingRule& rule : mappingRules)
 				{
@@ -145,20 +146,20 @@ namespace admrender {
 							if (idx >= 0)
 								gains[idx] = gain.second;
 						}
-						return gains;
+						return;
 					}
 				}
 			}
 		}
 
 		// Check if there are any speakers with the same label and LFE type
-		std::string speakerLabel = GetNominalSpeakerLabel(metadata.speakerLabel);
+		const std::string& speakerLabel = GetNominalSpeakerLabel(metadata.speakerLabel);
 		int idx = m_layout.getMatchingChannelIndex(speakerLabel);
 		if (idx >= 0 && (m_layout.channels[idx].isLFE == isLfeChannel))
 		{
 			gains[idx] = 1.;
 
-			return gains;
+			return;
 		}
 
 		DirectSpeakerPolarPosition direction = metadata.polarPosition;
@@ -174,7 +175,7 @@ namespace admrender {
 		// If the channel is LFE then send to the appropriate LFE (if any exist)
 		if (isLfeChannel)
 		{
-			idx = m_layout.getMatchingChannelIndex("LFE1");
+			idx = m_layout.getMatchingChannelIndex(m_lfeLabels[0]);
 			if (idx >= 0)
 				gains[idx] = 1.;
 		}
@@ -187,18 +188,16 @@ namespace admrender {
 			{
 				gains[idxWithinBounds] = 1.;
 
-				return gains;
+				return;
 			}
 
-			std::vector<double> gainsPSP = m_pointSourcePannerGainCalc.CalculateGains(PolarPosition{ direction.azimuth,direction.elevation,direction.distance });
+			m_pointSourcePannerGainCalc.CalculateGains(PolarPosition{ direction.azimuth,direction.elevation,direction.distance }, m_gainsPSP);
 			// fill in the gains on the non-LFE channels
 			int indNonLfe = 0;
 			for (unsigned int i = 0; i < gains.size(); ++i)
 				if (!m_layout.channels[i].isLFE)
-					gains[i] = gainsPSP[indNonLfe++];
+					gains[i] = m_gainsPSP[indNonLfe++];
 		}
-
-		return gains;
 	}
 
 	bool CAdmDirectSpeakersGainCalc::MappingRuleApplies(const MappingRule& rule, const std::string& inputLayout, const std::string& speakerLabel, Layout& outputLayout)

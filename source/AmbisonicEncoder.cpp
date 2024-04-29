@@ -14,7 +14,7 @@
 
 
 #include "AmbisonicEncoder.h"
-
+#include <assert.h>
 
 CAmbisonicEncoder::CAmbisonicEncoder()
 { }
@@ -29,6 +29,8 @@ bool CAmbisonicEncoder::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
         return false;
     //SetOrderWeight(0, 1.f / sqrtf(2.f)); // Removed as seems to break SN3D normalisation
     
+    m_pfCoeffOld.resize(GetChannelCount(), 0.f);
+
     return true;
 }
 
@@ -50,6 +52,8 @@ void CAmbisonicEncoder::SetPosition(PolarPoint polPosition, float interpDur)
 
 void CAmbisonicEncoder::Process(float* pfSrc, unsigned nSamples, CBFormat* pfDst)
 {
+    assert(nSamples <= pfDst->GetSampleCount());
+
     unsigned niChannel = 0;
     unsigned niSample = 0;
     if (m_fInterpDur > 0.f)
@@ -87,6 +91,8 @@ void CAmbisonicEncoder::Process(float* pfSrc, unsigned nSamples, CBFormat* pfDst
 
 void CAmbisonicEncoder::ProcessAccumul(float* pfSrc, unsigned nSamples, CBFormat* pfDst, unsigned int nOffset, float fGain)
 {
+    assert(nSamples + nOffset < pfDst->GetSampleCount()); // Cannot write beyond the of the destination buffers!
+
     unsigned niChannel = 0;
     unsigned niSample = 0;
     if (m_fInterpDur > 0.f)

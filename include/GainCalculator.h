@@ -35,6 +35,13 @@ namespace admrender {
 	private:
 		unsigned int m_nCh = 0;
 		Layout m_layout;
+
+		std::vector<double> m_l2norm;
+		std::vector<unsigned int> m_closestSpeakersInd;
+		std::vector<unsigned int> m_equalDistanceSpeakers;
+		std::vector<std::vector<double>> m_tuple;
+		std::vector<std::vector<double>> m_tupleSorted;
+		int m_activeTuples = 0;
 	};
 
 	class ZoneExclusionHandler
@@ -44,9 +51,11 @@ namespace admrender {
 		~ZoneExclusionHandler();
 
 		/**
-			Calculate the gain vector once the appropriate loudspeakers have been exlcuded
+			Calculate the gain vector once the appropriate loudspeakers have been exlcuded.
+
+			The gains are replaced with the processed version.
 		*/
-		std::vector<double> handle(const std::vector<PolarExclusionZone>& exclusionZones, const std::vector<double>& gains);
+		void handle(const std::vector<PolarExclusionZone>& exclusionZones, std::vector<double>& gainsInOut);
 
 	private:
 		unsigned int m_nCh = 0;
@@ -55,6 +64,17 @@ namespace admrender {
 		std::vector<std::vector<unsigned int>> m_downmixMatrix;
 
 		int GetLayerPriority(const std::string& inputChannelName, const std::string& outputChannelName);
+
+		// Downmix matrix
+		std::vector<std::vector<double>> m_D;
+		// Vector holding the exclusion state of each channel
+		std::vector<bool> m_isExcluded;
+		// Temp vector of the gains
+		std::vector<double> m_gainsTmp;
+
+		std::vector<unsigned int> m_notExcludedElements;
+		std::vector<unsigned int> m_setElements;
+
 	};
 
 	class CGainCalculator
@@ -84,5 +104,11 @@ namespace admrender {
 
 		ChannelLockHandler m_channelLockHandler;
 		ZoneExclusionHandler m_zoneExclusionHandler;
+
+		std::vector<double> m_gains;
+
+		std::vector<CartesianPosition> m_divergedPos;
+		std::vector<double> m_divergedGains;
+		std::vector<std::vector<double>> m_gains_for_each_pos;
 	};
 } // namespace admrenderer
