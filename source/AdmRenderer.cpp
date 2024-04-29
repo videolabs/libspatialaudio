@@ -20,7 +20,8 @@ namespace admrender {
 
 	CAdmRenderer::CAdmRenderer()
 	{
-
+		m_RenderLayout = OutputLayout::Stereo;
+		m_nSamples = 0;
 	}
 
 	CAdmRenderer::~CAdmRenderer()
@@ -92,7 +93,7 @@ namespace admrender {
 			break;
 		}
 
-		auto nInternalCh = m_outputLayout.channels.size();
+		unsigned int nInternalCh = (unsigned int)m_outputLayout.channels.size();
 
 		if (reproductionScreen.size() > 0)
 		{
@@ -178,7 +179,7 @@ namespace admrender {
 
 		// If the output layout has an LFE then get its index
 
-		for (size_t iSpk = 0; iSpk < nInternalCh; ++iSpk)
+		for (unsigned int iSpk = 0; iSpk < nInternalCh; ++iSpk)
 			if (!m_outputLayout.channels[iSpk].isLFE)
 				m_mapNoLfeToLfe.push_back(iSpk);
 
