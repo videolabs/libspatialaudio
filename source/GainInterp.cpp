@@ -12,8 +12,11 @@
 
 #include "GainInterp.h"
 
-CGainInterp::CGainInterp()
+#include <assert.h>
+
+CGainInterp::CGainInterp(unsigned int nCh) : m_gainVec(nCh), m_targetGainVec(nCh)
 {
+
 }
 
 CGainInterp::~CGainInterp()
@@ -22,6 +25,8 @@ CGainInterp::~CGainInterp()
 
 void CGainInterp::SetGainVector(const std::vector<double>& newGainVec, unsigned int interpTimeInSamples)
 {
+	assert(newGainVec.size() == m_targetGainVec.size()); //Number of channels must match!
+
 	if (m_targetGainVec != newGainVec)
 	{
 		if (!m_isFirstCall)
@@ -42,7 +47,7 @@ void CGainInterp::SetGainVector(const std::vector<double>& newGainVec, unsigned 
 	}
 }
 
-void CGainInterp::ProcessAccumul(float* pIn, std::vector<std::vector<float>>& ppOut, unsigned int nSamples, unsigned int nOffset)
+void CGainInterp::ProcessAccumul(const float* pIn, std::vector<std::vector<float>>& ppOut, unsigned int nSamples, unsigned int nOffset)
 {
 	unsigned int nCh = (unsigned int)m_targetGainVec.size();
 	// The number of samples to interpolate over in this block

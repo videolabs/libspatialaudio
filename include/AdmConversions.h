@@ -52,41 +52,113 @@ namespace admrender {
 		Find the sector to which a given azimuth angle belongs.
 		See Rec. ITU-R BS.2127-0 sec. 10.1 pg 70
 	*/
-	static inline std::vector<std::pair<double, double>> FindSector(double az)
+
+	/**	Find the sector to which a given azimuth angle belongs.
+	 *	See Rec. ITU-R BS.2127-0 sec. 10.1 pg 70
+	 *  @param az		The azimuth to check
+	 * @param sectorOut	A 2D array of size 3x2 holding the sector information
+	 */
+	static inline void FindSector(double az, double (&sectorOut)[3][2])
 	{
 		double tol = 1e-10;
 		if (insideAngleRange(az, 0., 30., tol))
-			return std::vector<std::pair<double, double>>{ { 30., 0. }, { -1.,1. }, { 0.,1. }};
+		{
+			sectorOut[0][0] = 30.;
+			sectorOut[0][1] = 0.;
+			sectorOut[1][0] = -1;
+			sectorOut[1][1] = 1.;
+			sectorOut[2][0] = 0.;
+			sectorOut[2][1] = 1.;
+		}
 		else if (insideAngleRange(az, -30., 0., tol))
-			return std::vector<std::pair<double, double>>{ { 0., -30. }, { 0.,1. }, { 1.,1. }};
+		{
+			sectorOut[0][0] = 0.;
+			sectorOut[0][1] = -30.;
+			sectorOut[1][0] = 0.;
+			sectorOut[1][1] = 1.;
+			sectorOut[2][0] = 1.;
+			sectorOut[2][1] = 1.;
+		}
 		else if(insideAngleRange(az, -110., -30., tol))
-			return std::vector<std::pair<double, double>>{ { -30., -110. }, { 1.,1. }, { 1.,-1. }};
+		{
+			sectorOut[0][0] = -30.;
+			sectorOut[0][1] = -110.;
+			sectorOut[1][0] = 1;
+			sectorOut[1][1] = 1.;
+			sectorOut[2][0] = 1.;
+			sectorOut[2][1] = -1.;
+		}
 		else if (insideAngleRange(az, 110., -110., tol))
-			return std::vector<std::pair<double, double>>{ { -110., 110. }, { 1.,-1. }, { -1.,-1. }};
+		{
+			sectorOut[0][0] = -110.;
+			sectorOut[0][1] = 110.;
+			sectorOut[1][0] = 1.;
+			sectorOut[1][1] = -1.;
+			sectorOut[2][0] = -1.;
+			sectorOut[2][1] = -1.;
+		}
 		else if (insideAngleRange(az, 30., 110., tol))
-			return std::vector<std::pair<double, double>>{ { 110., 30. }, { -1.,-1. }, { -1.,1. }};
-
-		return std::vector<std::pair<double, double>>{};
+		{
+			sectorOut[0][0] = 110.;
+			sectorOut[0][1] = 30.;
+			sectorOut[1][0] = -1;
+			sectorOut[1][1] = -1.;
+			sectorOut[2][0] = -1.;
+			sectorOut[2][1] = 1.;
+		}
 	}
 	/*
 		Find the sector to which a given azimuth angle belongs.
 		See Rec. ITU-R BS.2127-0 sec. 10.1 pg 70
 	*/
-	static inline std::vector<std::pair<double, double>> FindCartSector(double az)
+	static inline void FindCartSector(double az, double (&sectorOut)[3][2])
 	{
 		double tol = 1e-10;
 		if (insideAngleRange(az, 0., 45., tol))
-			return std::vector<std::pair<double, double>>{ { 30., 0. }, { -1.,1. }, { 0.,1. }};
+		{
+			sectorOut[0][0] = 30.;
+			sectorOut[0][1] = 0.;
+			sectorOut[1][0] = -1;
+			sectorOut[1][1] = 1.;
+			sectorOut[2][0] = 0.;
+			sectorOut[2][1] = 1.;
+		}
 		else if (insideAngleRange(az, -45., 0., tol))
-			return std::vector<std::pair<double, double>>{ { 0., -30. }, { 0.,1. }, { 1.,1. }};
+		{
+			sectorOut[0][0] = 0.;
+			sectorOut[0][1] = -30.;
+			sectorOut[1][0] = 0.;
+			sectorOut[1][1] = 1.;
+			sectorOut[2][0] = 1.;
+			sectorOut[2][1] = 1.;
+		}
 		else if (insideAngleRange(az, -135., -45., tol))
-			return std::vector<std::pair<double, double>>{ { -30., -110. }, { 1.,1. }, { 1.,-1. }};
+		{
+			sectorOut[0][0] = -30.;
+			sectorOut[0][1] = -110.;
+			sectorOut[1][0] = 1;
+			sectorOut[1][1] = 1.;
+			sectorOut[2][0] = 1.;
+			sectorOut[2][1] = -1.;
+		}
 		else if (insideAngleRange(az, 135., -135., tol))
-			return std::vector<std::pair<double, double>>{ { -110., 110. }, { 1.,-1. }, { -1.,-1. }};
+		{
+			sectorOut[0][0] = -110.;
+			sectorOut[0][1] = 110.;
+			sectorOut[1][0] = 1.;
+			sectorOut[1][1] = -1.;
+			sectorOut[2][0] = -1.;
+			sectorOut[2][1] = -1.;
+		}
 		else if (insideAngleRange(az, 45., 135., tol))
-			return std::vector<std::pair<double, double>>{ { 110., 30. }, { -1.,-1. }, { -1.,1. }};
-
-		return std::vector<std::pair<double, double>>{};
+		{
+			sectorOut[0][0] = 110.;
+			sectorOut[0][1] = 30.;
+			sectorOut[1][0] = -1;
+			sectorOut[1][1] = -1.;
+			sectorOut[2][0] = -1.;
+			sectorOut[2][1] = 1.;
+		}
 	}
 
 	/**
@@ -122,13 +194,14 @@ namespace admrender {
 			r_xy = d;
 		}
 
-		auto sector = FindSector(az);
-		double az_l = sector[0].first;
-		double az_r = sector[0].second;
-		double x_l = sector[1].first;
-		double y_l = sector[1].second;
-		double x_r = sector[2].first;
-		double y_r = sector[2].second;
+		double sector[3][2];
+		FindSector(az, sector);
+		double az_l = sector[0][0];
+		double az_r = sector[0][1];
+		double x_l = sector[1][0];
+		double y_l = sector[1][1];
+		double x_r = sector[2][0];
+		double y_r = sector[2][1];
 
 		double azDash = relativeAngle(az_r, az);
 		double azDash_l = relativeAngle(az_r, az_l);
@@ -167,17 +240,18 @@ namespace admrender {
 		}
 
 		double azDash = -RAD2DEG * atan2(x, y);
-		auto sector = FindCartSector(azDash);
-		double az_l = sector[0].first;
-		double az_r = sector[0].second;
-		double x_l = sector[1].first;
-		double y_l = sector[1].second;
-		double x_r = sector[2].first;
-		double y_r = sector[2].second;
+		double sector[3][2];
+		FindCartSector(azDash, sector);
+		double az_l = sector[0][0];
+		double az_r = sector[0][1];
+		double x_l = sector[1][0];
+		double y_l = sector[1][1];
+		double x_r = sector[2][0];
+		double y_r = sector[2][1];
 
-		std::vector<std::vector<double>> mat = { {x_l, y_l},{x_r, y_r} };
-		auto invMat = inverseMatrix(mat);
-		auto g = std::vector<double>({ x * invMat[0][0] + y * invMat[1][0], x * invMat[0][1] + y * invMat[1][1] });
+		double det = x_l * y_r - y_l * x_r;
+		double invMat[2][2] = { {y_r / det, -y_l / det},{-x_r / det, x_l / det} };
+		double g[2] = {x * invMat[0][0] + y * invMat[1][0], x * invMat[0][1] + y * invMat[1][1]};
 		double r_xy = g[0] + g[1];
 		double azDash_l = relativeAngle(az_r, az_l);
 		double azRel = MapLinearToAz(azDash_l, az_r, g[1] / r_xy);
@@ -203,7 +277,7 @@ namespace admrender {
 	/**
 		Convert polar extent to cartesian extent
 	*/
-	static inline std::vector<double> whd2xyz(double w, double h, double d)
+	static inline void whd2xyz(double w, double h, double d, double& x, double& y, double& z)
 	{
 		double s_xw = w < 180. ? std::sin(DEG2RAD * w * 0.5) : 1.;
 		double s_yw = 0.5 * (1. - std::cos(DEG2RAD * w * 0.5));
@@ -211,46 +285,51 @@ namespace admrender {
 		double s_yh = 0.5 * (1 - std::cos(DEG2RAD * h * 0.5));
 		double s_yd = d;
 
-		return std::vector<double>{s_xw, std::max(std::max(s_yw, s_yh), s_yd), s_zh};
+		x = s_xw;
+		y = std::max(std::max(s_yw, s_yh), s_yd);
+		z = s_zh;
 	}
 
 	/**
 		Convert cartesian extent to polar extent
 	*/
-	static inline std::vector<double> xyz2whd(double s_x, double s_y, double s_z)
+	static inline void xyz2whd(double s_x, double s_y, double s_z, double& w, double& h, double& d)
 	{
 		double w_sx = 2. * RAD2DEG * std::asin(s_x);
 		double w_sy = 2. * RAD2DEG * std::acos(1. - 2.*s_y);
-		double w = w_sx + s_x * std::max(w_sy - w_sx, 0.);
+		w = w_sx + s_x * std::max(w_sy - w_sx, 0.);
 
 		double h_sz = 2. * RAD2DEG * std::asin(s_z);
 		double h_sy = 2. * RAD2DEG * std::acos(1. - 2. * s_y);
-		double h = h_sz + s_z * std::max(h_sy - h_sz, 0.);
-		auto s_eq = whd2xyz(w, h, 0.);
+		h = h_sz + s_z * std::max(h_sy - h_sz, 0.);
+		double s_eq[3];
+		whd2xyz(w, h, 0., s_eq[0], s_eq[1], s_eq[2]);
 
-		double d = std::max(0., s_y - s_eq[1]);
-
-		return std::vector<double>{w, h, d};
+		d = std::max(0., s_y - s_eq[1]);
 	}
 
 	/**
 		Convert a cartesian source position and extent to polar position and polar extent
 		See Rec. ITU-R BS.2127-0 sec. 10.2.2 pg 72
 	*/
-	static inline std::pair<PolarPosition, std::vector<double>> ExtentCartToPolar(double x, double y, double z, double s_x, double  s_y, double  s_z)
+	static inline void ExtentCartToPolar(double x, double y, double z, double s_x, double  s_y, double  s_z,
+		PolarPosition& polarPosition, double (&whd)[3])
 	{
-		auto polarPosition = PointCartToPolar(CartesianPosition{ x,y,z });
-		std::vector<std::vector<double>> diagS = { {s_x,0.,0.}, {0.,s_y,0.}, {0.,0.,s_z} };
-		auto localCoordSystem = LocalCoordinateSystem(polarPosition.azimuth, polarPosition.elevation);
-		auto M = multiplyMat(diagS, localCoordSystem);
+		polarPosition = PointCartToPolar(CartesianPosition{ x,y,z });
+		double diagS[3] = { s_x, s_y, s_z };
+		double localCoordSystem[3][3];
+		LocalCoordinateSystem(polarPosition.azimuth, polarPosition.elevation, localCoordSystem);
+		// Multiply diag([s_x,s_y,s_x])*localCoordSystem
+		double M[3][3];
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < 3; ++j)
+				M[i][j] = diagS[i] * localCoordSystem[i][j];
 
-		double s_xf = norm(std::vector<double>{M[0][0], M[1][0], M[2][0]});
-		double s_yf = norm(std::vector<double>{M[0][1], M[1][1], M[2][1]});
-		double s_zf = norm(std::vector<double>{M[0][2], M[1][2], M[2][2]});
+		double s_xf = std::sqrt(M[0][0] * M[0][0] + M[1][0] * M[1][0] + M[2][0] * M[2][0]);
+		double s_yf = std::sqrt(M[0][1] * M[0][1] + M[1][1] * M[1][1] + M[2][1] * M[2][1]);
+		double s_zf = std::sqrt(M[0][2] * M[0][2] + M[1][2] * M[1][2] + M[2][2] * M[2][2]);
 
-		auto whd = xyz2whd(s_xf, s_yf, s_zf);
-
-		return { polarPosition, whd };
+		xyz2whd(s_xf, s_yf, s_zf, whd[0], whd[1], whd[2]);
 	}
 
 	/*
@@ -264,12 +343,12 @@ namespace admrender {
 		if (inMetadataBlock.cartesian)
 		{
 			// Update the position and the extent
-			auto posWhd = ExtentCartToPolar(inMetadataBlock.cartesianPosition.x, inMetadataBlock.cartesianPosition.y, inMetadataBlock.cartesianPosition.z,
-				inMetadataBlock.width, inMetadataBlock.height, inMetadataBlock.depth);
-			outMetadataBlock.polarPosition = posWhd.first;
-			outMetadataBlock.width = posWhd.second[0];
-			outMetadataBlock.height = posWhd.second[1];
-			outMetadataBlock.depth = posWhd.second[2];
+			double whd[3];
+			ExtentCartToPolar(inMetadataBlock.cartesianPosition.x, inMetadataBlock.cartesianPosition.y, inMetadataBlock.cartesianPosition.z,
+				inMetadataBlock.width, inMetadataBlock.height, inMetadataBlock.depth, outMetadataBlock.polarPosition, whd);
+			outMetadataBlock.width = whd[0];
+			outMetadataBlock.height = whd[1];
+			outMetadataBlock.depth = whd[2];
 
 			// Convert the divergence according to Rec. ITU-R BS.2127-0 sec. 10.3 pg.73
 			// TODO: The equation given in this section gives strange results. Need to double check it

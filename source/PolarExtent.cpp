@@ -40,6 +40,11 @@ CSpreadPannerBase::CSpreadPannerBase()
 	m_nVirtualSources = (int)m_virtualSourcePositions.size();
 
 	m_weights.resize(m_nVirtualSources);
+	m_rotMat.resize(3, std::vector<double>(3, 0.));
+	m_positionBasisPol.resize(3, 0.);
+	m_posVec.resize(3, 0.);
+	m_positionBasis.resize(3, 0.);
+	m_closestCircle.resize(3, 0.);
 }
 
 CSpreadPannerBase::~CSpreadPannerBase()
@@ -49,22 +54,27 @@ CSpreadPannerBase::~CSpreadPannerBase()
 double CSpreadPannerBase::CalculateWeights(CartesianPosition position)
 {
 	// Convert position to coordinate system of the weighting function
-	auto positionBasis = multiplyMatVec(m_rotMat, std::vector<double>({ position.x,position.y,position.z }));
+	m_posVec[0] = position.x;
+	m_posVec[1] = position.y;
+	m_posVec[2] = position.z;
+	multiplyMatVec(m_rotMat, m_posVec, m_positionBasis);
 	// Get the azimuth and elevation of the converted position
-	auto positionBasisPol = CartesianToPolar(positionBasis);
+	CartesianToPolar(m_positionBasis, m_positionBasisPol);
 
 	// Calculate the distance of the input position from the "stadium"
 	double distance = 0.;
-	if (std::abs(positionBasisPol[0]) < m_circularCapAzimuth)
-		distance = std::abs(positionBasisPol[1]) - 0.5 * m_height;
+	if (std::abs(m_positionBasisPol[0]) < m_circularCapAzimuth)
+		distance = std::abs(m_positionBasisPol[1]) - 0.5 * m_height;
 	else
 	{
 		// if the direction is to the right (x > 0) then reflect to the left to be in the same hemisphere are the circular cap
-		positionBasis[0] = positionBasis[0] > 0. ? -positionBasis[0] : positionBasis[0];
-		std::vector<double> closestCircle({ m_circularCapPosition.x, m_circularCapPosition.y, m_circularCapPosition.z });
+		m_positionBasis[0] = m_positionBasis[0] > 0. ? -m_positionBasis[0] : m_positionBasis[0];
+		m_closestCircle[0] = m_circularCapPosition.x;
+		m_closestCircle[1] = m_circularCapPosition.y;
+		m_closestCircle[2] = m_circularCapPosition.z;
 		// Sometimes the dot product of the 2 unit vectors can be greater than one, which leads to a nan from acos()
 		// so it is capped to 1
-		double dotProd = std::min(dotProduct(positionBasis, closestCircle), 1.);
+		double dotProd = std::min(dotProduct(m_positionBasis, m_closestCircle), 1.);
 		distance = std::acos(dotProd) * RAD2DEG - 0.5 * m_height;
 	}
 
@@ -81,7 +91,7 @@ void CSpreadPannerBase::ConfigureWeightingFunction(CartesianPosition position, d
 	m_height = height;
 	// Calculate the rotation matrix to convert the virtual source positions to the coordinate system defined by position
 	auto polarPosition = CartesianToPolar(position);
-	m_rotMat = LocalCoordinateSystem(polarPosition.azimuth, polarPosition.elevation);
+	LocalCoordinateSystem(polarPosition.azimuth, polarPosition.elevation, m_rotMat);
 
 	if (m_height > m_width)
 	{
@@ -102,20 +112,25 @@ void CSpreadPannerBase::ConfigureWeightingFunction(CartesianPosition position, d
 CSpreadPanner::CSpreadPanner(CPointSourcePannerGainCalc& psp) : m_pointSourcePannerGainCalc(psp)
 {
 	m_nCh = m_pointSourcePannerGainCalc.getNumChannels();
+	std::vector<double> gainsTmp(m_nCh, 0.);
 	// Calculate the panning gain vector for this grid point
 	for (int i = 0; i < m_nVirtualSources; ++i)
-		m_virtualSourcePanningVectors.push_back(m_pointSourcePannerGainCalc.CalculateGains(m_virtualSourcePositions[i]));
+	{
+		m_pointSourcePannerGainCalc.CalculateGains(m_virtualSourcePositions[i], gainsTmp);
+		m_virtualSourcePanningVectors.push_back(gainsTmp);
+	}
 }
 
 CSpreadPanner::~CSpreadPanner()
 {
 }
 
-std::vector<double> CSpreadPanner::CalculateGains(CartesianPosition position, double width, double height)
+void CSpreadPanner::CalculateGains(CartesianPosition position, double width, double height, std::vector<double>& gains)
 {
 	ConfigureWeightingFunction(position, width, height);
 
-	std::vector<double> gains(m_nCh, 0.);
+	assert(gains.size() == m_nCh); // output gain vector length must match the number of channels
+
 	// Calculate the weights to be applied to each of the virtual source gain vectors
 	for (int i = 0; i < m_nVirtualSources; ++i)
 	{
@@ -133,8 +148,6 @@ std::vector<double> CSpreadPanner::CalculateGains(CartesianPosition position, do
 	else
 		for (auto& g : gains)
 			g = 0.;
-
-	return gains;
 }
 
 // CAmbisonicSpreadPanner ================================================================================
@@ -157,11 +170,14 @@ CAmbisonicSpreadPanner::~CAmbisonicSpreadPanner()
 {
 }
 
-std::vector<double> CAmbisonicSpreadPanner::CalculateGains(CartesianPosition position, double width, double height)
+void CAmbisonicSpreadPanner::CalculateGains(CartesianPosition position, double width, double height, std::vector<double>& gains)
 {
 	ConfigureWeightingFunction(position, width, height);
 
-	std::vector<double> gains(m_nCh, 0.);
+	assert(gains.size() == m_nCh);
+	// Clear the gains
+	for (size_t i = 0; i < gains.size(); ++i)
+		gains[i] = 0.;
 	// Calculate the weights to be applied to each of the virtual source gain vectors
 	double weightSum = 0.;
 	for (int i = 0; i < m_nVirtualSources; ++i)
@@ -183,8 +199,6 @@ std::vector<double> CAmbisonicSpreadPanner::CalculateGains(CartesianPosition pos
 		if (m_weights[i] > tol) // Weight and sum the virtual source gain vectors
 			for (unsigned int iCh = 0; iCh < m_nCh; ++iCh)
 				gains[iCh] += m_weights[i] * m_virtualSourcePanningVectors[i][iCh];
-
-	return gains;
 }
 
 unsigned int CAmbisonicSpreadPanner::GetAmbisonicOrder()
@@ -220,18 +234,22 @@ CPolarExtentHandler::CPolarExtentHandler(CPointSourcePannerGainCalc& psp) : m_po
 	m_spreadPanner(m_pointSourcePannerGainGalc)
 {
 	m_nCh = m_pointSourcePannerGainGalc.getNumChannels();
+	m_g_p.resize(m_nCh);
+	m_g_s.resize(m_nCh);
+	m_g1.resize(m_nCh);
+	m_g2.resize(m_nCh);
 }
 
 CPolarExtentHandler::~CPolarExtentHandler()
 {
 }
 
-std::vector<double> CPolarExtentHandler::handle(CartesianPosition position, double width, double height, double depth)
+void CPolarExtentHandler::handle(CartesianPosition position, double width, double height, double depth, std::vector<double>& gains)
 {
 	// Get the distance of the source
 	double sourceDistance = norm(position);
 
-	std::vector<double> gains(m_nCh, 0.);
+	assert(gains.size() == m_nCh); // Length must match the number of channels
 
 	// See Rec. ITU-R BS.2127-0 7.3.8.2 pg 48
 	if (depth != 0.)
@@ -245,43 +263,52 @@ std::vector<double> CPolarExtentHandler::handle(CartesianPosition position, doub
 		double modWidth2 = PolarExtentModification(d2, width);
 		double modHeight2 = PolarExtentModification(d2, height);
 
-		std::vector<double> g1 = CalculatePolarExtentGains(position, modWidth1, modHeight1);
-		std::vector<double> g2 = CalculatePolarExtentGains(position, modWidth2, modHeight2);
+		CalculatePolarExtentGains(position, modWidth1, modHeight1, m_g1);
+		CalculatePolarExtentGains(position, modWidth2, modHeight2, m_g2);
 
 		for (size_t i = 0; i < gains.size(); ++i)
-			gains[i] = std::sqrt(0.5 * (g1[i] * g1[i] + g2[i] * g2[i]));
+			gains[i] = std::sqrt(0.5 * (m_g1[i] * m_g1[i] + m_g2[i] * m_g2[i]));
 	}
 	else
 	{
 		double modWidth = PolarExtentModification(sourceDistance, width);
 		double modHeight = PolarExtentModification(sourceDistance, height);
 
-		gains = CalculatePolarExtentGains(position, modWidth, modHeight);
+		CalculatePolarExtentGains(position, modWidth, modHeight, gains);
 	}
-	return gains;
 }
 
-std::vector<double> CPolarExtentHandler::CalculatePolarExtentGains(CartesianPosition position, double width, double height)
+void CPolarExtentHandler::CalculatePolarExtentGains(CartesianPosition position, double width, double height, std::vector<double>& gains)
 {
 	double p = clamp(std::max(width, height) / m_minExtent, 0., 1.);
-	std::vector<double> g_p(m_nCh);
-	std::vector<double> g_s(m_nCh);
-	std::vector<double> gains(m_nCh);
+
+	assert(gains.size() == m_nCh); // gain output vector must match the number of channels
+
 	// If width is low or zero then calculate the point source panning gains
 	if (p < 1.)
 	{
-		g_p = m_pointSourcePannerGainGalc.CalculateGains(position);
+		m_pointSourcePannerGainGalc.CalculateGains(position, m_g_p);
+	}
+	else
+	{
+		// Otherwise set to zero
+		for (auto& g : m_g_p)
+			g = 0.;
 	}
 	if (p > 0.)
 	{
-		g_s = m_spreadPanner.CalculateGains(position, width, height);
+		m_spreadPanner.CalculateGains(position, width, height, m_g_s);
+	}
+	else
+	{
+		// Otherwise set to zero
+		for (auto& g : m_g_s)
+			g = 0.;
 	}
 
 	// Weight and add the point source gains and the spread gains
 	for (size_t i = 0; i < m_nCh; ++i)
-		gains[i] = std::sqrt(p * g_s[i] * g_s[i] + (1. - p) * g_p[i] * g_p[i]);
-
-	return gains;
+		gains[i] = std::sqrt(p * m_g_s[i] * m_g_s[i] + (1. - p) * m_g_p[i] * m_g_p[i]);
 }
 
 // AmbisonicPolarExtentHandler ==========================================================================
@@ -289,18 +316,22 @@ CAmbisonicPolarExtentHandler::CAmbisonicPolarExtentHandler(unsigned int ambiOrde
 {
 	m_ambiSource.Configure(ambiOrder, true, 0);
 	m_nCh = m_ambiSource.GetChannelCount();
+	m_g_p.resize(m_nCh);
+	m_g_s.resize(m_nCh);
+	m_g1.resize(m_nCh);
+	m_g2.resize(m_nCh);
 }
 
 CAmbisonicPolarExtentHandler::~CAmbisonicPolarExtentHandler()
 {
 }
 
-std::vector<double> CAmbisonicPolarExtentHandler::handle(CartesianPosition position, double width, double height, double depth)
+void CAmbisonicPolarExtentHandler::handle(CartesianPosition position, double width, double height, double depth, std::vector<double>& gains)
 {
 	// Get the distance of the source
 	double sourceDistance = norm(position);
 
-	std::vector<double> gains(m_nCh, 0.);
+	assert(gains.size() == m_nCh); // Length must match the number of channels
 
 	// See Rec. ITU-R BS.2127-0 7.3.8.2 pg 48
 	if (depth != 0.)
@@ -314,45 +345,54 @@ std::vector<double> CAmbisonicPolarExtentHandler::handle(CartesianPosition posit
 		double modWidth2 = PolarExtentModification(d2, width);
 		double modHeight2 = PolarExtentModification(d2, height);
 
-		std::vector<double> g1 = CalculatePolarExtentGains(position, modWidth1, modHeight1);
-		std::vector<double> g2 = CalculatePolarExtentGains(position, modWidth2, modHeight2);
+		CalculatePolarExtentGains(position, modWidth1, modHeight1, m_g1);
+		CalculatePolarExtentGains(position, modWidth2, modHeight2, m_g2);
 
 		for (size_t i = 0; i < gains.size(); ++i)
-			gains[i] = 0.5 * (g1[i] + g2[i]);
+			gains[i] = 0.5 * (m_g1[i] + m_g2[i]);
 	}
 	else
 	{
 		double modWidth = PolarExtentModification(sourceDistance, width);
 		double modHeight = PolarExtentModification(sourceDistance, height);
 
-		gains = CalculatePolarExtentGains(position, modWidth, modHeight);
+		CalculatePolarExtentGains(position, modWidth, modHeight, gains);
 	}
-	return gains;
 }
 
-std::vector<double> CAmbisonicPolarExtentHandler::CalculatePolarExtentGains(CartesianPosition position, double width, double height)
+void CAmbisonicPolarExtentHandler::CalculatePolarExtentGains(CartesianPosition position, double width, double height, std::vector<double>& gains)
 {
 	double p = clamp(std::max(width, height) / m_minExtent, 0., 1.);
-	std::vector<double> g_p(m_nCh);
-	std::vector<double> g_s(m_nCh);
-	std::vector<double> gains(m_nCh);
+
+	assert(gains.size() == m_nCh); // gain output vector must match the number of channels
+
 	// If width is low or zero then calculate the point source panning gains
 	if (p < 1.)
 	{
 		auto polarPos = CartesianToPolar(position);
 		m_ambiSource.SetPosition(PolarPoint{ DegreesToRadians((float)polarPos.azimuth), DegreesToRadians((float)polarPos.elevation), (float)polarPos.distance });
 		m_ambiSource.Refresh();
-		auto hoaGains = m_ambiSource.GetCoefficients();
-		g_p = std::vector<double>(hoaGains.begin(), hoaGains.end());
+		for (unsigned iAmbiCh = 0; iAmbiCh < m_ambiSource.GetChannelCount(); ++iAmbiCh)
+			m_g_p[iAmbiCh] = m_ambiSource.GetCoefficient(iAmbiCh);
+	}
+	else
+	{
+		// Otherwise set to zero
+		for (auto& g : m_g_p)
+			g = 0.;
 	}
 	if (p > 0.)
 	{
-		g_s = m_ambiSpreadPanner.CalculateGains(position, width, height);
+		m_ambiSpreadPanner.CalculateGains(position, width, height, m_g_s);
+	}
+	else
+	{
+		// Otherwise set to zero
+		for (auto& g : m_g_s)
+			g = 0.;
 	}
 
 	// Weight and add the point source gains and the spread gains
 	for (size_t i = 0; i < m_nCh; ++i)
-		gains[i] = p * g_s[i] + (1. - p) * g_p[i];
-
-	return gains;
+		gains[i] = p * m_g_s[i] + (1. - p) * m_g_p[i];
 }

@@ -60,6 +60,16 @@ protected:
 	CartesianPosition m_circularCapPosition;
 	double m_circularCapAzimuth = 0.;
 
+	// The polar coordinates of the position when converted to the coordinate system of the weighting function
+	std::vector<double> m_positionBasisPol;
+
+	// A temp vector holding the position of the signal
+	std::vector<double> m_posVec;
+	// A temp vector holding the position basis
+	std::vector<double> m_positionBasis;
+	// A temp vector holding the position of the closest circle
+	std::vector<double> m_closestCircle;
+
 	/**
 		Calculate the weight to be applied to the virtual source gain vector for a virtual
 		source in with the specified position
@@ -87,7 +97,7 @@ public:
 		Calculate the gains for a source in the defined direction and
 		with the specified width and height
 	*/
-	std::vector<double> CalculateGains(CartesianPosition position, double width, double height);
+	void CalculateGains(CartesianPosition position, double width, double height, std::vector<double>& gainsOut);
 
 private:
 	CPointSourcePannerGainCalc& m_pointSourcePannerGainCalc;
@@ -107,7 +117,7 @@ public:
 		Calculate the gains for a source in the defined direction and
 		with the specified width and height
 	*/
-	std::vector<double> CalculateGains(CartesianPosition position, double width, double height);
+	void CalculateGains(CartesianPosition position, double width, double height, std::vector<double>& gainsOut);
 
 	/**
 		Get the order of the HOA encoding for the sources
@@ -128,6 +138,9 @@ public:
 	CPolarExtentHandlerBase();
 	~CPolarExtentHandlerBase();
 
+	/** Pure virtual function for the main gain calculation function */
+	virtual void handle(CartesianPosition position, double width, double height, double depth, std::vector<double>& gainsOut) = 0;
+
 protected:
 	unsigned int m_nCh = 0;
 	// The minimum extent, defined by the standard at 5 deg
@@ -141,7 +154,13 @@ protected:
 	/**
 		Calculate the polar extent gain vector as described in ITU-R BS.2127-0 section 7.3.8.2.2 pg 49
 	*/
-	virtual std::vector<double> CalculatePolarExtentGains(CartesianPosition position, double width, double height) = 0;
+	virtual void CalculatePolarExtentGains(CartesianPosition position, double width, double height, std::vector<double>& outGains) = 0;
+
+	// Temp vectors
+	std::vector<double> m_g_p;
+	std::vector<double> m_g_s;
+	std::vector<double> m_g1;
+	std::vector<double> m_g2;
 };
 
 
@@ -160,7 +179,7 @@ public:
 
 		See Rec. ITU-R BS.2127-0 section 7.3.8.2 (pg. 48) for more details on the algorithm
 	*/
-	std::vector<double> handle(CartesianPosition position, double width, double height, double depth);
+	void handle(CartesianPosition position, double width, double height, double depth, std::vector<double>& gainsOut) override;
 
 private:
 	CPointSourcePannerGainCalc m_pointSourcePannerGainGalc;
@@ -169,7 +188,7 @@ private:
 	/**
 		Calculate the polar extent gain vector as described in ITU-R BS.2127-0 section 7.3.8.2.2 pg 49
 	*/
-	std::vector<double> CalculatePolarExtentGains(CartesianPosition position, double width, double height) override;
+	void CalculatePolarExtentGains(CartesianPosition position, double width, double height, std::vector<double>& gainsOut) override;
 };
 
 /**
@@ -189,7 +208,7 @@ public:
 		Note that some changes have been made to account for the fact that ambisonic coefficients should
 		be summed by power in order to preserve their polarity.
 	*/
-	std::vector<double> handle(CartesianPosition position, double width, double height, double depth);
+	void handle(CartesianPosition position, double width, double height, double depth, std::vector<double>& gainsOut) override;
 
 private:
 	CAmbisonicSource m_ambiSource;
@@ -199,5 +218,5 @@ private:
 		Calculate the HOA extent gain vector. Essentially works as described in ITU-R BS.2127-0 section 7.3.8.2.2 pg 49
 		except instead of using loudspeaker gains it uses HOA encoding coefficients
 	*/
-	std::vector<double> CalculatePolarExtentGains(CartesianPosition position, double width, double height) override;
+	void CalculatePolarExtentGains(CartesianPosition position, double width, double height, std::vector<double>& outGains) override;
 };

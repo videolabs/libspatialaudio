@@ -20,7 +20,7 @@
 class CGainInterp
 {
 public:
-	CGainInterp();
+	CGainInterp(unsigned int nCh);
 	~CGainInterp();
 
 	/*

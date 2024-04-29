@@ -32,9 +32,12 @@ Triplet::Triplet(std::vector<unsigned int> chanInds, std::vector<PolarPosition> 
 	m_inverseDirections = inverseMatrix(unitVectors);
 }
 
-std::vector<double> Triplet::CalculateGains(const std::vector<double>& directionUnitVec)
+void Triplet::CalculateGains(const std::vector<double>& directionUnitVec, std::vector<double>& gains)
 {
-	std::vector<double> gains(3, 0.);
+	assert(gains.capacity() >= 3);
+	gains.resize(3, 0.);
+	for (auto& g : gains)
+		g = 0.;
 
 	for (int i = 0; i < 3; ++i)
 		for (int j = 0; j < 3; ++j)
@@ -43,15 +46,17 @@ std::vector<double> Triplet::CalculateGains(const std::vector<double>& direction
 	// if any of the gains is negative then return zero
 	for (int i = 0; i < 3; ++i)
 		if (gains[i] < -m_tol)
-			return { 0.,0.,0. };
+		{
+			for (int j = 0; j < 3; ++j)
+				gains[j] = 0.;
+			return;
+		}
 
 	// Normalise
 	double vecNorm = norm(gains);
 
 	for (int i = 0; i < 3; ++i)
 		gains[i] /= vecNorm;
-
-	return gains;
 }
 
 //=======================================================================================
@@ -77,24 +82,27 @@ VirtualNgon::VirtualNgon(std::vector<unsigned int> chanInds, std::vector<PolarPo
 		tripletPositions[2] = centrePosition;
 		m_triplets.push_back(Triplet(channelIndSubset, tripletPositions));
 	}
+	m_tripletGains.resize(3, 0.);
 }
 
-std::vector<double> VirtualNgon::CalculateGains(const std::vector<double>& directionUnitVec)
+void VirtualNgon::CalculateGains(const std::vector<double>& directionUnitVec, std::vector<double>& gains)
 {
-	std::vector<double> gains(m_nCh, 0.);
+	assert(gains.capacity() >= m_nCh);
+	gains.resize(m_nCh, 0.);
+	for (auto& g : gains)
+		g = 0.;
 
 	unsigned int nTriplets = (unsigned int)m_triplets.size();
 
 	unsigned int iTriplet = 0;
-	std::vector<double> tripletGains;
 	// All gains must be above this value for the triplet to be valid
 	// Select a very small negative number to account for rounding errors
 	for (iTriplet = 0; iTriplet < nTriplets; ++iTriplet)
 	{
-		tripletGains = m_triplets[iTriplet].CalculateGains(directionUnitVec);
-		double gainSum = std::accumulate(tripletGains.begin(), tripletGains.end(), 0.);
+		m_triplets[iTriplet].CalculateGains(directionUnitVec, m_tripletGains);
+		double gainSum = std::accumulate(m_tripletGains.begin(), m_tripletGains.end(), 0.);
 		// All gains must be positive (within tolerance) and the sum should be greater than 0
-		if (tripletGains[0] > -m_tol && tripletGains[1] > -m_tol && tripletGains[2] > -m_tol
+		if (m_tripletGains[0] > -m_tol && m_tripletGains[1] > -m_tol && m_tripletGains[2] > -m_tol
 			&& gainSum > m_tol)
 		{
 			break;
@@ -102,19 +110,17 @@ std::vector<double> VirtualNgon::CalculateGains(const std::vector<double>& direc
 	}
 	// If no triplet is found then return the vector of zero gains
 	if (iTriplet == nTriplets)
-		return gains;
+		return;
 
-	std::vector<unsigned int> tripletInds = m_triplets[iTriplet].m_channelInds;
+	std::vector<unsigned int>& tripletInds = m_triplets[iTriplet].m_channelInds;
 	for (int i = 0; i < 2; ++i)
-		gains[tripletInds[i]] += tripletGains[i];
+		gains[tripletInds[i]] += m_tripletGains[i];
 	for (unsigned int i = 0; i < m_nCh; ++i)
-		gains[i] += m_downmixCoefficient * tripletGains[2];
+		gains[i] += m_downmixCoefficient * m_tripletGains[2];
 
 	double gainNorm = 1. / norm(gains);
 	for (unsigned int i = 0; i < m_nCh; ++i)
 		gains[i] *= gainNorm;
-
-	return gains;
 }
 
 //=======================================================================================
@@ -146,16 +152,19 @@ QuadRegion::QuadRegion(std::vector<unsigned int> chanInds, std::vector<PolarPosi
 	m_polynomialXProdX = CalculatePolyXProdTerms(m_quadVertices);
 	// For the Y terms rotate the order in which the vertices are sent
 	m_polynomialXProdY = CalculatePolyXProdTerms({ m_quadVertices[1],m_quadVertices[2],m_quadVertices[3],m_quadVertices[0] });
+
+	m_gainsTmp.resize(4);
+	m_gP.resize(3);
 }
 
-double QuadRegion::GetPanningValue(const std::vector<double>& directionUnitVec, std::vector<std::vector<double>> xprodTerms)
+double QuadRegion::GetPanningValue(const std::vector<double>& directionUnitVec, std::vector<std::vector<double>>& xprodTerms)
 {
 	// Take the dot product with the direction vector to get the polynomial terms
 	double a = dotProduct(xprodTerms[0], directionUnitVec);
 	double b = dotProduct(xprodTerms[1], directionUnitVec);
 	double c = dotProduct(xprodTerms[2], directionUnitVec);
 
-	std::vector<double> roots(2, -1.);
+	double roots[2] = { -1. };
 
 	// No quadratic term so solve linear bx + c = 0
 	if (abs(a) < m_tol)
@@ -181,39 +190,44 @@ double QuadRegion::GetPanningValue(const std::vector<double>& directionUnitVec, 
 	return -1.; // if no gain was found between 0 and 1 then return -1
 }
 
-std::vector<double> QuadRegion::CalculateGains(const std::vector<double>& directionUnitVec)
+void QuadRegion::CalculateGains(const std::vector<double>& directionUnitVec, std::vector<double>& gains)
 {
-	std::vector<double> gains_tmp(4, 0.);
-	std::vector<double> gains(4, 0.);
+	assert(gains.capacity() >= 4);
+	gains.resize(4, 0.);
+	for (auto& g : gains)
+		g = 0.;
+
 	// Calculate the gains in anti-clockwise order
 	double x = GetPanningValue(directionUnitVec, m_polynomialXProdX);
 	double y = GetPanningValue(directionUnitVec, m_polynomialXProdY);
 
 	// Check that both of the panning values are between zero and one and that gP.d > 0
 	if (x > 1. + m_tol || x < -m_tol || y > 1. + m_tol || y < -m_tol)
-		return gains; // return zero gains
-	gains_tmp = { (1. - x) * (1. - y),x * (1. - y),x * y,(1. - x) * y };
+		return; // return zero gains
+	m_gainsTmp[0] = (1. - x) * (1. - y);
+	m_gainsTmp[1] = x * (1. - y);
+	m_gainsTmp[2] = x * y;
+	m_gainsTmp[3] = (1. - x) * y;
 
-	std::vector<double> gP(3, 0.);
+	for (int i = 0; i < 3; ++i)
+		m_gP[i] = 0.;
 	for (int i = 0; i < 4; ++i)
 	{
-		gP[0] += gains_tmp[i] * m_quadVertices[i].x;
-		gP[1] += gains_tmp[i] * m_quadVertices[i].y;
-		gP[2] += gains_tmp[i] * m_quadVertices[i].z;
+		m_gP[0] += m_gainsTmp[i] * m_quadVertices[i].x;
+		m_gP[1] += m_gainsTmp[i] * m_quadVertices[i].y;
+		m_gP[2] += m_gainsTmp[i] * m_quadVertices[i].z;
 	}
-	double dirCheck = dotProduct(gP, directionUnitVec);
+	double dirCheck = dotProduct(m_gP, directionUnitVec);
 	if (dirCheck < 0.)
-		return std::vector<double>(4, 0.);
+		return; // Return zeros
 
-	double gainNorm = 1. / norm(gains_tmp);
+	double gainNorm = 1. / norm(m_gainsTmp);
 	for (int i = 0; i < 4; ++i)
-		gains_tmp[i] *= gainNorm;
+		m_gainsTmp[i] *= gainNorm;
 
 	// Map the gains to the order the channels were input
 	for (int i = 0; i < 4; ++i)
-		gains[m_vertOrder[i]] = gains_tmp[i];
-
-	return gains;
+		gains[m_vertOrder[i]] = m_gainsTmp[i];
 }
 
 std::vector<std::vector<double>> QuadRegion::CalculatePolyXProdTerms(const std::vector<CartesianPosition>& quadVertices)
