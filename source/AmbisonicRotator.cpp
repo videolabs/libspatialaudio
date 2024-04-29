@@ -230,7 +230,6 @@ void CAmbisonicRotator::getPitchMatrix(float pitch, std::vector<std::vector<floa
             {
                 assert(m_nOrder <= 3);
 
-                float cosPitchCu = cosPitchSq * cosPitch;
                 float sinPitchCu = sinPitchSq * sinPitch;
                 pitchMat[9][9] = 0.25f * (3.f * cosPitchSq + 1.f);
                 pitchMat[9][10] = -m_sqrt6_4 * sin2Pitch;
