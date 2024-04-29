@@ -265,7 +265,7 @@ namespace admrender {
 	struct StreamInformation
 	{
 		std::vector<TypeDefinition> typeDefinition;
-		unsigned int nChannels;
+		unsigned int nChannels = 0;
 	};
 
 	// Rec. ITU-R BS.2127-0 Table 15

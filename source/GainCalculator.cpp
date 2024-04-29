@@ -158,7 +158,7 @@ namespace admrender {
 		}
 
 		m_D.resize(m_nCh);
-		for (int i = 0; i < m_nCh; ++i)
+		for (unsigned int i = 0; i < m_nCh; ++i)
 			m_D[i].resize(m_nCh, 0.);
 		m_isExcluded.resize(m_nCh, false);
 		m_gainsTmp.resize(m_nCh);
@@ -187,7 +187,7 @@ namespace admrender {
 		assert(gainInOut.size() == m_nCh);
 
 		// Find the set of excluded speakers
-		for (int i = 0; i < m_nCh; ++i)
+		for (unsigned int i = 0; i < m_nCh; ++i)
 			m_isExcluded[i] = false;
 		int nCountExcluded = 0;
 		for (unsigned int iZone = 0; iZone < exclusionZones.size(); ++iZone)
