@@ -77,7 +77,8 @@ struct PolarEdges {
 			double width = d * std::tan(DEG2RAD * w / 2.);
 			double height = width / a;
 
-			auto l_xyz = LocalCoordinateSystem(az, el);
+			double l_xyz[3][3];
+			LocalCoordinateSystem(az, el, l_xyz);
 			v_x = CartesianPosition{ l_xyz[0][0] * width,l_xyz[0][1] * width,l_xyz[0][2] * width };
 			v_z = CartesianPosition{ l_xyz[2][0] * height,l_xyz[2][1] * height,l_xyz[2][2] * height };
 		}

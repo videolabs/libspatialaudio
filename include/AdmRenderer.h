@@ -199,6 +199,13 @@ namespace admrender {
 		std::unique_ptr<float[]> m_pZeros;
 		void ClearHoaBuffer();
 
+		// Temp vectors
+		std::vector<double> m_directGainsNoLFE;
+		std::vector<double> m_diffuseGainsNoLFE;
+		std::vector<double> m_directGains;
+		std::vector<double> m_diffuseGains;
+		std::vector<double> m_directSpeakerGains;
+
 		/**
 			Find the element of a vector matching the input. If the track types do not match or no matching
 			elements then returns -1

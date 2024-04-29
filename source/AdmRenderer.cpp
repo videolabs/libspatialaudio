@@ -92,8 +92,13 @@ namespace admrender {
 			break;
 		}
 
+		auto nInternalCh = m_outputLayout.channels.size();
+
 		if (reproductionScreen.size() > 0)
+		{
 			m_outputLayout.reproductionScreen = reproductionScreen;
+			m_objMetaDataTmp.referenceScreen = reproductionScreen;
+		}
 
 		// Clear the vectors containing the HOA and panning objects so that if the renderer is
 		// reconfigured the mappings will be correct
@@ -121,9 +126,11 @@ namespace admrender {
 				break;
 			case TypeDefinition::Objects:
 				m_pannerTrackInd.push_back({ iCh,TypeDefinition::Objects });
-				m_gainInterpDirect.push_back(CGainInterp());
-				m_gainInterpDiffuse.push_back(CGainInterp());
+				m_gainInterpDirect.push_back(CGainInterp(nInternalCh));
+				m_gainInterpDiffuse.push_back(CGainInterp(nInternalCh));
 				m_objectMetadata.push_back(ObjectMetadata());
+				if (reproductionScreen.size() > 0)
+					m_objectMetadata.back().referenceScreen = reproductionScreen;
 				m_channelToObjMap.insert(std::pair<int, int>(iCh, iObj++));
 				break;
 			case TypeDefinition::HOA:
@@ -147,13 +154,12 @@ namespace admrender {
 		// Set up the Householder matrix matrix to apply to the diffuse gains when output is binaural
 		if (m_RenderLayout == OutputLayout::Binaural)
 		{
-			size_t nCh = m_outputLayout.channels.size();
-			m_scatteringMatrix.resize(nCh);
-			for (size_t iCh = 0; iCh < nCh; ++iCh)
+			m_scatteringMatrix.resize(nInternalCh);
+			for (size_t iCh = 0; iCh < nInternalCh; ++iCh)
 			{
-				m_scatteringMatrix[iCh].resize(nCh);
-				for (size_t jCh = 0; jCh < nCh; ++jCh)
-					m_scatteringMatrix[iCh][jCh] = (iCh == jCh ? (double)nCh - 2. : -2.) / (double)nCh;
+				m_scatteringMatrix[iCh].resize(nInternalCh);
+				for (size_t jCh = 0; jCh < nInternalCh; ++jCh)
+					m_scatteringMatrix[iCh][jCh] = (iCh == jCh ? (double)nInternalCh - 2. : -2.) / (double)nInternalCh;
 			}
 		}
 
@@ -172,12 +178,12 @@ namespace admrender {
 
 		// If the output layout has an LFE then get its index
 
-		for (size_t iSpk = 0; iSpk < m_outputLayout.channels.size(); ++iSpk)
+		for (size_t iSpk = 0; iSpk < nInternalCh; ++iSpk)
 			if (!m_outputLayout.channels[iSpk].isLFE)
 				m_mapNoLfeToLfe.push_back(iSpk);
 
 		// Set up the buffers holding the direct and diffuse speaker signals
-		size_t nAmbiCh = m_outputLayout.channels.size();
+		size_t nAmbiCh = nInternalCh;
 		m_speakerOut.resize(m_nOutputChannels);
 		m_speakerOutDirect.resize(m_nOutputChannels);
 		m_speakerOutDiffuse.resize(m_nOutputChannels);
@@ -199,6 +205,14 @@ namespace admrender {
 		// A buffer of zeros to use to clear the HOA buffer
 		m_pZeros = std::make_unique<float[]>(nSamples);
 		memset(m_pZeros.get(), 0, m_nSamples * sizeof(float));
+
+		// Allocate vectors used during gain calculations
+		auto nOutputChannelsNoLFE = getLayoutWithoutLFE(m_outputLayout).channels.size();
+		m_directGainsNoLFE.resize(nOutputChannelsNoLFE);
+		m_diffuseGainsNoLFE.resize(nOutputChannelsNoLFE);
+		m_directGains.resize(nInternalCh);
+		m_diffuseGains.resize(nInternalCh);
+		m_directSpeakerGains.resize(m_nOutputChannels);
 
 		return true;
 	}
@@ -241,31 +255,27 @@ namespace admrender {
 			// Store the metadata
 			m_objectMetadata[iObj] = m_objMetaDataTmp;
 			// Calculate a new gain vector with this metadata
-			std::vector<double> directGainsNoLFE;
-			std::vector<double> diffuseGainsNoLFE;
-			m_objectGainCalc->CalculateGains(m_objMetaDataTmp, directGainsNoLFE, diffuseGainsNoLFE);
+			m_objectGainCalc->CalculateGains(m_objMetaDataTmp, m_directGainsNoLFE, m_diffuseGainsNoLFE);
 
 			// Apply scattering to the diffuse gains when output is binaural
 			if (m_RenderLayout == OutputLayout::Binaural)
-				diffuseGainsNoLFE = multiplyMatVec(m_scatteringMatrix, diffuseGainsNoLFE);
+				multiplyMatVec(m_scatteringMatrix, m_diffuseGainsNoLFE, m_diffuseGainsNoLFE);
 
-			std::vector<double> directGains;
-			std::vector<double> diffuseGains;
 			// Advance the index of any speakers after the LFE to leave a gap for the LFE
 			if (m_outputLayout.hasLFE)
 			{
-				directGains.resize(m_nOutputChannels, 0.);
-				diffuseGains.resize(m_nOutputChannels, 0.);
+				m_directGains.resize(m_nOutputChannels, 0.);
+				m_diffuseGains.resize(m_nOutputChannels, 0.);
 				for (unsigned int i = 0; i < m_nOutputChannels - 1; ++i)
 				{
-					directGains[m_mapNoLfeToLfe[i]] = directGainsNoLFE[i];
-					diffuseGains[m_mapNoLfeToLfe[i]] = diffuseGainsNoLFE[i];
+					m_directGains[m_mapNoLfeToLfe[i]] = m_directGainsNoLFE[i];
+					m_diffuseGains[m_mapNoLfeToLfe[i]] = m_diffuseGainsNoLFE[i];
 				}
 			}
 			else
 			{
-				directGains = directGainsNoLFE;
-				diffuseGains = diffuseGainsNoLFE;
+				m_directGains = m_directGainsNoLFE;
+				m_diffuseGains = m_diffuseGainsNoLFE;
 			}
 
 			// Get the interpolation time
@@ -276,8 +286,8 @@ namespace admrender {
 				interpLength = m_objMetaDataTmp.blockLength;
 
 			// Set the gains in the interpolators
-			m_gainInterpDirect[iObj].SetGainVector(directGains, interpLength);
-			m_gainInterpDiffuse[iObj].SetGainVector(diffuseGains, interpLength);
+			m_gainInterpDirect[iObj].SetGainVector(m_directGains, interpLength);
+			m_gainInterpDiffuse[iObj].SetGainVector(m_diffuseGains, interpLength);
 		}
 
 		if (m_RenderLayout == OutputLayout::Binaural)
@@ -341,11 +351,11 @@ namespace admrender {
 		else
 		{
 			// Get the gain vector to be applied to the DirectSpeaker channel
-			std::vector<double> gains = m_directSpeakerGainCalc->calculateGains(metadata);
+			m_directSpeakerGainCalc->calculateGains(metadata, m_directSpeakerGains);
 			for (int iSpk = 0; iSpk < (int)m_nOutputChannels; ++iSpk)
-				if (gains[iSpk] != 0.)
+				if (m_directSpeakerGains[iSpk] != 0.)
 					for (int iSample = 0; iSample < (int)nSamples; ++iSample)
-						m_speakerOut[iSpk][iSample + nOffset] += pDirSpkIn[iSample] * (float)gains[iSpk];
+						m_speakerOut[iSpk][iSample + nOffset] += pDirSpkIn[iSample] * (float)m_directSpeakerGains[iSpk];
 		}
 	}
 

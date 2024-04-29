@@ -77,7 +77,7 @@ class Triplet : public RegionHandler
 public:
 	Triplet(std::vector<unsigned int> chanInds, std::vector<PolarPosition> polPos);
 
-	std::vector<double> CalculateGains(const std::vector<double>& directionUnitVec);
+	void CalculateGains(const std::vector<double>& directionUnitVec, std::vector<double>& gainsOut);
 
 private:
 	// Inverse of the matrix holding the triplet unit vectors
@@ -94,13 +94,15 @@ class VirtualNgon : public RegionHandler
 public:
 	VirtualNgon(std::vector<unsigned int> chanInds, std::vector<PolarPosition> polPos, PolarPosition centrePosition);
 
-	std::vector<double> CalculateGains(const std::vector<double>& directionUnitVec);
+	void CalculateGains(const std::vector<double>& directionUnitVec, std::vector<double>& gainsOut);
 
 private:
 	std::vector<Triplet> m_triplets;
 	double m_downmixCoefficient;
 	// The number of channels in the Ngon
 	unsigned int m_nCh = 0;
+	// Temp vector holding gains of a triplet
+	std::vector<double> m_tripletGains;
 };
 
 /**
@@ -112,9 +114,9 @@ class QuadRegion : public RegionHandler
 public:
 	QuadRegion(std::vector<unsigned int> chanInds, std::vector<PolarPosition> polPos);
 
-	double GetPanningValue(const std::vector<double>& directionUnitVec, std::vector<std::vector<double>> xprodTerms);
+	double GetPanningValue(const std::vector<double>& directionUnitVec, std::vector<std::vector<double>>& xprodTerms);
 
-	std::vector<double> CalculateGains(const std::vector<double>& directionUnitVec);
+	void CalculateGains(const std::vector<double>& directionUnitVec, std::vector<double>& gainsOut);
 
 private:
 	std::vector<std::vector<double>> CalculatePolyXProdTerms(const std::vector<CartesianPosition>& quadVertices);
@@ -126,6 +128,10 @@ private:
 	// The cross product terms from the final equation in section 6.1.2.3.2 (pg 24)
 	std::vector<std::vector<double>> m_polynomialXProdX;
 	std::vector<std::vector<double>> m_polynomialXProdY;
+
+	// Temp vectors for gain calculation
+	std::vector<double> m_gainsTmp;
+	std::vector<double> m_gP;
 };
 
 struct LayoutRegions

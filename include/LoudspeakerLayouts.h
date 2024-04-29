@@ -50,7 +50,7 @@ public:
 		If the channel name matches one of the channels in the Layout then return
 		its index. If not, return -1.
 	*/
-	int getMatchingChannelIndex(std::string channelName)
+	int getMatchingChannelIndex(const std::string& channelName)
 	{
 		unsigned int nChannels = (unsigned int)channels.size();
 		for (unsigned int iCh = 0; iCh < nChannels; ++iCh)
@@ -76,12 +76,69 @@ public:
 private:
 };
 
+/** List of labels for audio channels from Rec. ITU-R BS.2094-1 Table 1
+*/
+static const std::vector<std::string> channelLabels = { "M+030",
+	"M-030",
+	"M+000",
+	"M+110",
+	"M-110",
+	"M+022",
+	"M-022",
+	"M+180",
+	"M+090",
+	"M-090",
+	"T+000",
+	"U+030",
+	"U+000",
+	"U-030",
+	"U+110",
+	"U+180",
+	"U-110",
+	"U+090",
+	"U-090",
+	"B+000",
+	"B+045",
+	"B-045",
+	"B+060",
+	"B-060",
+	"M+135_Diff",
+	"M-135_Diff",
+	"M+135",
+	"M-135",
+	"U+135",
+	"U-135",
+	"LFE1",
+	"LFE2",
+	"U+045",
+	"U-045",
+	"M+SC",
+	"M-SC",
+	"M+045",
+	"M-045",
+	"UH+180",
+	"" /* empty to indicate no appropriate channel name */
+};
+
 /**
 	If the the speaker label is in the format "urn:itu:bs:2051:[0-9]:speaker:X+YYY then
 	return the X+YYY portion. Otherwise, returns the original input
 */
-static inline std::string GetNominalSpeakerLabel(const std::string& label)
+static inline const std::string& GetNominalSpeakerLabel(const std::string& label)
 {
+	for (size_t i = 0; i < channelLabels.size(); ++i)
+		if (stringContains(label, channelLabels[i]))
+			return channelLabels[i];
+
+	// Rename the LFE channels, if requried.
+	// See Rec. ITU-R BS.2127-0 sec 8.3
+	if (stringContains(label, "LFE") || stringContains(label,"LFEL"))
+		return channelLabels[30];
+	else if (stringContains(label, "LFER"))
+		return channelLabels[31];
+
+	return channelLabels.back();
+#if 0
 	std::string speakerLabel = label;
 
 	std::stringstream ss(speakerLabel);
@@ -105,6 +162,7 @@ static inline std::string GetNominalSpeakerLabel(const std::string& label)
 		speakerLabel = "LFE2";
 
 	return speakerLabel;
+#endif
 }
 
 static inline Layout getLayoutWithoutLFE(Layout layout)

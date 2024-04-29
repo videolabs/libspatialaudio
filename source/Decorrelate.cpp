@@ -175,7 +175,7 @@ void CDecorrelate::Process(std::vector<std::vector<float>>& ppInDirect, std::vec
         m_nWritePos -= (int)m_nDelayLineLength;
 }
 
-void CDecorrelate::WriteToDelayLine(float* pDelayLine, float* pIn, int nWritePos, int nSamples)
+void CDecorrelate::WriteToDelayLine(float* pDelayLine, const float* pIn, int nWritePos, int nSamples)
 {
     int overrun = nWritePos + nSamples - m_nDelayLineLength;
     if (overrun > 0) {
@@ -187,7 +187,7 @@ void CDecorrelate::WriteToDelayLine(float* pDelayLine, float* pIn, int nWritePos
     }
 }
 
-void CDecorrelate::ReadFromDelayLine(float* pDelayLine, float* pOut, int nReadPos, int nSamples)
+void CDecorrelate::ReadFromDelayLine(const float* pDelayLine, float* pOut, int nReadPos, int nSamples)
 {
     int overrun = nReadPos + nSamples - m_nDelayLineLength;
     if (overrun > 0) {
