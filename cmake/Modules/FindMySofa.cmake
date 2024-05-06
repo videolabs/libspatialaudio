@@ -23,11 +23,22 @@ if(PKG_CONFIG_FOUND)
     pkg_check_modules(MYSOFA libmysofa)
 endif(PKG_CONFIG_FOUND)
 
+if(MYSOFA)
+    set(MYSOFA_INCLUDE_DIRS ${MYSOFA_PKG_CONFIG_INCLUDE_DIRS})
+    set(MYSOFA_LIBRARY_DIRS ${MYSOFA_PKG_CONFIG_LIBRARY_DIRS})
+endif()
+
 if(NOT MYSOFA_LIBRARIES)
     find_library(MYSOFA_LIBRARIES
         NAMES mysofa
     )
 endif(NOT MYSOFA_LIBRARIES)
+
+if(NOT MYSOFA_LIBRARY_DIRS)
+    find_path(MYSOFA_LIBRARY_DIRS
+        NAMES libmysofa.so
+    )
+endif(NOT MYSOFA_LIBRARY_DIRS)
 
 if(NOT MYSOFA_INCLUDE_DIRS)
     find_path(MYSOFA_INCLUDE_DIRS
