@@ -18,10 +18,17 @@
 
 namespace admrender {
 
-	/*
-		Map a source positioned between two azimuths to linear coordinates.
-		Azimuth angles are expected in degrees.
-	*/
+	/** Map a source positioned between two azimuths to linear coordinates.
+	 *	Azimuth angles are expected in degrees.
+	 *
+	 *	See Rec. ITU-R BS.2127-1 sec. 10.1 pg 69
+	 *
+	 * @param azL	The left azimuth in radians.
+	 * @param azR	The right azimuth in radians.
+	 * @param az	The azimuth angle to convert in returns
+	 * @return		Returns the az converted to linear
+	 * @see MapLinearToAz
+	 */
 	static inline double MapAzToLinear(double azL, double azR, double az)
 	{
 		double azMid = 0.5 * (azL + azR);
@@ -32,10 +39,17 @@ namespace admrender {
 		return 2. / M_PI * std::atan2(g_r, 1. - g_r);
 	}
 
-	/*
-		Map a linear source coordinate to a polar angle between two azimuths.
-		Azimuth angles are expected in degrees.
-	*/
+	/** Map a linear source coordinate to a polar angle between two azimuths.
+	 *	Azimuth angles are expected in degrees.
+	 *
+	 *	See Rec. ITU-R BS.2127-1 sec. 10.1 pg 69
+	 *
+	 * @param azL	The left of the azimuth range.
+	 * @param azR	The right of the azimuth range.
+	 * @param x		The linear value to convert to azimuth
+	 * @return		The input linear value x converted to azimuth
+	 * @see MapAzToLinear
+	 */
 	static inline double MapLinearToAz(double azL, double azR, double x)
 	{
 		double azMid = 0.5 * (azL + azR);
@@ -48,15 +62,11 @@ namespace admrender {
 		return azMid + azRel;
 	}
 
-	/*
-		Find the sector to which a given azimuth angle belongs.
-		See Rec. ITU-R BS.2127-0 sec. 10.1 pg 70
-	*/
-
 	/**	Find the sector to which a given azimuth angle belongs.
-	 *	See Rec. ITU-R BS.2127-0 sec. 10.1 pg 70
-	 *  @param az		The azimuth to check
-	 * @param sectorOut	A 2D array of size 3x2 holding the sector information
+	 *	See Rec. ITU-R BS.2127-0 sec. 10.1 pg 70.
+	 *
+	 * @param az		The azimuth to check
+	 * @param sectorOut	A reference to a 2D array of size 3x2 holding the returned sector information
 	 */
 	static inline void FindSector(double az, double (&sectorOut)[3][2])
 	{
@@ -107,10 +117,13 @@ namespace admrender {
 			sectorOut[2][1] = 1.;
 		}
 	}
-	/*
-		Find the sector to which a given azimuth angle belongs.
-		See Rec. ITU-R BS.2127-0 sec. 10.1 pg 70
-	*/
+
+	/** Find the cartesian sector to which a given azimuth angle belongs.
+	 *	See Rec. ITU-R BS.2127-0 sec. 10.1 pg 70.
+	 *
+	 * @param az		The azimuth to check
+	 * @param sectorOut	A reference to a 2D array of size 3x2 holding the returned cartesian sector information
+	 */
 	static inline void FindCartSector(double az, double (&sectorOut)[3][2])
 	{
 		double tol = 1e-10;
@@ -161,14 +174,16 @@ namespace admrender {
 		}
 	}
 
-	/**
-		Convert a polar position to cartesian.
-		Note that this is not a traditional polar-cartesian conversion. In this case cartesian is
-		related to the ADM metadata parameter.
-		It should therefore generally not be used for coordinate system conversions. Use it for
-		metadata conversions.
-		See Rec. ITU-R BS.2127-0 sec. 10 for more details on this conversion
-	*/
+	/** Convert a polar position to cartesian using the ADM convention.
+	 *	Note that this is not a traditional polar-cartesian conversion. In this case cartesian is
+	 *	related to the ADM metadata parameter.
+	 *	It should therefore generally not be used for coordinate system conversions. Use it for
+	 *	metadata conversions.
+	 *	See Rec. ITU-R BS.2127-0 sec. 10 for more details on this conversion.
+	 *
+	 * @param polar		The polar position to convert to cartesian coordinates
+	 * @return			Cartesian coordindate conversion of polar
+	 */
 	static inline CartesianPosition PointPolarToCart(PolarPosition polar)
 	{
 		double az = polar.azimuth;
@@ -212,14 +227,16 @@ namespace admrender {
 		return CartesianPosition{ x,y,z };
 	}
 
-	/**
-		Convert a cartesian position to polar.
-		Note that this is not a traditional polar-cartesian conversion. In this case cartesian is
-		related to the ADM metadata parameter.
-		It should therefore generally not be used for coordinate system conversions. Use it for
-		metadata conversions.
-		See Rec. ITU-R BS.2127-0 sec. 10 for more details on this conversion
-	*/
+	/** Convert a cartesian position to polar using the ADM convention.
+	 *	Note that this is not a traditional polar-cartesian conversion. In this case cartesian is
+	 *	related to the ADM metadata parameter.
+	 *	It should therefore generally not be used for coordinate system conversions. Use it for
+	 *	metadata conversions.
+	 *	See Rec. ITU-R BS.2127-0 sec. 10 for more details on this conversion.
+	 *
+	 * @param cart	The ADM cartesian coordinates to be converted to polar coordinates.
+	 * @return		The polar coordinate convertsion of the cartesian input.
+	 */
 	static inline PolarPosition PointCartToPolar(CartesianPosition cart)
 	{
 		double x = cart.x;
@@ -274,9 +291,16 @@ namespace admrender {
 		return PolarPosition{ az, el, d };
 	}
 
-	/**
-		Convert polar extent to cartesian extent
-	*/
+	/** Convert polar metadata extent to cartesian metadata extent
+	 *	See Rec. ITU-R BS.2127-1 sec. 10.2.1 pg72 for more details on this conversion.
+	 *
+	 * @param w		Polar extent width.
+	 * @param h		Polar extent height.
+	 * @param d		Polar extent distance.
+	 * @param x		Cartesian extent x return.
+	 * @param y		Cartesian extent y return.
+	 * @param z		Cartesian extent z return.
+	 */
 	static inline void whd2xyz(double w, double h, double d, double& x, double& y, double& z)
 	{
 		double s_xw = w < 180. ? std::sin(DEG2RAD * w * 0.5) : 1.;
@@ -290,9 +314,16 @@ namespace admrender {
 		z = s_zh;
 	}
 
-	/**
-		Convert cartesian extent to polar extent
-	*/
+	/** Convert cartesian metadata extent to polar metadata extent
+	 *	See Rec. ITU-R BS.2127-1 sec. 10.2.2 pg72 for more details on this conversion.
+	 *
+	 * @param x		Cartesian extent x.
+	 * @param y		Cartesian extent y.
+	 * @param z		Cartesian extent z.
+	 * @param w		Polar extent width return.
+	 * @param h		Polar extent height return.
+	 * @param d		Polar extent distance return.
+	 */
 	static inline void xyz2whd(double s_x, double s_y, double s_z, double& w, double& h, double& d)
 	{
 		double w_sx = 2. * RAD2DEG * std::asin(s_x);
@@ -308,10 +339,18 @@ namespace admrender {
 		d = std::max(0., s_y - s_eq[1]);
 	}
 
-	/**
-		Convert a cartesian source position and extent to polar position and polar extent
-		See Rec. ITU-R BS.2127-0 sec. 10.2.2 pg 72
-	*/
+	/** Convert a cartesian source position and extent to polar position and polar extent.
+	 *  See Rec. ITU-R BS.2127-1 sec. 10.2.2 pg 72.
+	 *
+	 * @param x					Cartesian source x-coordinate.
+	 * @param y					Cartesian source y-coordinate.
+	 * @param z					Cartesian source z-coordiante.
+	 * @param s_x				Extent size in the x-dimension.
+	 * @param s_y				Extent size in the y-dimension.
+	 * @param s_z				Extent size in the z-dimension.
+	 * @param polarPosition		Return of the polar position.
+	 * @param whd				Return of the width, height and distance of the polar extent.
+	 */
 	static inline void ExtentCartToPolar(double x, double y, double z, double s_x, double  s_y, double  s_z,
 		PolarPosition& polarPosition, double (&whd)[3])
 	{
@@ -332,11 +371,12 @@ namespace admrender {
 		xyz2whd(s_xf, s_yf, s_zf, whd[0], whd[1], whd[2]);
 	}
 
-	/*
-		Convert a metadata block from Cartesian to polar.
-
-		See Rec. ITU-R BS.2127-0 sec. 10 pg 68.
-	*/
+	/** Convert a metadata block from Cartesian to polar.
+	 *	See Rec. ITU-R BS.2127-1 sec. 10 pg 68.
+	 *
+	 * @param inMetadataBlock	Input metadata block. If this is already polar (i.e. cartesian = false) then it is returned unchanged
+	 * @param outMetadataBlock	Output metadata block converted to polar convention
+	 */
 	static inline void toPolar(const ObjectMetadata& inMetadataBlock, ObjectMetadata& outMetadataBlock)
 	{
 		outMetadataBlock = inMetadataBlock;

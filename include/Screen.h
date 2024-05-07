@@ -19,12 +19,13 @@
 #include "Coordinates.h"
 #include "Tools.h"
 
-/**
-	In some output layouts when cartesian==true, vertical panning in front of the listener may be
-	warped. This compensates for that.
-
-	See Rec. ITU-R BS.2127-0 sec. 7.3.2 pg 41 for more details
-*/
+/** In some output layouts when cartesian==true, vertical panning in front of the listener may be
+ *  warped. This compensates for that. See Rec. ITU-R BS.2127-0 sec. 7.3.2 pg 41 for more details.
+ * @param az		Azimuth of the source position in degrees.
+ * @param el		Elevation fo the source position in degrees.
+ * @param layout	The loudspeaker layout.
+ * @return			The compensated position (az, el) in degrees.
+ */
 static inline std::pair<double, double> CompensatePosition(double az, double el, const Layout& layout)
 {
 	auto speakerNames = layout.channelNames();
@@ -37,22 +38,23 @@ static inline std::pair<double, double> CompensatePosition(double az, double el,
 	}
 	else
 		return { az,el };
-
 }
 
-/**
-	The the position of the source from a position relative to the reference screen to a position
-	relative to the reproduction screen.
+/** The the position of the source from a position relative to the reference screen to a position
+ *  relative to the reproduction screen.
 */
 class CScreenScaleHandler {
 public:
 	CScreenScaleHandler(std::vector<Screen> reproductionScreen, Layout layout);
 	~CScreenScaleHandler();
 
-	/**
-		Scales a position depending on the reproduction screen and the reference screen
-		See Rec. ITU-R BS.2127-0 sec. 7.3.3 pg 40 for more details
-	*/
+	/** Scales a position depending on the reproduction screen and the reference screen. See Rec. ITU-R BS.2127-0 sec. 7.3.3 pg 40 for more details
+	 * @param position			Cartesian position to be scaled.
+	 * @param screenRef			If true then applies the scaling, otherwise return the original position unmodified.
+	 * @param referenceScreen	Reference screen to use for the scaling.
+	 * @param cartesian			Flag if the Cartesian rendering path is to be used.
+	 * @return					Returns the modified position.
+	 */
 	CartesianPosition handle(CartesianPosition position, bool screenRef, const std::vector<Screen>& referenceScreen, bool cartesian);
 
 private:
@@ -64,36 +66,42 @@ private:
 
 	bool m_repScreenSet = false;
 
-	/**
-		Scale the position
-	*/
-	CartesianPosition ScalePosition(CartesianPosition);
+	/** Scale the position for the polar/egocentric path.
+	 * @param position	The position to scale.
+	 * @return			The scaled postion.
+	 */
+	CartesianPosition ScalePosition(CartesianPosition position);
 
-	/**
-		Scale the azimuth and elevation
-	*/
+	/** Scale the azimuth and elevation based on the polar edges of the screen.
+	 * @param az	The azimuth to scale in degrees.
+	 * @param el	The elevation to scale in degrees.
+	 * @return		Pair containing scaled az and el.
+	 */
 	std::pair<double, double> ScaleAzEl(double az, double el);
 };
 
-/**
-	Apply screen edge locking to supplied position based on the reproduction screen and (if cartesian == true) the layout.
-*/
+/** Apply screen edge locking to supplied position based on the reproduction screen and (if cartesian == true) the layout. */
 class CScreenEdgeLock
 {
 public:
 	CScreenEdgeLock(std::vector<Screen> reproductionScreen, Layout layout);
 	~CScreenEdgeLock();
 
-	/*
-		Apply screen edge locking to a cartesian position
-	*/
+	/** Apply screen edge locking to a position. See Rec. ITU-R BS.2127-1 sec. 7.3.4 pg. 43.
+	 * @param position			The position to process.
+	 * @param screenEdgeLock	Screen edge lock metadata.
+	 * @param cartesian			If true then uses cartesian/allocentric processing. Otherwise uses polar/egocentric method.
+	 * @return					The modified position.
+	 */
 	CartesianPosition HandleVector(CartesianPosition position, admrender::ScreenEdgeLock screenEdgeLock, bool cartesian = false);
 
-	/*
-		Apply screen edge locking to an azimuth and elevation
-	*/
+	/** Apply screen edge locking to an azimuth and elevation.
+	 * @param azimuth			The azimuth in degrees to process.
+	 * @param elevation			The elevation in degrees to process.
+	 * @param screenEdgeLock	ScreenEdgeLock metadata.
+	 * @return					The modified directions in degrees.
+	 */
 	std::pair<double, double> HandleAzEl(double azimuth, double elevation, admrender::ScreenEdgeLock screenEdgeLock);
-
 
 private:
 	bool m_repScreenSet = false;

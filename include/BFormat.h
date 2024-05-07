@@ -30,48 +30,68 @@ class CBFormat : public CAmbisonicBase
 {
 public:
     CBFormat();
-    /**
-        Returns the number of samples.
-    */
+
+    /** Returns the number of samples.
+     * @return      Number of samples in the internal buffers
+     */
     unsigned GetSampleCount();
-    /**
-        Re-create the buffers needed for the given configuration. Previous
-        buffer contents are lost.
-    */
+
+    /** Re-create the buffers needed for the given configuration. Previous
+     *  buffer contents are lost.
+     * @param nOrder        Order of the B-format signal.
+     * @param b3D           True if the signal is 3D.
+     * @param nSampleCount  Number of samples in the buffer.
+     * @return              Returns true if successfully configured.
+     */
     bool Configure(unsigned nOrder, bool b3D, unsigned nSampleCount);
-    /**
-        Fill the buffer with zeros.
-    */
+
+    /** Fill the buffer with zeros. */
     void Reset();
-    /**
-        Not implemented.
-    */
+
+    /** Not implemented. */
     void Refresh();
-    /**
-        Copy a number of samples to a specific channel of the BFormat.
-    */
+
+    /** Copy a number of samples to a specific channel of the BFormat. Replaces the original content.
+     * @param pfData    Pointer to buffer to copy.
+     * @param nChannel  Channel to copy the input to.
+     * @param nSamples  Number of samples to copy. Must be less than specified in Configure().
+     */
     void InsertStream(float* pfData, unsigned nChannel, unsigned nSamples);
-    /**
-        Add a number of samples to a specific channel of the BFormat.
-    */
+
+    /** Add a number of samples to a specific channel of the BFormat. Adds to the original content.
+     * @param pfData    Pointer to buffer to copy.
+     * @param nChannel  Channel to copy the input to.
+     * @param nSamples  Number of samples to copy. Must be less than specified in Configure().
+     * @param nOffset   Start position in the internal buffers that the data should be copied to.
+     */
     void AddStream(float* pfData, unsigned nChannel, unsigned nSamples, unsigned nOffset = 0);
     /**
         Copy a number of samples from a specific channel of the BFormat.
     */
+
+    /** Copy a number of samples from a specific channel of the BFormat.
+     * @param pfData    Output holding the specified data.
+     * @param nChannel  Channel to copy.
+     * @param nSamples  Number of samples to copy.
+     */
     void ExtractStream(float* pfData, unsigned nChannel, unsigned nSamples);
 
-    /**
-        Copy the content of the buffer. It is assumed that the two objects are
+    /** Copy the content of the buffer. It is assumed that the two objects are
         of the same configuration.
-    */
+     * @param bf    B-format signal to copy.
+     */
     void operator = (const CBFormat &bf);
-    /**
-        Returns true if the configuration of the two objects match.
-    */
+
+    /** Returns true if the configuration of the two objects match.
+     * @param bf    B-format signal for configuration comparison.
+     * @return      Returns true if configuration of both objects match.
+     */
     bool operator == (const CBFormat &bf);
-    /**
-        Returns true if the configuration of the two objects don't match.
-    */
+
+    /** Returns true if the configuration of the two objects don't match.
+     * @param bf    B-format signal for configuration comparison.
+     * @return      Returns true if configuration of both objects do not match.
+     */
     bool operator != (const CBFormat &bf);
     CBFormat& operator += (const CBFormat &bf);
     CBFormat& operator -= (const CBFormat &bf);

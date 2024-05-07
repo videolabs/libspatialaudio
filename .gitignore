@@ -1,2 +1,5 @@
 build/
 install/
+
+# Doxygen output
+**/docs/html/

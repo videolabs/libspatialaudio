@@ -46,10 +46,11 @@ public:
 
 	std::vector<Screen> reproductionScreen = {};
 
-	/*
-		If the channel name matches one of the channels in the Layout then return
-		its index. If not, return -1.
-	*/
+	/** If the channel name matches one of the channels in the Layout then return
+	 *  its index. If not, return -1.
+	 * @param channelName	String containing the name of the channel.
+	 * @return				The index of the channel in the layout. If it is not present, returns -1.
+	 */
 	int getMatchingChannelIndex(const std::string& channelName)
 	{
 		unsigned int nChannels = (unsigned int)channels.size();
@@ -61,9 +62,7 @@ public:
 		return -1; // if no matching channel names are found
 	}
 
-	/*
-		Returns a list of the channel names in order.
-	*/
+	/** Returns a list of the channel names in order. */
 	std::vector<std::string> channelNames() const
 	{
 		std::vector<std::string> channelNames;
@@ -76,8 +75,7 @@ public:
 private:
 };
 
-/** List of labels for audio channels from Rec. ITU-R BS.2094-1 Table 1
-*/
+/** List of labels for audio channels from Rec. ITU-R BS.2094-1 Table 1. */
 static const std::vector<std::string> channelLabels = { "M+030",
 	"M-030",
 	"M+000",
@@ -120,10 +118,11 @@ static const std::vector<std::string> channelLabels = { "M+030",
 	"" /* empty to indicate no appropriate channel name */
 };
 
-/**
-	If the the speaker label is in the format "urn:itu:bs:2051:[0-9]:speaker:X+YYY then
-	return the X+YYY portion. Otherwise, returns the original input
-*/
+/** If the the speaker label is in the format "urn:itu:bs:2051:[0-9]:speaker:X+YYY then
+ *  return the X+YYY portion. Otherwise, returns the original input.
+ * @param label		String containing the label.
+ * @return			String of the nominal speaker label (X+YYY portion of input).
+ */
 static inline const std::string& GetNominalSpeakerLabel(const std::string& label)
 {
 	for (size_t i = 0; i < channelLabels.size(); ++i)
@@ -138,33 +137,12 @@ static inline const std::string& GetNominalSpeakerLabel(const std::string& label
 		return channelLabels[31];
 
 	return channelLabels.back();
-#if 0
-	std::string speakerLabel = label;
-
-	std::stringstream ss(speakerLabel);
-	std::string token;
-	std::vector<std::string> tokens;
-	while (std::getline(ss, token, ':'))
-	{
-		tokens.push_back(token);
-	}
-
-	if (tokens.size() == 7)
-		if (tokens[0] == "urn" && tokens[1] == "itu" && tokens[2] == "bs" && tokens[3] == "2051" &&
-			(std::stoi(tokens[4]) >= 0 || std::stoi(tokens[4]) < 10) && tokens[5] == "speaker")
-			speakerLabel = tokens[6];
-
-	// Rename the LFE channels, if requried.
-	// See Rec. ITU-R BS.2127-0 sec 8.3
-	if (speakerLabel == "LFE" || speakerLabel == "LFEL")
-		speakerLabel = "LFE1";
-	else if (speakerLabel == "LFER")
-		speakerLabel = "LFE2";
-
-	return speakerLabel;
-#endif
 }
 
+/** Returns a version of the input layout without any LFE channels.
+ * @param layout	Input layout.
+ * @return			Copy of the input layout with any LFE channels removed.
+ */
 static inline Layout getLayoutWithoutLFE(Layout layout)
 {
 	Layout layoutNoLFE = layout;
@@ -178,9 +156,7 @@ static inline Layout getLayoutWithoutLFE(Layout layout)
 	return layoutNoLFE;
 }
 
-/**
-	Directions of audio channels from Rec. ITU-R BS.2094-1 Table 1
-*/
+/** Directions of audio channels from Rec. ITU-R BS.2094-1 Table 1. */
 const std::map<std::string, PolarPosition> bs2094Positions = {
 	{"M+030", PolarPosition{30.,0.,1.}},
 	{"M-030", PolarPosition{-30.,0.,1.}},
@@ -224,6 +200,7 @@ const std::map<std::string, PolarPosition> bs2094Positions = {
 	{"UH+180", PolarPosition{180.,45.,1.}}
 };
 
+/** Predefined speaker layouts. */
 const std::vector<Layout> speakerLayouts = {
 // Stereo
 Layout{
@@ -300,9 +277,10 @@ Channel{"ACN14",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false},
 Channel{"ACN15",PolarPosition{0.,0.,1.},PolarPosition{0.,0.,1.},false}}, false, true, 3},
 };
 
-/**
-	Get the speakerLayout that matches the given name. If no match then returns empty.
-*/
+/** Get the speakerLayout that matches the given name. If no match then returns empty.
+ * @param layoutName	String containing the name of the desired speaker layout.
+ * @return				The speaker layout matching the name. Returns an empty layout if none is found.
+ */
 static inline Layout GetMatchingLayout(std::string layoutName)
 {
 	unsigned int nLayouts = (unsigned int)speakerLayouts.size();
@@ -314,7 +292,7 @@ static inline Layout GetMatchingLayout(std::string layoutName)
 	return {}; // if no matching channel names are found
 }
 
-/**
+/*
 	Presets of supported output layouts used in the point source panner
 */
 const std::vector<std::vector<unsigned int>> HULL_0_5_0 = { {3, 4, 13, 14}, {8, 9, 3, 4},

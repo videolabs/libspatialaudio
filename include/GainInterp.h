@@ -14,28 +14,36 @@
 
 #include <vector>
 
-/*
-	A class to handle the interpolation from one gain vector applied to a mono input over a specified duration
+/**
+*	A class to handle the interpolation from one gain vector applied to a mono input over a specified duration
 */
 class CGainInterp
 {
 public:
+
+	/** Constructor
+	 * @param nCh	The number of channels of gain to apply
+	 */
 	CGainInterp(unsigned int nCh);
 	~CGainInterp();
 
-	/*
-		Set the gain vector target and the time in samples to interpolate to it
-	*/
+	/** Set the gain vector target and the time in samples to interpolate to it.
+	 *
+	 * @param newGainVec			Vector of new gains. Must have the same length as number of channels set in the constructor.
+	 * @param interpTimeInSamples	The number of channels over which to interpolate to the new gain vector.
+	 */
 	void SetGainVector(const std::vector<double>& newGainVec, unsigned int interpTimeInSamples);
 
-	/*
-		Apply the gains to the mono input signal and _add_ them to the output buffer
-	*/
+	/** Apply the gains to the mono input signal and _add_ them to the output buffer.
+	 *
+	 * @param pIn		Pointer to mono input buffer.
+	 * @param ppOut		Output containing its original content plus pIn multiplied by the gain vector.
+	 * @param nSamples	The number of samples to process.
+	 * @param nOffset	Number of samples of delay to applied to the signal.
+	 */
 	void ProcessAccumul(const float* pIn, std::vector<std::vector<float>>& ppOut, unsigned int nSamples, unsigned int nOffset);
 
-	/*
-		Resets the gain interpolator by setting the gain vector to the target and making sure there is no interpolation processing
-	*/
+	/** Resets the gain interpolator by setting the gain vector to the target and making sure there is no interpolation processing pending.	*/
 	void Reset();
 
 private:

@@ -36,12 +36,21 @@ class CAmbisonicBinauralizer : public CAmbisonicBase
 {
 public:
     CAmbisonicBinauralizer();
-    /**
-        Re-create the object for the given configuration. Previous data is
-        lost. The tailLength variable it updated with the number of taps
-        used for the processing, and this can be used to offset the delay
-        this causes. The function returns true if the call is successful.
-    */
+
+    /** Re-create the object for the given configuration. Previous data is
+     *  lost. The tailLength variable it updated with the number of taps
+     *  used for the processing, and this can be used to offset the delay
+     *  this causes. The function returns true if the call is successful.
+     *
+     * @param nOrder        The order of the signal to be processed.
+     * @param b3D           Set to true if the signal to be processed is 3D. Must be true.
+     * @param nSampleRate   Sample rate of the signal to binauralize.
+     * @param nBlockSize    The maximum number of samples in a block to be processed.
+     * @param tailLength    Returns the length of the HRTF in samples.
+     * @param HRTFPath      Path to the HRTF to be used.
+     * @param lowCpuMode    If true then uses a symmetric head assumption to reduce CPU use.
+     * @return              Returns true if correctly configured.
+     */
     virtual bool Configure(unsigned nOrder,
                            bool b3D,
                            unsigned nSampleRate,
@@ -49,27 +58,21 @@ public:
                            unsigned& tailLength,
                            std::string HRTFPath = "",
                            bool lowCpuMode = true);
-    /**
-        Resets members.
-    */
-    virtual void Reset();
-    /**
-        Refreshes coefficients.
-    */
-    virtual void Refresh();
-    /**
-        Decode B-Format to binaural feeds. There is no arguement for the number
-        of samples to process, as this is determined by the nBlockSize argument
-        in the constructor and Configure() function. It is the responsibility of
-        program using this library to handle the blocks of the signal by FIFO
-        buffers or other means.
 
-        pBFSrc = the B-format audio to be rendered to binaural
-        ppfDst = the output destination
-        nSamples = the number of samples to be in the input output. Useful if
-        working with variable sizes of buffers. Must be less than the max size
-        set at Configure
-    */
+    /** Resets the state of the binauralizer. */
+    virtual void Reset();
+
+    /** Base class pure virtual function. Not implemented here. */
+    virtual void Refresh() override;
+
+    /** Decode B-Format to binaural feeds.
+     *
+     * @param pBFSrc    the B-format audio to be rendered to binaural
+     * @param ppfDst    the output destination
+     * @param nSamples = the number of samples to be in the input output. Useful if
+     *  working with variable sizes of buffers. Must be less than the max size
+     *  set at Configure
+     */
     void Process(CBFormat* pBFSrc, float** ppfDst);
     void Process(CBFormat* pBFSrc, float** ppfDst, unsigned int nSamples);
 

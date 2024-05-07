@@ -25,25 +25,27 @@
 class CDecorrelate
 {
 public:
-	/*
-		layout is the target loudspeaker layout
-		nSamples is the maximum block size expected
-	*/
 	CDecorrelate();
 	~CDecorrelate();
 
-	/**
-		Re-create the object for the given configuration. Previous data is
-		lost. Returns true if successful.
-	*/
+	/** Re-create the object for the given configuration. Previous data is lost.
+	 *
+	 * @param layout		Target speaker layout
+	 * @param nBlockSize	Maximum number of samples to be passed to Process()
+	 * @return				Returns true if correctly configured
+	 */
 	bool Configure(Layout layout, unsigned int nBlockSize);
 	/**
 		Not implemented.
 	*/
 	void Reset();
-	/**
-		Filter otate B-Format stream.
-	*/
+
+	/** Apply decorrelation filters to the input signal
+	 *
+	 * @param ppInDirect	The direct input signal to be processed. A delay will be applied to compensate for the delay in the diffuse FIR filters.
+	 * @param ppInDiffuse	The diffuse output signal.
+	 * @param nSamples		The number of samples to process.
+	 */
 	void Process(std::vector<std::vector<float>> &ppInDirect, std::vector<std::vector<float>> &ppInDiffuse, unsigned int nSamples);
 
 private:
@@ -79,20 +81,34 @@ private:
 	int m_nReadPos = 0;
 	int m_nWritePos = 0;
 
-	/**
-		Read and write data to delay lines
-	*/
+	/** Write a circular signal to a delay line
+	 *
+	 * @param pDelayLine	Delay line buffer.
+	 * @param pIn			Signal to be written to the delay line.
+	 * @param nWritePos		The position in the delay line that the signal is to be written to.
+	 * @param nSamples		Number of samples to be written to the delay line
+	 */
 	void WriteToDelayLine(float* pDelayLine, const float* pIn, int nWritePos, int nSamples);
+
+	/** Read from a circular delay line
+	 *
+	 * @param pDelayLine	Delay line buffer.
+	 * @param pOut			Signal read from the delay line.
+	 * @param nReadPos		The position from which the signal is to be read.
+	 * @param nSamples		Number of samples to be read from the delay line.
+	 */
 	void ReadFromDelayLine(const float* pDelayLine, float* pOut, int nReadPos, int nSamples);
 
-	/**
-		Calculate decorrelation filters using the method described in Rec. ITU-R BS.2127-0 sec. 7.4
-		The filters depend on the layout set at construction
-	*/
+	/** Calculate decorrelation filters using the method described in Rec. ITU-R BS.2127-0 sec. 7.4
+	 *	The filters depend on the layout set at construction.
+	 * @return Returns the decorrelation filters of size m_nCh x m_nDecorrelationFilterSamples
+	 */
 	std::vector<std::vector<float>> CalculateDecorrelationFilterBank();
 
-	/**
-		Calculate the time-domain decorrelation filter for the a particular channel index seed
-	*/
+	/** Calculate the time-domain decorrelation filter for the a particular channel index seed.
+	 *
+	 * @param seedIndex		The seed index for the random number generator.
+	 * @return				Returns the time-domain decorrelation FIR.
+	 */
 	std::vector<float> CalculateDecorrelationFilter(unsigned int seedIndex);
 };
