@@ -18,7 +18,7 @@
 
 namespace admrender {
 
-	// Structing containing a Mapping Rule c.f. Rec. ITU-R BS.2127-0 sec. 8.1
+	/** Structing containing a Mapping Rule. See Rec. ITU-R BS.2127-0 sec. 8.1. */
 	struct MappingRule {
 		std::string speakerLabel;
 		std::vector<std::pair<std::string, double>> gains;
@@ -32,7 +32,7 @@ namespace admrender {
     const double sqrt2_3 = std::sqrt(2. / 3.);
     const double _1_sqrt3 = std::sqrt(1. / 3.);
 
-    // Mapping rules from Rec. ITU-R BS.2127-0 Table 16
+    /** Mapping rules from Rec. ITU-R BS.2127-0 Table 16. */
     const std::vector<MappingRule> mappingRules = 
     {
     {"M+000", {{"M+000", 1.0}}, {}, {}},

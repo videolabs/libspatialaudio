@@ -31,24 +31,28 @@ CAmbisonicShelfFilters : public CAmbisonicBase
 public:
     CAmbisonicShelfFilters();
     ~CAmbisonicShelfFilters();
-    /**
-        Re-create the object for the given configuration. Previous data is
-        lost. The last argument is not used, it is just there to match with
-        the base class's form. Returns true if successful.
-    */
+
+    /** Re-create the object for the given configuration. Previous data is
+     *  lost. The last argument is not used, it is just there to match with
+     *  the base class's form. Returns true if successful.
+     * @param nOrder        Order of the signal to be filtered.
+     * @param b3D           Flag if the signal is 3D.
+     * @param nBlockSize    Maximum number of samples per block.
+     * @param nMisc         Unused.
+     * @return              Returns true if successfully configured.
+     */
     bool Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, unsigned nMisc);
-    /**
-        Not implemented.
-    */
+
+    /** Reset the internal buffers. */
     void Reset();
-    /**
-        Recalculate coefficients.
-    */
+
+    /** Not implemented. */
     void Refresh();
-    /**
-        Filter B-Format stream.
-        Overload with number of samples (nSamples < m_nBlockSize) to process shorter block sizes
-    */
+
+    /** Filter B-Format stream.
+     *  Overload with number of samples (nSamples < m_nBlockSize) to process shorter block sizes
+     * @param pBFSrcDst     The signal to be filtered.
+     */
     void Process(CBFormat* pBFSrcDst);
     void Process(CBFormat* pBFSrcDst, unsigned int nSamples);
 

@@ -21,22 +21,22 @@
 #include <assert.h>
 #include <set>
 
+/** Class to calculate the panning gains for a point source on the specified loudspeaker layout. */
 class CPointSourcePannerGainCalc
 {
 public:
 	CPointSourcePannerGainCalc(const Layout& layout);
 	~CPointSourcePannerGainCalc();
 
-	/**
-		Calculate the gains to be applied to a mono signal in order to place it in the target
-		speaker layout
-	*/
+	/** Calculate the gains to be applied to a mono signal in order to place it in the target
+	 *  speaker layout
+	 * @param directionUnitVec	Unit vector in the source direction (either cartesian or polar).
+	 * @param gainsOut			Output vector of the panning gains.
+	 */
 	void CalculateGains(CartesianPosition directionUnitVec, std::vector<double>& gainsOut);
 	void CalculateGains(PolarPosition directionUnitVec, std::vector<double>& gainsOut);
 
-	/**
-		Get the number of loudspeakers set in the targetLayout
-	*/
+	/** Get the number of loudspeakers set in the targetLayout. */
 	unsigned int getNumChannels();
 
 private:
@@ -64,16 +64,18 @@ private:
 	std::vector<double> m_tripletGains;
 	std::vector<double> m_quadGains;
 
-	/**
-		Return the extra loudspeakers needed to fill in the gaps in the array.
-		This currently works for the supported arrays: 0+5+0, 0+4+0, 0+7+0
-		See Rec. ITU-R BS.2127-0 pg. 27
-	*/
+	/** Return the extra loudspeakers needed to fill in the gaps in the array.
+	 *	This currently works for the supported arrays: 0+5+0, 0+4+0, 0+7+0
+	 *	See Rec. ITU-R BS.2127-0 pg. 27.
+	 * @param layout	The layout to be processed.
+	 * @return			A new layout with speakers added to fill the gaps.
+	 */
 	Layout CalculateExtraSpeakersLayout(const Layout& layout);
 
-	/**
-		Calculate the gains for the panning layout. In most cases this will be the same
+	/** Calculate the gains for the panning layout. In most cases this will be the same
 		as the output layout but in the case of 0+2+0 the panning layout is 0+5+0
-	*/
+	 * @param directionUnitVec	Unit vector in the source direction.
+	 * @param gainsOut			Output vector of the panning gains.
+	 */
 	void CalculateGainsFromRegions(CartesianPosition directionUnitVec, std::vector<double>& gainsOut);
 };

@@ -22,8 +22,7 @@
 
 namespace admrender {
 
-	// The different audio types expected from the ADM metadata
-	// Rec. ITU-R BS.2127-0 pg. 8
+	/** The different audio types expected from the ADM metadata. Rec. See ITU-R BS.2127-0 pg. 8 */
 	enum class TypeDefinition {
 		DirectSpeakers = 1,
 		Matrix,
@@ -32,8 +31,9 @@ namespace admrender {
 		Binaural
 	};
 
-	// Shared structure (Rec.ITU - R BS.2127 - 0 section 11.1.1) ============================================================
-	// Frequency data for the channel
+	// Shared structures (Rec.ITU - R BS.2127-0 section 11.1.1) ============================================================
+
+	/** Frequency data for the channel. */
 	struct Frequency {
 		std::vector<double> lowPass;
 		std::vector<double> highPass;
@@ -175,7 +175,7 @@ namespace admrender {
 
 	// Metadata for different objects. See Rec. ITU-R BS.2127-0 page 86.
 
-	// The metadata for ObjectType
+	/** The metadata for ObjectType */
 	struct ObjectMetadata
 	{
 		PolarPosition polarPosition;
@@ -220,7 +220,7 @@ namespace admrender {
 			&& lhs.blockLength == rhs.blockLength;
 	}
 
-	// The metadata for HoaType
+	/** The metadata for HoaType */
 	struct HoaMetadata
 	{
 		// A vector containing the HOA orders of each of the channels
@@ -236,8 +236,8 @@ namespace admrender {
 		return lhs.orders == rhs.orders && lhs.degrees == rhs.degrees
 			&& lhs.normalization == rhs.normalization && lhs.trackInds == rhs.trackInds;
 	}
-	// The metadata for DirectSpeaker
-	// See See Rec. ITU-R BS.2127-0 page 63.
+
+	/** The metadata for DirectSpeaker. See See Rec. ITU-R BS.2127-0 page 63. */
 	struct DirectSpeakerMetadata
 	{
 		// The speaker labels from the stream metadata
@@ -260,15 +260,14 @@ namespace admrender {
 			&& lhs.channelFrequency == rhs.channelFrequency;
 	}
 
-	// Information about all of the channels in the stream. Contains the type of each track
-	// and the number of channels
+	/** Information about all of the channels in the stream.Contains the type of each track and the number of channels */
 	struct StreamInformation
 	{
 		std::vector<TypeDefinition> typeDefinition;
 		unsigned int nChannels = 0;
 	};
 
-	// Rec. ITU-R BS.2127-0 Table 15
+	/** Mapping from common definitions audioPackFormatID to layout name. Rec.ITU-R BS.2127-0 Table 15 */
 	const std::map<std::string, std::string> ituPackNames = {{"AP_00010001", "0+1+0"},
 	{"AP_00010002", "0+2+0"},
 	{"AP_0001000c", "0+5+0"},

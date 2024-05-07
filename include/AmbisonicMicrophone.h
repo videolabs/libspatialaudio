@@ -29,21 +29,25 @@ class CAmbisonicMicrophone : public CAmbisonicSource
 public:
     CAmbisonicMicrophone();
     ~CAmbisonicMicrophone();
-    /**
-        Recalculate coefficients, and apply normalisation factors.
-    */
+
+    /** Recalculate coefficients, and apply normalisation factors. */
     void Refresh();
-    /**
-        Decode B-Format to speaker feed.
-    */
+
+    /** Decode B-Format to microphone feed.
+     * @param pBFSrc    BFormat scene to be sampled by the microphone directivity.
+     * @param nSamples  Number of samples to process.
+     * @param pfDst     Mono microphone signal.
+     */
     void Process(CBFormat* pBFSrc, unsigned nSamples, float* pfDst);
-    /**
-        Set the microphone's directivity.
-    */
+
+    /** Set the microphone's directivity.
+     * @param fDirectivity  Microphone directivity.
+     */
     void SetDirectivity(float fDirectivity);
-    /**
-        Get the microphone's directivity.
-    */
+
+    /** Get the microphone's directivity.
+     * @return  Microphone directivity.
+     */
     float GetDirectivity();
 
 protected:

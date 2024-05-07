@@ -13,6 +13,7 @@
 
 #pragma once
 
+/** Structure holding a spherical-polar position. */
 struct PolarPosition
 {
 	double azimuth = 0.0;
@@ -24,6 +25,7 @@ inline bool operator==(const PolarPosition& lhs, const PolarPosition& rhs)
 	return lhs.azimuth == rhs.azimuth && lhs.elevation == rhs.elevation && lhs.distance == rhs.distance;
 }
 
+/** Structure holding a cartesian position. */
 struct CartesianPosition
 {
 	double x = 1.0;
