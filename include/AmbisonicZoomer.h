@@ -32,37 +32,41 @@ class CAmbisonicZoomer : public CAmbisonicBase
 public:
     CAmbisonicZoomer();
     virtual ~CAmbisonicZoomer() = default;
-    /**
-        Re-create the object for the given configuration. Previous data is
-        lost. The last argument is not used, it is just there to match with
-        the base class's form. Returns true if successful.
-    */
+
+    /** Re-create the object for the given configuration. Previous data is
+     *  lost. The last argument is not used, it is just there to match with
+     *  the base class's form. Returns true if successful.
+     * @param nOrder        Order of the signal to process.
+     * @param b3D           Flag if the signal is 3D.
+     * @param nBlockSize    Number of samples to process each block.
+     * @param sampleRate    Sample rate of the signal to process.
+     * @return              Returns true if successfully configured.
+     */
     virtual bool Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, unsigned sampleRate);
-    /**
-        Not implemented.
-    */
+
+    /** Not implemented. */
     void Reset();
-    /**
-        Recalculate coefficients.
-    */
+
+    /** Recalculate coefficients. */
     void Refresh();
-    /**
-        Set zoom factor. This is in a range from -1 to 1, with 0 being no zoom,
-        1 full forward zoom, and -1 full forward backwards.
-    */
+
+    /** Set zoom factor. This is in a range from 0 to 1, with 0 being no zoom,
+     *  1 full forward zoom.
+     * @param fZoom     How much zoom to apply.
+     */
     void SetZoom(float fZoom);
-    /**
-        Get zoom factor.
-    */
+
+    /** Get zoom factor.
+     * @return      Zoom factor
+     */
     float GetZoom();
-    /**
-        Zoom into B-Format stream.
-    */
+
+    /** Zoom into B-Format stream.
+     * @param pBFSrcDst     B-Format signal to process.
+     * @param nSamples      Number of samples to process.
+     */
     void Process(CBFormat* pBFSrcDst, unsigned nSamples);
-    /**
-        Compute factorial of integer
-    */
-    float factorial(unsigned M);
+
 protected:
     CAmbisonicDecoder m_AmbDecoderFront;
 
@@ -74,6 +78,12 @@ protected:
     float m_fZoomRed;
     float m_AmbFrontMic;
     float m_fZoomBlend;
+
+    /** Compute factorial of integer.
+     * @param M     Interger input.
+     * @return      Factorial of input as a float.
+     */
+    float factorial(unsigned M);
 };
 
 #endif // _AMBISONIC_ZOOMER_H

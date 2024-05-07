@@ -27,28 +27,9 @@
 #include "PolarExtent.h"
 #include "GainCalculator.h"
 
-/*
-
-	CURRENT FUNCTIONALITY:
-		- Spatialise Objects with HOA panner when using binaural output
-		- Spatialise Objects with a VBAP-type panner when output to speakers
-		- Add HOA signal to the render to be decoded
-		- Add DirectSpeaker tracks to be rendered
-		- Set the output format to stereo, binaural, quad, 5.x and 7.x
-		- Apply decorrelation to Objects and apply compensation delay to the direct signal
-		- Handles exclusion zones, divergence, channel lock
-		- Handles extent panning for both loudspeaker and binaural output
-		- Handle screen scaling and screen edge lock
-
-	TODO FOR MORE ADVANCED FUNCTIONALITY
-		- Handle Matrix types (need samples to be able to test)
-		- Add Cartesian processing path. Currently convert positions of objects to polar and uses polar processing.
-
-*/
-
 namespace admrender {
 
-	// The different output layouts supported by this class
+	/** The different output layouts supported by CAdmRenderer */
 	enum class OutputLayout
 	{
 		Stereo = 1,
@@ -61,76 +42,85 @@ namespace admrender {
 	};
 
 	/** This is a renderer for ADM streams. It aims to provide a simple way to
-		add spatial data to the stream audio using the methods available in
-		libspatialaudio.
-		Note that it currently supports the basic spatialisation features and is
-		not compliant with Rec. ITU-R BS.2127-0 */
-
+	 *	add spatial data to the stream audio using the methods available in
+	 *	libspatialaudio.
+	 *
+	 *	CURRENT FUNCTIONALITY:
+	 *	- Spatialise Objects with HOA panner when using binaural output
+	 *	- Spatialise Objects with a VBAP-type panner when output to speakers
+	 *	- Add HOA signal to the render to be decoded
+	 *	- Add DirectSpeaker tracks to be rendered
+	 *	- Set the output format to stereo, binaural, quad, 5.x and 7.x
+	 *	- Apply decorrelation to Objects and apply compensation delay to the direct signal
+	 *	- Handles exclusion zones, divergence, channel lock
+	 *	- Handles extent panning for both loudspeaker and binaural output
+	 *	- Handle screen scaling and screen edge lock
+	 *
+	 *	Required to meet full compliance with Rec. ITU-R BS.2127-0:
+	 *	- Handle Matrix types (need samples to be able to test)
+	 *	- Add Cartesian processing path. Currently convert positions of objects to polar and uses polar processing.
+	 */
 	class CAdmRenderer
 	{
 	public:
 		CAdmRenderer();
 		~CAdmRenderer();
 
-		/**
-			Configure the module.
-
-			Inputs: outputTarget - enum of the output speaker layout target
-					hoaOrder - the HOA order used for decoding HOA streams or in the binaural rendering for OutputLayout::Binaural
-					nSampleRate - the sample rate of the audio
-					nSamples - the maximum number of samples expected in a frame
-					StreamInformation - structure containing the types of each track in the stream
-					HRTFPath - path to the SOFA file used for binaural rendering
-					reproductionScreen - the reproduction screen used on the playback side. If none or unknown then leave blank. Vector should be of size = 1 (i.e. only one screen)
-
-			Returns true if everything is configured correctly. Otherwise, returns false.
-		*/
+		/** Configure the ADM Renderer.
+		 *
+		 * @param outputTarget			The target output layout.
+		 * @param hoaOrder				The ambisonic order of the signal to be rendered.
+		 * @param nSampleRate			Sample rate of the streams to be processed.
+		 * @param nSamples				The maximum number of samples in an audio frame to be added to the stream.
+		 * @param channelInfo			Information about the expected stream formats.
+		 * @param HRTFPath				Path to an HRTF to be used when the output layout is binaural.
+		 * @param reproductionScreen	Screen details used for screen scaling/locking.
+		 * @return						Returns true if the class is correctly configured and ready to use.
+		 */
 		bool Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, const StreamInformation& channelInfo, std::string HRTFPath = "", std::vector<Screen> reproductionScreen = std::vector<Screen>{});
 
-		/**
-			Add an audio Object to be rendered
-
-			Inputs: pIn - Pointer to audio
-					channelInd - channel index in the ADM
-		*/
+		/** Add an audio Object to be rendered.
+		 *
+		 * @param pIn		Pointer to the object buffer to be rendered.
+		 * @param nSamples	Number of samples in the stream.
+		 * @param metadata	Metadata for the object stream. If the metadata is in Cartesian format it will be converted to polar.
+		 * @param nOffset	Number of samples of delay to applied to the signal.
+		 */
 		void AddObject(float* pIn, unsigned int nSamples, const ObjectMetadata& metadata, unsigned int nOffset = 0);
 
-		/**
-			Adds an HOA stream to be rendered
-
-			Inputs: pHoaIn - nHoaChannels x nSamples array containing the HOA signal to be rendereds
-					nSamples - number of samples in the block
-					metadata - the HOA metadata
-		*/
+		/** Adds an HOA stream to be rendered. Currently only supports SN3D normalisation.
+		 *
+		 * @param pHoaIn	The HOA audio channels to be rendered of size nAmbiCh x nSamples
+		 * @param nSamples	Number of samples in the stream.
+		 * @param metadata	Metadata for the HOA stream
+		 * @param nOffset	Number of samples of delay to applied to the signal.
+		 */
 		void AddHoa(float** pHoaIn, unsigned int nSamples, const HoaMetadata& metadata, unsigned int nOffset = 0);
 
-		/**
-			Adds an DirectSpeaker stream to be rendered
-
-			Inputs: pDirSpkIn -  nSamples array containing the mono speaker signal to be rendered
-					nSamples - number of samples in the block
-					metadata - the DirectSpeaker metadata
-		*/
+		/** Adds an DirectSpeaker stream to be rendered.
+		 *
+		 * @param pDirSpkIn	Pointer to the direct speaker stream.
+		 * @param nSamples	Number of samples in the stream.
+		 * @param metadata	Metadata for the DirectSpeaker stream
+		 * @param nOffset	Number of samples of delay to applied to the signal.
+		 */
 		void AddDirectSpeaker(float* pDirSpkIn, unsigned int nSamples, const DirectSpeakerMetadata& metadata, unsigned int nOffset = 0);
 
-		/**
-			Adds a binaural signal to the output. If the output type was not set to Binaural at startup
-			then the input is discarded.
-
-			Inputs: pBinIn - 2 x nSamples array containing the HOA signal to be rendereds
-					nSamples - number of samples in the block
-					metadata - the HOA metadata
-		*/
+		/** Adds a binaural signal to the output. If the output type was not set to Binaural at startup
+		 *	then the input is discarded.
+		 * @param pBinIn	The binaural stream of size 2 x nSamples
+		 * @param nSamples	Number of samples in the stream.
+		 * @param nOffset	Number of samples of delay to applied to the signal.
+		 */
 		void AddBinaural(float** pBinIn, unsigned int nSamples, unsigned int nOffset = 0);
 
-		/**
-			Get the rendered audio
-		*/
+		/** Get the rendered audio. This should only be called after all streams have been added.
+		 * @param pRender	Rendered audio output.
+		 * @param nSamples	The number of samples to get
+		 */
 		void GetRenderedAudio(float** pRender, unsigned int nSamples);
 
-		/**
-			Reset the processor
-		*/
+		/** Reset the processor. */
 		void Reset();
 
 	private:
@@ -206,10 +196,7 @@ namespace admrender {
 		std::vector<double> m_diffuseGains;
 		std::vector<double> m_directSpeakerGains;
 
-		/**
-			Find the element of a vector matching the input. If the track types do not match or no matching
-			elements then returns -1
-		*/
+		/** Find the element of a vector matching the input. If the track types do not match or no matching elements then returns -1 */
 		int GetMatchingIndex(const std::vector<std::pair<unsigned int, TypeDefinition>>& vector, unsigned int nElement, TypeDefinition trackType);
 	};
 

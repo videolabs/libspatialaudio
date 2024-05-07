@@ -108,41 +108,52 @@ private:
 
 /// Ambisonic processor.
 
-/** This object is used to rotate the BFormat signal around all three axes.
-    Orientation structs are used to define the the soundfield's orientation. */
+/** DEPRECATED: This object is used to rotate the BFormat signal around all three axes.
+ *  Orientation structs are used to define the the soundfield's orientation.
+ *  Please use CAmbisonicRotator instead.
+ */
 
 class
     [[deprecated("This class is deprecated. Please use CAmbisonicRotator class instead.")]]
 CAmbisonicProcessor : public CAmbisonicBase
 {
 public:
+    /** DEPRECATED: Please use CAmbisonicRotator instead.
+     */
     CAmbisonicProcessor();
     ~CAmbisonicProcessor();
-    /**
-        Re-create the object for the given configuration. Previous data is
-        lost. The last argument is not used, it is just there to match with 
-        the base class's form. Returns true if successful.
-    */
+
+    /** Re-create the object for the given configuration. Previous data is
+     *  lost. The last argument is not used, it is just there to match with
+     *  the base class's form. Returns true if successful.
+     * @param nOrder        Ambisonic order to process.
+     * @param b3D           True if the signal to process is 3D
+     * @param nBlockSize    Maximum block size (unused).
+     * @param nMisc         Unused.
+     * @return              Returns true if the configuration is successful.
+     */
     bool Configure(unsigned nOrder, bool b3D, unsigned nBlockSize, unsigned nMisc);
-    /**
-        Not implemented.
-    */
+
+    /** Not implemented. */
     void Reset();
-    /**
-        Recalculate coefficients.
-    */
+
+    /** Recalculate coefficients after the orientation changed. */
     void Refresh();
-    /**
-        Set yaw, roll, and pitch settings.
-    */
+
+    /** Set yaw, roll, and pitch settings.
+     * @param orientation   Orientation as yaw, pitch and roll
+     */
     void SetOrientation(Orientation orientation);
-    /**
-        Get yaw, roll, and pitch settings.
-    */
+
+    /** Get yaw, roll, and pitch settings.
+     * @return      Current orientation.
+     */
     Orientation GetOrientation();
-    /**
-        Rotate B-Format stream.
-    */
+
+    /** Rotate B-Format stream in place.
+     * @param pBFSrcDst  BFormat stream to be rotated.
+     * @param nSamples   Number of samples in the signal.
+     */
     void Process(CBFormat* pBFSrcDst, unsigned nSamples);
 
 private:

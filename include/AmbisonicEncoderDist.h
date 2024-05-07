@@ -33,32 +33,39 @@ class CAmbisonicEncoderDist : public CAmbisonicEncoder
 public:
     CAmbisonicEncoderDist();
     ~CAmbisonicEncoderDist();
-    /**
-        Re-create the object for the given configuration. Previous data is
-        lost. Returns true if successful.
-    */
+
+    /** Re-create the object for the given configuration. Previous data is
+     *  lost. Returns true if successful.
+     * @param nOrder        Order to which the signal should be encoded.
+     * @param b3D           Flag if the 2D or 3D encoding.
+     * @param nSampleRate   Sample rate of the signal to be encoded.
+     * @return              Returns true if successfully configured.
+     */
     virtual bool Configure(unsigned nOrder, bool b3D, unsigned nSampleRate);
-    /**
-        Resets members such as delay lines.
-    */
+
+    /** Resets members such as delay lines. */
     virtual void Reset();
-    /**
-        Refreshes coefficients.
-    */
+
+    /** Refreshes coefficients. */
     virtual void Refresh();
-    /**
-        Encode mono stream to B-Format.
-    */
+
+    /** Encode mono stream to B-Format.
+     * @param pfSrc     Pointer to mono signal to be encoded.
+     * @param nSamples  Number of samples to encode.
+     * @param pBFDst    Output B-Format signal.
+     */
     void Process(float* pfSrc, unsigned nSamples, CBFormat* pBFDst);
-    /**
-        Set the radius of the intended playback speaker setup which is used for
-        the interior effect (W-Panning).
-    */
+
+    /** Set the radius of the intended playback speaker setup which is used for
+     *  the interior effect (W-Panning).
+     * @param fRoomRadius   Room radius in metres
+     */
     void SetRoomRadius(float fRoomRadius);
-    /**
-        Returns the radius of the intended playback speaker setup, which is
-        used for the interior effect (W-Panning).
-    */
+
+    /** Returns the radius of the intended playback speaker setup, which is
+     *  used for the interior effect (W-Panning).
+     * @return  Room radius in metres.
+     */
     float GetRoomRadius();
 
 protected:

@@ -40,6 +40,7 @@ public:
     
     /** Reset the internal state of the filters */
     void Reset();
+
     /** No implementation. Pure virtual base-class function. */
     void Refresh();
 

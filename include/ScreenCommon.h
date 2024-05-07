@@ -16,10 +16,9 @@
 #include "Coordinates.h"
 #include "Tools.h"
 
-/**
-	Holds a screen with either cartesian or polar coordinates. If isCartesianScreen is set true then
-	the centre should be set in centreCartesianPosition.
-*/
+/** Holds a screen with either cartesian or polar coordinates. If isCartesianScreen is set true then
+ * the centre should be set in centreCartesianPosition.
+ */
 struct Screen {
 	// Flag if the screen is cartesian. Only one set of properties is used depending on this flag so make sure they match
 	bool isCartesianScreen = false;
@@ -35,20 +34,19 @@ struct Screen {
 	double widthX;
 };
 
-/**
-	PolarEdges structure that holds the representation of the screen for
-	use in the screen edge lock and screen scaling prcocessing classes.
-*/
+/** PolarEdges structure that holds the representation of the screen for
+ *  use in the screen edge lock and screen scaling prcocessing classes.
+ */
 struct PolarEdges {
 	double leftAzimuth;
 	double rightAzimuth;
 	double bottomElevation;
 	double topElevation;
 
-	/**
-		Convert from Screen to Polar Edges.
-		See Rec. ITU-R BS.2127-0 Sec. 7.3.3.1 pg. 40
-	*/
+
+	/** Convert from Screen to Polar Edges. See Rec. ITU-R BS.2127-0 Sec. 7.3.3.1 pg. 40.
+	 * @param screen	The screen from which the PolarEdges are to be calcualted
+	 */
 	void fromScreen(Screen screen)
 	{
 		CartesianPosition centre;

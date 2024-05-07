@@ -21,15 +21,20 @@
 
 namespace admrender {
 
+	/** A class to apply ChannelLocking as described in Rec. ITU-R BS.2127-1 sec. 7.3.6 pg44. */
 	class ChannelLockHandler
 	{
 	public:
 		ChannelLockHandler(Layout layout);
 		~ChannelLockHandler();
 
-		/**
-			If the Object has a valid channelLock distance then determines the new direction of the object
-		*/
+		/** If the Object has a valid channelLock distance then determines the new direction of the object.
+		 *  Otherwise the original position is returned.
+		 *
+		 * @param channelLock	The ChannelLock distance. position must be less than the specified distance of a channel to lock to it.
+		 * @param position		The position to be processed.
+		 * @return				The processed position. If position is not within the specified distance of for ChannelLocking then the original position is returned.
+		 */
 		CartesianPosition handle(ChannelLock channelLock, CartesianPosition position);
 
 	private:
@@ -44,17 +49,17 @@ namespace admrender {
 		int m_activeTuples = 0;
 	};
 
+	/** A class to handle zone exclusion as described in Rec. ITU-R BS.2127-1 sec. 7.3.12 pg. 60. */
 	class ZoneExclusionHandler
 	{
 	public:
 		ZoneExclusionHandler(Layout layout);
 		~ZoneExclusionHandler();
 
-		/**
-			Calculate the gain vector once the appropriate loudspeakers have been exlcuded.
-
-			The gains are replaced with the processed version.
-		*/
+		/** Calculate the gain vector once the appropriate loudspeakers have been exlcuded. The gains are replaced with the processed version.
+		 * @param exclusionZones	Vector of all exclusion zones.
+		 * @param gainsInOut		Input panning gains which are replaced by the processed ones.
+		 */
 		void handle(const std::vector<PolarExclusionZone>& exclusionZones, std::vector<double>& gainsInOut);
 
 	private:
@@ -63,6 +68,11 @@ namespace admrender {
 		std::vector<std::vector<std::set<unsigned int>>> m_downmixMapping;
 		std::vector<std::vector<unsigned int>> m_downmixMatrix;
 
+		/** Get the layer priority based on the input and output channel types.
+		 * @param inputChannelName	Name of the input channel.
+		 * @param outputChannelName	Name of the output channel.
+		 * @return					Priority of the layer.
+		 */
 		int GetLayerPriority(const std::string& inputChannelName, const std::string& outputChannelName);
 
 		// Downmix matrix
@@ -77,16 +87,20 @@ namespace admrender {
 
 	};
 
+	/** The main ADM gain calculator class which processes metadata to calculate direct and diffuse gains. */
 	class CGainCalculator
 	{
 	public:
 		CGainCalculator(Layout outputLayoutNoLFE);
 		~CGainCalculator();
 
-		/*
-			Calculate the panning (loudspeaker or HOA) gains to apply to a
-			mono signal for spatialisation based on the input metadata
-		*/
+		/** Calculate the panning (loudspeaker or HOA) gains to apply to a
+		 *	mono signal for spatialisation based on the input metadata.
+		 *
+		 * @param metadata		Object metadata to be used to calculate the gains.
+		 * @param directGains	Output vector of direct gains corresponding to the supplied metadata.
+		 * @param diffuseGains	Output vector of diffuse gains corresponding to the supplied metadata.
+		 */
 		void CalculateGains(const ObjectMetadata& metadata, std::vector<double>& directGains, std::vector<double>& diffuseGains);
 
 	private:
