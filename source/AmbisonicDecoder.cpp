@@ -38,8 +38,11 @@ bool CAmbisonicDecoder::Configure(unsigned nOrder, bool b3D, unsigned nBlockSize
     bool success = CAmbisonicBase::Configure(nOrder, b3D, 0);
     if(!success)
         return false;
+
     // Set up the ambisonic shelf filters
-    shelfFilters.Configure(nOrder, b3D, nBlockSize, sampleRate);
+    m_shelfFilters.Configure(nOrder, b3D, nBlockSize, sampleRate);
+
+    m_pBFSrcTmp.Configure(nOrder, b3D, nBlockSize);
 
     SpeakerSetUp(nSpeakerSetUp, nSpeakers);
     Refresh();
@@ -51,7 +54,8 @@ void CAmbisonicDecoder::Reset()
 {
     for(unsigned niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         m_pAmbSpeakers[niSpeaker].Reset();
-    shelfFilters.Reset();
+    m_shelfFilters.Reset();
+    m_pBFSrcTmp.Reset();
 }
 
 void CAmbisonicDecoder::Refresh()
@@ -64,18 +68,30 @@ void CAmbisonicDecoder::Refresh()
     // Load the preset
     LoadDecoderPreset();
 
-    shelfFilters.Refresh();
+    m_shelfFilters.Refresh();
+    m_pBFSrcTmp.Refresh();
 }
 
 void CAmbisonicDecoder::Process(CBFormat* pBFSrc, unsigned nSamples, float** ppfDst)
 {
     // If a preset is not loaded then use optimisation shelf filters
     if (!m_bPresetLoaded)
-        shelfFilters.Process(pBFSrc, nSamples);
-
-    for(unsigned niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
     {
-        m_pAmbSpeakers[niSpeaker].Process(pBFSrc, nSamples, ppfDst[niSpeaker]);
+        // Process a copy of the input to avoid overwriting it
+        m_pBFSrcTmp = *pBFSrc;
+        m_shelfFilters.Process(&m_pBFSrcTmp, nSamples);
+
+        for (unsigned niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
+        {
+            m_pAmbSpeakers[niSpeaker].Process(&m_pBFSrcTmp, nSamples, ppfDst[niSpeaker]);
+        }
+    }
+    else
+    {
+        for (unsigned niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
+        {
+            m_pAmbSpeakers[niSpeaker].Process(pBFSrc, nSamples, ppfDst[niSpeaker]);
+        }
     }
 }
 
@@ -502,6 +518,19 @@ void CAmbisonicDecoder::SpeakerSetUp(Amblib_SpeakerSetUps nSpeakerSetUp, unsigne
         m_pAmbSpeakers[0].SetPosition(polPosition);
         break;
     };
+
+    if (m_b3D)
+    {
+        for (unsigned iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
+            for (unsigned i = 0; i < m_nOrder; ++i)
+                m_pAmbSpeakers[iSpk].SetOrderWeight(i, 2.f * (float)i + 1.f);
+    }
+    else
+    {
+        for (unsigned iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
+            for (unsigned i = 0; i < m_nOrder; ++i)
+                m_pAmbSpeakers[iSpk].SetOrderWeight(i, 2.f);
+    }
 
     fSpeakerGain = 1.f / sqrtf((float)m_nSpeakers);
     for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)

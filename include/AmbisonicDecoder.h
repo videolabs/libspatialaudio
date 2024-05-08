@@ -105,20 +105,20 @@ public:
      */
     PolarPoint GetPosition(unsigned nSpeaker);
 
-    /** Sets the weight [0,1] for the spherical harmonics of the given order,
+    /** Sets the weight for the spherical harmonics of the given order,
      *  at the given speaker.
      * @param nSpeaker  Index of the speaker to adjust.
      * @param nOrder    Order of the components to be weighted.
-     * @param fWeight   Weight [0,1] to be applied.
+     * @param fWeight   Weight to be applied.
      * @see GetOrderWeight
      */
     void SetOrderWeight(unsigned nSpeaker, unsigned nOrder, float fWeight);
 
-    /** Returns the weight [0,1] for the spherical harmonics of the given order,
+    /** Returns the weight for the spherical harmonics of the given order,
      *  at the given speaker.
      * @param nSpeaker  Speaker index
      * @param nOrder    Order of the components to get the weight for.
-     * @return          Weight [0,1] applied to the specified speaker and components.
+     * @return          Weight applied to the specified speaker and components.
      */
     float GetOrderWeight(unsigned nSpeaker, unsigned nOrder);
 
@@ -160,7 +160,9 @@ protected:
     bool m_bPresetLoaded;
 
 private:
-    CAmbisonicOptimFilters shelfFilters;
+    CAmbisonicOptimFilters m_shelfFilters;
+    // A temp version of the input when optimisation filtering is applied to avoid overwriting the input
+    CBFormat m_pBFSrcTmp;
 };
 
 #endif // _AMBISONIC_DECODER_H

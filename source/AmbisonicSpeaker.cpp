@@ -48,17 +48,13 @@ void CAmbisonicSpeaker::Process(CBFormat* pBFSrc, unsigned nSamples, float* pfDs
         float *out = pfDst;
 
         if(m_b3D){ /* Decode to a 3D loudspeaker array */
-            // The spherical harmonic coefficients are multiplied by (2*order + 1) to provide the correct decoder
-            // for SN3D normalised Ambisonic inputs.
-            const float coeff = m_pfCoeff[niChannel] * (2.f*floorf(sqrtf((float)niChannel)) + 1.f);
+            const float coeff = m_pfCoeff[niChannel];
             for(niSample = 0; niSample < nSamples; niSample++)
                 *out++ += (*in++) * coeff;
         }
         else
         {    /* Decode to a 2D loudspeaker array */
-            // The spherical harmonic coefficients are multiplied by 2 to provide the correct decoder
-            // for SN3D normalised Ambisonic inputs decoded to a horizontal loudspeaker array
-            const float coeff = m_pfCoeff[niChannel] * 2.f;
+            const float coeff = m_pfCoeff[niChannel];
             for(niSample = 0; niSample < nSamples; niSample++)
                 *out++ += (*in++) * coeff;
         }

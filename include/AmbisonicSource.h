@@ -58,13 +58,13 @@ public:
      */
     virtual PolarPoint GetPosition();
 
-    /** Sets the weight [0,1] for the spherical harmonics of the given order.
+    /** Sets the weight for the spherical harmonics of the given order.
      * @param nOrder    The order to set the weights for
      * @param fWeight   Weight to be applied to all coefficients of the specified order.
      */
     virtual void SetOrderWeight(unsigned nOrder, float fWeight);
 
-    /** Sets the weight [0,1] for the spherical harmonics of all orders.
+    /** Sets the weight for the spherical harmonics of all orders.
      * @param fWeight Weight to be applied to all coefficients.
      */
     virtual void SetOrderWeightAll(float fWeight);
@@ -76,7 +76,7 @@ public:
      */
     virtual void SetCoefficient(unsigned nChannel, float fCoeff);
 
-    /** Gets the weight [0,1] for the spherical harmonics of the given order.
+    /** Gets the weight for the spherical harmonics of the given order.
      * @param nOrder    Order of coefficients
      * @return          Weight applied to coefficients of the specified order.
      */
