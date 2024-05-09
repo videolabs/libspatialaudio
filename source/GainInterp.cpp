@@ -47,7 +47,7 @@ void CGainInterp::SetGainVector(const std::vector<double>& newGainVec, unsigned 
 	}
 }
 
-void CGainInterp::ProcessAccumul(const float* pIn, std::vector<std::vector<float>>& ppOut, unsigned int nSamples, unsigned int nOffset)
+void CGainInterp::ProcessAccumul(const float* pIn, float** ppOut, unsigned int nSamples, unsigned int nOffset)
 {
 	unsigned int nCh = (unsigned int)m_targetGainVec.size();
 	// The number of samples to interpolate over in this block
