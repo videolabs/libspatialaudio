@@ -46,7 +46,7 @@ public:
 	 * @param ppInDiffuse	The diffuse output signal.
 	 * @param nSamples		The number of samples to process.
 	 */
-	void Process(std::vector<std::vector<float>> &ppInDirect, std::vector<std::vector<float>> &ppInDiffuse, unsigned int nSamples);
+	void Process(float** ppInDirect, float** ppInDiffuse, unsigned int nSamples);
 
 private:
 	// The time-domain decorrelation filters

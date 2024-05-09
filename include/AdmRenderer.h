@@ -129,6 +129,8 @@ namespace admrender {
 		unsigned int m_nOutputChannels = 2;
 		// Ambisonic order to be used for playback
 		unsigned int m_HoaOrder = 3;
+		// Number of ambisonic channels corresponding to the HOA order
+		unsigned int m_nAmbiChannels = 16;
 		// Maximum number of samples expected in a frame
 		unsigned int m_nSamples;
 
@@ -165,14 +167,16 @@ namespace admrender {
 		CAmbisonicBinauralizer m_hoaBinaural;
 		// Buffers to hold the HOA audio
 		CBFormat m_hoaAudioOut;
-		// Vector to pass the direct and diffuse HOA object data to the decorrelator
-		std::vector<std::vector<float>> m_hoaObjectDirect, m_hoaObjectDiffuse;
+		// Buffers to hold the direct and diffuse signals
+		float** m_hoaObjectDirect, ** m_hoaObjectDiffuse;
+		// Buffers holding the decoded HOA loudspeaker signals
+		float** m_hoaDecodedOut;
 		// Buffers holding the output signal
-		std::vector<std::vector<float>> m_speakerOut;
+		float** m_speakerOut;
 		// Buffers to hold the direct object audio
-		std::vector<std::vector<float>> m_speakerOutDirect;
+		float** m_speakerOutDirect;
 		// Buffers to hold the diffuse object audio
-		std::vector<std::vector<float>> m_speakerOutDiffuse;
+		float** m_speakerOutDiffuse;
 		void ClearOutputBuffer();
 		void ClearObjectDirectBuffer();
 		void ClearObjectDiffuseBuffer();
@@ -198,6 +202,19 @@ namespace admrender {
 
 		/** Find the element of a vector matching the input. If the track types do not match or no matching elements then returns -1 */
 		int GetMatchingIndex(const std::vector<std::pair<unsigned int, TypeDefinition>>& vector, unsigned int nElement, TypeDefinition trackType);
+
+		/** Allocate internal 2D buffers of the specified size (nCh x nSamples).
+		 * @param buffers Array of pointers to the buffers.
+		 * @param nCh Number of channels to allocate.
+		 * @param nSamples Number of samples to allocate.
+		 */
+		void AllocateBuffers(float**& buffers, unsigned nCh, unsigned nSamples);
+
+		/** Deallocate internal 2D buffers.
+		 * @param buffers Buffers to deallocate.
+		 * @param nCh Number of channels in the buffer.
+		 */
+		void DeallocateBuffers(float**& buffers, unsigned nCh);
 	};
 
 }
