@@ -648,3 +648,80 @@ void testDecoderPresets()
 		delete ldspkOut[iLdspk];
 	delete[] ldspkOut;
 }
+
+/** Test the routing of ADM HOA decoding to presets
+*/
+void testAdmHoaDecodingRouting()
+{
+	auto outputLayout = admrender::OutputLayout::FivePointZero;
+	unsigned nLdspk = 5;
+	unsigned order = 1;
+	unsigned sampleRate = 48000;
+	unsigned nSamples = 1;
+	admrender::StreamInformation channelInfo;
+	channelInfo.nChannels = OrderToComponents(order, true);
+	channelInfo.typeDefinition.resize(channelInfo.nChannels, admrender::TypeDefinition::HOA);
+
+	admrender::HoaMetadata metadata;
+	metadata.normalization = "SN3D";
+	metadata.trackInds.resize(channelInfo.nChannels);
+
+	for (unsigned i = 0; i < channelInfo.nChannels; ++i)
+		metadata.trackInds[i] = i;
+
+	for(int iOrder = 0; iOrder < order + 1; ++iOrder)
+		for (int iDegree = -iOrder; iDegree < iOrder + 1; ++iDegree)
+		{
+			metadata.orders.push_back(iOrder);
+			metadata.degrees.push_back(iDegree);
+		}
+
+	admrender::CAdmRenderer admRenderer;
+	bool admSuccess = admRenderer.Configure(outputLayout, order, sampleRate, nSamples, channelInfo);
+	assert(admSuccess);
+
+	CAmbisonicEncoder ambiEnc;
+	bool success = ambiEnc.Configure(order, true, 0);
+	assert(success);
+
+	CBFormat inputSignal;
+	inputSignal.Configure(order, true, nSamples);
+	inputSignal.Reset();
+	std::vector<float> impulse(nSamples, 0.f);
+	impulse[0] = 1.f;
+
+	float** hoaIn = new float* [channelInfo.nChannels];
+	for (int iCh = 0; iCh < channelInfo.nChannels; ++iCh)
+		hoaIn[iCh] = new float[nSamples];
+
+	float** ldspkOut = new float* [nLdspk];
+	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+		ldspkOut[iLdspk] = new float[nSamples];
+
+	for (float az = 0.f; az < 360.f; az += 1.f)
+	{
+		ambiEnc.SetPosition({ DegreesToRadians(az),0.f,1. }, 0.f);
+		ambiEnc.Refresh();
+		ambiEnc.Process(impulse.data(), nSamples, &inputSignal);
+
+		for (int i = 0; i < channelInfo.nChannels; ++i)
+			inputSignal.ExtractStream(hoaIn[i], i, nSamples);
+
+		admRenderer.AddHoa(hoaIn, nSamples, metadata);
+		admRenderer.GetRenderedAudio(ldspkOut, nSamples);
+
+		for (unsigned iSamp = 0; iSamp < nSamples; ++iSamp)
+		{
+			for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+				std::cout << ldspkOut[iLdspk][iSamp] << ", ";
+			std::cout << std::endl;
+		}
+	}
+
+	for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+		delete ldspkOut[iLdspk];
+	delete[] ldspkOut;
+	for (unsigned iCh = 0; iCh < channelInfo.nChannels; ++iCh)
+		delete hoaIn[iCh];
+	delete[] hoaIn;
+}

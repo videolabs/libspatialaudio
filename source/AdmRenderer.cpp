@@ -63,24 +63,29 @@ namespace admrender {
 		case OutputLayout::Quad:
 			ambiLayout = Amblib_SpeakerSetUps::kAmblib_Quad;
 			m_outputLayout = GetMatchingLayout("0+4+0");
+			m_hoaDecMap = { 0,1,2,3 }; // One-to-one mapping
 			break;
 		case OutputLayout::FivePointOne:
 			ambiLayout = Amblib_SpeakerSetUps::kAmblib_51;
 			m_outputLayout = GetMatchingLayout("0+5+0");
+			m_hoaDecMap = { 0,1,4,5,2,3 }; // M+030, M-030, M+110, M-110, M+000, LFE to M+030, M-030, LFE, M+000, M+110, M-110
 			break;
 		case OutputLayout::FivePointZero:
 			ambiLayout = Amblib_SpeakerSetUps::kAmblib_50;
-			m_outputLayout = GetMatchingLayout("0+5+0");
+			m_outputLayout = getLayoutWithoutLFE(GetMatchingLayout("0+5+0"));
 			m_outputLayout.hasLFE = false;
+			m_hoaDecMap = { 0,1,4,2,3 }; // M+030, M-030, M+110, M-110, M+000 to M+030, M-030, M+000, M+110, M-110
 			break;
 		case OutputLayout::SevenPointOne:
 			ambiLayout = Amblib_SpeakerSetUps::kAmblib_71;
 			m_outputLayout = GetMatchingLayout("0+7+0");
+			m_hoaDecMap = { 0,1,6,7,2,3,4,5 }; // M+030, M-030, M+090, M-090, M+135, M-135, M+000, LFE to M+030, M-030, M+000, LFE, M+090, M-090, M+135, M-135
 			break;
 		case OutputLayout::SevenPointZero:
 			ambiLayout = Amblib_SpeakerSetUps::kAmblib_70;
-			m_outputLayout = GetMatchingLayout("0+7+0");
+			m_outputLayout = getLayoutWithoutLFE(GetMatchingLayout("0+7+0"));
 			m_outputLayout.hasLFE = false;
+			m_hoaDecMap = { 0,1,6,2,3,4,5 }; // M+030, M-030, M+090, M-090, M+135, M-135, M+000 to M+030, M-030, M+000, M+090, M-090, M+135, M-135
 			break;
 		case OutputLayout::Binaural:
 			ambiLayout = Amblib_SpeakerSetUps::kAmblib_Dodecahedron;
@@ -395,7 +400,11 @@ namespace admrender {
 			m_decorrelate.Process(m_speakerOutDirect, m_speakerOutDiffuse, nSamples);
 
 			// Decode the HOA stream to the output buffer
-			m_hoaDecoder.Process(&m_hoaAudioOut, nSamples, pRender);
+			m_hoaDecoder.Process(&m_hoaAudioOut, nSamples, m_hoaDecodedOut);
+			// Remap the decoded signal to the ADM channel order
+			for (unsigned int iSpk = 0; iSpk < m_nOutputChannels; ++iSpk)
+				for (unsigned int iSample = 0; iSample < nSamples; ++iSample)
+					pRender[iSpk][iSample] = m_hoaDecodedOut[m_hoaDecMap[iSpk]][iSample];
 			// Add the signals that have already been routed to the speaker layout to the output buffer
 			for (unsigned int iSpk = 0; iSpk < m_nOutputChannels; ++iSpk)
 				for (unsigned int iSample = 0; iSample < nSamples; ++iSample)
