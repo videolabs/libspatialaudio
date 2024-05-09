@@ -41,7 +41,7 @@ public:
 	 * @param nSamples	The number of samples to process.
 	 * @param nOffset	Number of samples of delay to applied to the signal.
 	 */
-	void ProcessAccumul(const float* pIn, std::vector<std::vector<float>>& ppOut, unsigned int nSamples, unsigned int nOffset);
+	void ProcessAccumul(const float* pIn, float** ppOut, unsigned int nSamples, unsigned int nOffset);
 
 	/** Resets the gain interpolator by setting the gain vector to the target and making sure there is no interpolation processing pending.	*/
 	void Reset();

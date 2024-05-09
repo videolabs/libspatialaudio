@@ -127,7 +127,7 @@ void CDecorrelate::Reset()
     }
 }
 
-void CDecorrelate::Process(std::vector<std::vector<float>>& ppInDirect, std::vector<std::vector<float>>& ppInDiffuse, unsigned int nSamples)
+void CDecorrelate::Process(float** ppInDirect, float** ppInDiffuse, unsigned int nSamples)
 {
     kiss_fft_cpx cpTemp;
 

@@ -26,6 +26,12 @@ namespace admrender {
 
 	CAdmRenderer::~CAdmRenderer()
 	{
+		DeallocateBuffers(m_hoaObjectDirect, m_nAmbiChannels);
+		DeallocateBuffers(m_hoaObjectDiffuse, m_nAmbiChannels);
+		DeallocateBuffers(m_hoaDecodedOut, m_nOutputChannels);
+		DeallocateBuffers(m_speakerOut, m_nOutputChannels);
+		DeallocateBuffers(m_speakerOutDirect, m_nOutputChannels);
+		DeallocateBuffers(m_speakerOutDiffuse, m_nOutputChannels);
 	}
 
 	bool CAdmRenderer::Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, const StreamInformation& channelInfo, std::string HRTFPath, std::vector<Screen> reproductionScreen)
@@ -34,6 +40,7 @@ namespace admrender {
 		m_RenderLayout = outputTarget;
 		// Set the order to be used for the HOA rendering
 		m_HoaOrder = hoaOrder;
+		m_nAmbiChannels = (m_HoaOrder + 1) * (m_HoaOrder + 1);
 		if (m_HoaOrder > 3)
 			return false; // only accepts orders 0 to 3
 		// Set the maximum number of samples expected in a frame
@@ -184,24 +191,12 @@ namespace admrender {
 				m_mapNoLfeToLfe.push_back(iSpk);
 
 		// Set up the buffers holding the direct and diffuse speaker signals
-		size_t nAmbiCh = nInternalCh;
-		m_speakerOut.resize(m_nOutputChannels);
-		m_speakerOutDirect.resize(m_nOutputChannels);
-		m_speakerOutDiffuse.resize(m_nOutputChannels);
-		m_hoaObjectDirect.resize(nAmbiCh);
-		m_hoaObjectDiffuse.resize(nAmbiCh);
-		for (unsigned int i = 0; i < m_nOutputChannels; ++i)
-		{
-			m_speakerOut[i].resize(nSamples, 0.f);
-
-			m_speakerOutDirect[i].resize(nSamples, 0.f);
-			m_speakerOutDiffuse[i].resize(nSamples, 0.f);
-		}
-		for (size_t i = 0; i < nAmbiCh; ++i)
-		{
-			m_hoaObjectDirect[i].resize(nSamples, 0.f);
-			m_hoaObjectDiffuse[i].resize(nSamples, 0.f);
-		}
+		AllocateBuffers(m_speakerOut, m_nOutputChannels, nSamples);
+		AllocateBuffers(m_speakerOutDirect, m_nOutputChannels, nSamples);
+		AllocateBuffers(m_speakerOutDiffuse, m_nOutputChannels, nSamples);
+		AllocateBuffers(m_hoaObjectDirect, m_nAmbiChannels, nSamples);
+		AllocateBuffers(m_hoaObjectDiffuse, m_nAmbiChannels, nSamples);
+		AllocateBuffers(m_hoaDecodedOut, m_nOutputChannels, nSamples);
 
 		// A buffer of zeros to use to clear the HOA buffer
 		m_pZeros = std::make_unique<float[]>(nSamples);
@@ -429,23 +424,28 @@ namespace admrender {
 	void CAdmRenderer::ClearOutputBuffer()
 	{
 		for (unsigned int iCh = 0; iCh < m_nOutputChannels; ++iCh)
-			std::fill(m_speakerOut[iCh].begin(), m_speakerOut[iCh].end(), 0.f);
-		for (unsigned int iAmbiCh = 0; iAmbiCh < m_hoaObjectDirect.size(); ++iAmbiCh)
-			std::fill(m_hoaObjectDiffuse[iAmbiCh].begin(), m_hoaObjectDiffuse[iAmbiCh].end(), 0.f);
+			for (unsigned int iSamp = 0; iSamp < m_nSamples; ++iSamp)
+				m_speakerOut[iCh][iSamp] = 0.f;
+		for (unsigned int iAmbiCh = 0; iAmbiCh < m_nAmbiChannels; ++iAmbiCh)
+			for (unsigned int iSamp = 0; iSamp < m_nSamples; ++iSamp)
+				m_hoaObjectDiffuse[iAmbiCh][iSamp] = 0.f;
 	}
 
 	void CAdmRenderer::ClearObjectDirectBuffer()
 	{
 		for (unsigned int iCh = 0; iCh < m_nOutputChannels; ++iCh)
-			std::fill(m_speakerOutDirect[iCh].begin(), m_speakerOutDirect[iCh].end(), 0.f);
-		for (unsigned int iAmbiCh = 0; iAmbiCh < m_hoaObjectDirect.size(); ++iAmbiCh)
-			std::fill(m_hoaObjectDirect[iAmbiCh].begin(), m_hoaObjectDirect[iAmbiCh].end(), 0.f);
+			for (unsigned int iSamp = 0; iSamp < m_nSamples; ++iSamp)
+				m_speakerOutDirect[iCh][iSamp] = 0.f;
+		for (unsigned int iAmbiCh = 0; iAmbiCh < m_nAmbiChannels; ++iAmbiCh)
+			for (unsigned int iSamp = 0; iSamp < m_nSamples; ++iSamp)
+				m_hoaObjectDirect[iAmbiCh][iSamp] = 0.f;
 	}
 
 	void CAdmRenderer::ClearObjectDiffuseBuffer()
 	{
 		for (unsigned int iCh = 0; iCh < m_nOutputChannels; ++iCh)
-			std::fill(m_speakerOutDiffuse[iCh].begin(), m_speakerOutDiffuse[iCh].end(), 0.f);
+			for (unsigned int iSamp = 0; iSamp < m_nSamples; ++iSamp)
+				m_speakerOutDiffuse[iCh][iSamp] = 0.f;
 	}
 
 	int CAdmRenderer::GetMatchingIndex(const std::vector<std::pair<unsigned int, TypeDefinition>>& vector, unsigned int nElement, TypeDefinition trackType)
@@ -459,6 +459,28 @@ namespace admrender {
 			}
 
 		return -1;
+	}
+
+	void CAdmRenderer::AllocateBuffers(float**& buffers, unsigned nCh, unsigned nSamples)
+	{
+		DeallocateBuffers(buffers, nCh);
+		buffers = new float* [nCh];
+		for (unsigned int iCh = 0; iCh < nCh; ++iCh)
+		{
+			buffers[iCh] = new float[nSamples];
+			memset(buffers[iCh], 0, m_nSamples * sizeof(float));
+		}
+	}
+
+	void CAdmRenderer::DeallocateBuffers(float**& buffers, unsigned nCh)
+	{
+		if (buffers)
+		{
+			for (unsigned int iCh = 0; iCh < nCh; ++iCh)
+				if (buffers[iCh])
+					delete buffers[iCh];
+			delete[] buffers;
+		}
 	}
 
 }
