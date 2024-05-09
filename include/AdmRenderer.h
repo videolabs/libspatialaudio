@@ -181,6 +181,9 @@ namespace admrender {
 		void ClearObjectDirectBuffer();
 		void ClearObjectDiffuseBuffer();
 
+		// Map from AmbisonicDecoder's channel ordering to ADM channel ordering
+		std::vector<unsigned> m_hoaDecMap;
+
 		// Decorrelator filter processor
 		CDecorrelate m_decorrelate;
 		// Scattering matrix applied to the diffuse gains before decorrelation is applied. Only used when input layout is HOA.
