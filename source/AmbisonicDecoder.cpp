@@ -39,6 +39,9 @@ bool CAmbisonicDecoder::Configure(unsigned nOrder, bool b3D, unsigned nBlockSize
     if(!success)
         return false;
 
+    m_nBlockSize = nBlockSize;
+    m_sampleRate = sampleRate;
+
     // Set up the ambisonic shelf filters
     m_shelfFilters.Configure(nOrder, b3D, nBlockSize, sampleRate);
 
@@ -63,6 +66,8 @@ void CAmbisonicDecoder::Refresh()
     for(unsigned niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         m_pAmbSpeakers[niSpeaker].Refresh();
 
+    // Configure the decoder matrix to ensure optimal decoding of 3D HOA to 2D arrays
+    ConfigureDecoderMatrix();
     // Check if the speaker setup is one which has a preset
     CheckSpeakerSetUp();
     // Load the preset
@@ -193,20 +198,22 @@ void CAmbisonicDecoder::SpeakerSetUp(Amblib_SpeakerSetUps nSpeakerSetUp, unsigne
         m_pAmbSpeakers[2].SetPosition(polPosition);
         break;
     case Amblib_SpeakerSetUps::kAmblib_Quad:
+        m_maxLayoutOrder = 1;
         m_nSpeakers = 4;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fAzimuth = DegreesToRadians(45.f);
-        m_pAmbSpeakers[0].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[0].Configure(std::min(m_maxLayoutOrder, m_nOrder), m_b3D, 0);
         m_pAmbSpeakers[0].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(-45.f);
-        m_pAmbSpeakers[1].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[1].Configure(std::min(m_maxLayoutOrder, m_nOrder), m_b3D, 0);
         m_pAmbSpeakers[1].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(135.f);
-        m_pAmbSpeakers[2].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[2].Configure(std::min(m_maxLayoutOrder, m_nOrder), m_b3D, 0);
         m_pAmbSpeakers[2].SetPosition(polPosition);
         polPosition.fAzimuth = DegreesToRadians(-135.f);
-        m_pAmbSpeakers[3].Configure(m_nOrder, m_b3D, 0);
+        m_pAmbSpeakers[3].Configure(std::min(m_maxLayoutOrder, m_nOrder), m_b3D, 0);
         m_pAmbSpeakers[3].SetPosition(polPosition);
+        m_is2dLayout = true;
         break;
     case Amblib_SpeakerSetUps::kAmblib_50:
         m_nSpeakers = 5;
@@ -303,34 +310,40 @@ void CAmbisonicDecoder::SpeakerSetUp(Amblib_SpeakerSetUps nSpeakerSetUp, unsigne
         m_pAmbSpeakers[7].SetPosition(polPosition);
         break;
     case Amblib_SpeakerSetUps::kAmblib_Pentagon:
+        m_maxLayoutOrder = 1;
         m_nSpeakers = 5;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / m_nSpeakers);
-            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(std::min(m_maxLayoutOrder, m_nOrder), m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
+        m_is2dLayout = true;
         break;
     case Amblib_SpeakerSetUps::kAmblib_Hexagon:
+        m_maxLayoutOrder = 2;
         m_nSpeakers = 6;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / m_nSpeakers + 30.f);
-            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(std::min(m_maxLayoutOrder, m_nOrder), m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
+        m_is2dLayout = true;
         break;
     case Amblib_SpeakerSetUps::kAmblib_HexagonWithCentre:
+        m_maxLayoutOrder = 2;
         m_nSpeakers = 6;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / m_nSpeakers);
-            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(std::min(m_maxLayoutOrder, m_nOrder), m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
+        m_is2dLayout = true;
         break;
     case Amblib_SpeakerSetUps::kAmblib_Octagon:
         m_nSpeakers = 8;
@@ -341,6 +354,7 @@ void CAmbisonicDecoder::SpeakerSetUp(Amblib_SpeakerSetUps nSpeakerSetUp, unsigne
             m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
+        m_is2dLayout = true;
         break;
     case Amblib_SpeakerSetUps::kAmblib_Decadron:
         m_nSpeakers = 10;
@@ -351,6 +365,7 @@ void CAmbisonicDecoder::SpeakerSetUp(Amblib_SpeakerSetUps nSpeakerSetUp, unsigne
             m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
+        m_is2dLayout = true;
         break;
     case Amblib_SpeakerSetUps::kAmblib_Dodecadron:
         m_nSpeakers = 12;
@@ -361,22 +376,24 @@ void CAmbisonicDecoder::SpeakerSetUp(Amblib_SpeakerSetUps nSpeakerSetUp, unsigne
             m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
+        m_is2dLayout = true;
         break;
     case Amblib_SpeakerSetUps::kAmblib_Cube:
+        m_maxLayoutOrder = 1;
         m_nSpeakers = 8;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fElevation = DegreesToRadians(45.f);
         for(niSpeaker = 0; niSpeaker < m_nSpeakers / 2; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / (m_nSpeakers / 2) + 45.f);
-            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(std::min(m_maxLayoutOrder, m_nOrder), m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         polPosition.fElevation = DegreesToRadians(-45.f);
         for(niSpeaker = m_nSpeakers / 2; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians((niSpeaker - 4) * 360.f / (m_nSpeakers / 2) + 45.f);
-            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(std::min(m_maxLayoutOrder, m_nOrder), m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
@@ -480,20 +497,21 @@ void CAmbisonicDecoder::SpeakerSetUp(Amblib_SpeakerSetUps nSpeakerSetUp, unsigne
         break;
     case Amblib_SpeakerSetUps::kAmblib_Cube2:
         // This configuration is a standard for first order decoding
+        m_maxLayoutOrder = 1;
         m_nSpeakers = 8;
         m_pAmbSpeakers = new CAmbisonicSpeaker[m_nSpeakers];
         polPosition.fElevation = DegreesToRadians(35.2f);
         for(niSpeaker = 0; niSpeaker < m_nSpeakers / 2; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians(niSpeaker * 360.f / (m_nSpeakers / 2) + 45.f);
-            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(std::min(m_maxLayoutOrder, m_nOrder), m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         polPosition.fElevation = DegreesToRadians(-35.2f);
         for(niSpeaker = m_nSpeakers / 2; niSpeaker < m_nSpeakers; niSpeaker++)
         {
             polPosition.fAzimuth = -DegreesToRadians((niSpeaker - 4) * 360.f / (m_nSpeakers / 2) + 45.f);
-            m_pAmbSpeakers[niSpeaker].Configure(m_nOrder, m_b3D, 0);
+            m_pAmbSpeakers[niSpeaker].Configure(std::min(m_maxLayoutOrder, m_nOrder), m_b3D, 0);
             m_pAmbSpeakers[niSpeaker].SetPosition(polPosition);
         }
         break;
@@ -519,20 +537,7 @@ void CAmbisonicDecoder::SpeakerSetUp(Amblib_SpeakerSetUps nSpeakerSetUp, unsigne
         break;
     };
 
-    if (m_b3D)
-    {
-        for (unsigned iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
-            for (unsigned i = 0; i < m_nOrder; ++i)
-                m_pAmbSpeakers[iSpk].SetOrderWeight(i, 2.f * (float)i + 1.f);
-    }
-    else
-    {
-        for (unsigned iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
-            for (unsigned i = 0; i < m_nOrder; ++i)
-                m_pAmbSpeakers[iSpk].SetOrderWeight(i, 2.f);
-    }
-
-    fSpeakerGain = 1.f / sqrtf((float)m_nSpeakers);
+    fSpeakerGain = 1.f / (float)m_nSpeakers;
     for(niSpeaker = 0; niSpeaker < m_nSpeakers; niSpeaker++)
         m_pAmbSpeakers[niSpeaker].SetGain(fSpeakerGain);
 }
@@ -697,5 +702,55 @@ void CAmbisonicDecoder::LoadDecoderPreset()
         // Preset loaded
         m_bPresetLoaded = true;
         break;
+    }
+}
+
+void CAmbisonicDecoder::ConfigureDecoderMatrix()
+{
+    if (m_b3D)
+    {
+        if (m_is2dLayout)
+        {
+            for (unsigned iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
+                    m_pAmbSpeakers[iSpk].SetOrderWeight(1, 2.f);
+
+            auto processingOrder = std::min(m_nOrder, m_maxLayoutOrder);
+            auto maxRe2dGains = m_shelfFilters.GetMaxReGains(processingOrder, false);
+            m_shelfFilters.Configure(processingOrder, m_b3D, m_nBlockSize, m_sampleRate);
+            m_shelfFilters.SetHighFrequencyGains(maxRe2dGains);
+            if (processingOrder >= 2) // SN3D to SN2D conversion
+            {
+                for (unsigned iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
+                    m_pAmbSpeakers[iSpk].SetOrderWeight(2, 2.f / (3.f / 4.f)); // 2/(sqrt(3)/2)^2
+
+                if (processingOrder == 3)
+                {
+                    for (unsigned iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
+                        m_pAmbSpeakers[iSpk].SetOrderWeight(3, 2.f / (5.f / 8.f)); // 2/(sqrt(5/8)^2)
+                }
+            }
+
+            // Refresh so that the weights are applied to the coefficients
+            for (int iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
+                m_pAmbSpeakers[iSpk].Refresh();
+
+            // Set all non-horizontal components to zero
+            for (int iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
+                for (int iOrder = 0; iOrder < processingOrder + 1; ++iOrder)
+                    for (int iDegree = -iOrder + 1; iDegree < iOrder; ++iDegree)
+                        m_pAmbSpeakers[iSpk].SetCoefficient(OrderAndDegreeToComponent(iOrder, iDegree, true), 0.f);
+        }
+        else
+        {
+            for (unsigned iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
+                for (unsigned i = 0; i < m_nOrder; ++i)
+                    m_pAmbSpeakers[iSpk].SetOrderWeight(i, 2.f * (float)i + 1.f);
+        }
+    }
+    else
+    {
+        for (unsigned iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
+            for (unsigned i = 0; i < m_nOrder; ++i)
+                m_pAmbSpeakers[iSpk].SetOrderWeight(i, 2.f);
     }
 }

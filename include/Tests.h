@@ -725,3 +725,52 @@ void testAdmHoaDecodingRouting()
 		delete hoaIn[iCh];
 	delete[] hoaIn;
 }
+
+/** Test 2D HOA decoding
+*/
+void test2dHoaDecoding()
+{
+	unsigned nSamples = 128;
+	unsigned order = 2;
+	bool b3D = true;
+	unsigned sampleRate = 48000;
+	auto layout = Amblib_SpeakerSetUps::kAmblib_HexagonWithCentre;
+
+	CAmbisonicEncoder ambiEnc;
+	bool success = ambiEnc.Configure(order, b3D, 0);
+	assert(success);
+
+	CAmbisonicDecoder ambiDec;
+	success = ambiDec.Configure(order, b3D, nSamples, sampleRate, layout);
+	assert(success);
+
+	unsigned nLdspk = ambiDec.GetSpeakerCount();
+
+	CBFormat inputSignal;
+	inputSignal.Configure(order, b3D, nSamples);
+	inputSignal.Reset();
+	std::vector<float> impulse(nSamples, 0.f);
+	impulse[0] = 1.f;
+	std::vector<std::vector<float>> output(inputSignal.GetChannelCount(), std::vector<float>(nSamples, 0.f));
+
+	float** ldspkOut = new float* [nLdspk];
+	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+		ldspkOut[iLdspk] = new float[nSamples];
+
+	ambiEnc.SetPosition({ DegreesToRadians(30.f),0.f,1. }, 0.f);
+	ambiEnc.Refresh();
+	ambiEnc.Process(impulse.data(), nSamples, &inputSignal);
+
+	ambiDec.Process(&inputSignal, nSamples, ldspkOut);
+
+	for (unsigned iSamp = 0; iSamp < nSamples; ++iSamp)
+	{
+		for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+			std::cout << ldspkOut[iLdspk][iSamp] << ", ";
+		std::cout << std::endl;
+	}
+
+	for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+		delete ldspkOut[iLdspk];
+	delete[] ldspkOut;
+}

@@ -163,6 +163,20 @@ private:
     CAmbisonicOptimFilters m_shelfFilters;
     // A temp version of the input when optimisation filtering is applied to avoid overwriting the input
     CBFormat m_pBFSrcTmp;
+
+    /** Configure decoder matrix to account for the speaker layout
+    */
+    void ConfigureDecoderMatrix();
+
+    // Flag if the selected layout is 2D
+    bool m_is2dLayout = false;
+    // The maximum order supported by the selected layout
+    unsigned m_maxLayoutOrder = 3;
+
+    // Maximum block size
+    unsigned m_nBlockSize = 0;
+    // Sample rate of the signal to process
+    unsigned m_sampleRate = 0;
 };
 
 #endif // _AMBISONIC_DECODER_H

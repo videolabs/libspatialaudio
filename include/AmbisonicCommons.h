@@ -101,11 +101,27 @@ unsigned OrderToSpeakers(unsigned nOrder, bool b3D);
  */
 char ComponentToChannelLabel(unsigned nComponent, bool b3D);
 
-/** Get the degree that the channel corresponds to. E.g. Channel 0 belongs to degree 0, 1-to-3 belong to degree 1, 4-to-8 belong to degree 2
+/** Get the order that the channel corresponds to. E.g. Channel 0 belongs to order 0, 1-to-3 belong to order 1, 4-to-8 belong to order 2
  * @param nComponent    Index of the component
  * @param b3D           True if the signal is 3D.
- * @return              The degree of the specified component.
+ * @return              The order of the specified component.
  */
-unsigned ComponentPositionToDegree(unsigned nComponent, bool b3D);
+unsigned ComponentPositionToOrder(unsigned nComponent, bool b3D);
+
+/** Get the AmbiX channel index for a spherical harmonic of specified order and degree.
+ * @param order     Order of the signal such that order <= maxOrder.
+ * @param degree    Degree of the signal such that -order <= degree <= order.
+ * @param b3D       True if the component index is for a 3D signal.
+ * @return          AmbiX component index.
+ */
+unsigned OrderAndDegreeToComponent(int order, int degree, bool b3D);
+
+/** Get the spherical harmonic order and degree for a specified AmbiX channel index.
+ * @param order     Order of the signal such that order <= maxOrder.
+ * @param degree    Degree of the signal such that -order <= degree <= order.
+ * @param b3D       True if the component index is for a 3D signal.
+ * @return          AmbiX component index.
+ */
+void ComponentToOrderAndDegree(int nComponent, bool b3D, int& order, int& degree);
 
 #endif //_AMBISONICCOMMONS_H
