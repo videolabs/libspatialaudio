@@ -58,12 +58,8 @@ bool CAmbisonicOptimFilters::Configure(unsigned nOrder, bool b3D, unsigned nBloc
     if (!success)
         return false;
 
-    // Calculate the gains to be applied to each sub-set of channels, one for each order
-    m_gMaxRe.resize(nOrder + 1, 1.f); // high-frequency uses max-rE decoding
-
-    // The gains depend whether or not the processing is 2D or 3D.
-    for (unsigned int i = 0; i <= nOrder; ++i)
-        m_gMaxRe[i] = b3D ? maxReGains3D[nOrder - 1][i] : maxReGains2D[nOrder - 1][i];
+    // Get the gains to be applied to each sub-set of channels, one for each order
+    m_gHighFreq = GetMaxReGains(nOrder, b3D);
 
     m_nMaxBlockSize = nBlockSize;
     m_lowPassOut.Configure(nOrder, b3D, nBlockSize);
@@ -80,6 +76,20 @@ void CAmbisonicOptimFilters::Refresh()
 {
 }
 
+void CAmbisonicOptimFilters::SetHighFrequencyGains(const std::vector<float>& gHighFreq)
+{
+    assert(gHighFreq.size() == m_nOrder + 1);
+    m_gHighFreq = gHighFreq;
+}
+
+std::vector<float> CAmbisonicOptimFilters::GetMaxReGains(unsigned nOrder, bool b3D)
+{
+    std::vector<float> maxReGains(nOrder + 1);
+    for (unsigned int i = 0; i <= nOrder; ++i)
+        maxReGains[i] = b3D ? maxReGains3D[nOrder - 1][i] : maxReGains2D[nOrder - 1][i];
+    return maxReGains;
+}
+
 void CAmbisonicOptimFilters::Process(CBFormat* pBFSrcDst, unsigned int nSamples)
 {
     assert(nSamples <= m_nMaxBlockSize);
@@ -89,13 +99,13 @@ void CAmbisonicOptimFilters::Process(CBFormat* pBFSrcDst, unsigned int nSamples)
     m_bandFilterIIR.Process(inOutHP, outLP, inOutHP, nSamples);
 
     // Multiply the high-pass channels by the appropriate max-rE gain and add it to the output
-    for (unsigned int iCh = 0; iCh < pBFSrcDst->GetChannelCount(); ++iCh)
+    for (unsigned int iCh = 0; iCh < m_lowPassOut.GetChannelCount(); ++iCh)
     {
-        float gMaxRe = m_gMaxRe[ComponentPositionToDegree(iCh, m_b3D)];
+        float gHighFreq = m_gHighFreq[ComponentPositionToOrder(iCh, m_b3D)];
         float* chDataHP = inOutHP[iCh];
         float* chDataLP = outLP[iCh];
         // Scale the high-passed data and add the low-passed signal
         for (unsigned iSamp = 0; iSamp < nSamples; ++iSamp)
-            chDataHP[iSamp] = gMaxRe * chDataHP[iSamp] + chDataLP[iSamp];
+            chDataHP[iSamp] = gHighFreq * chDataHP[iSamp] + chDataLP[iSamp];
     }
 }
