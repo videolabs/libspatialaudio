@@ -44,6 +44,18 @@ public:
     /** No implementation. Pure virtual base-class function. */
     void Refresh();
 
+    /** Set the gains to be applied the channels of each order.
+     * @param gHighFreq     Vector of nOrder + 1 gains.
+     */
+    void SetHighFrequencyGains(const std::vector<float>& gHighFreq);
+
+    /** Get the max rE gains for each order for a 3D or 2D decoder.
+     * @param nOrder    Ambisonic order.
+     * @param b3D       If the gains are 3D or 2D.
+     * @return          Vector containing the nOrder + 1 max rE gains
+     */
+    static std::vector<float> GetMaxReGains(unsigned nOrder, bool b3D);
+
     /** Apply shelf filters to the B-format stream to apply psychoacoustic optimisation in the high frequency band
      * @param pBFSrcDst     The B-format stream to process
      * @param nSamples      The number of samples to process
@@ -54,8 +66,8 @@ protected:
     // Filter the signal into low- and high-frequency bands
     CLinkwitzRileyIIR m_bandFilterIIR;
 
-    // The gains for the and high-frequency band max-rE optimisation
-    std::vector<float> m_gMaxRe;
+    // The gains applied to each order in the high-frequency band
+    std::vector<float> m_gHighFreq;
 
     // A temp buffer holding the low-passed signal
     CBFormat m_lowPassOut;
