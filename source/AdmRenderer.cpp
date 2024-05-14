@@ -34,7 +34,7 @@ namespace admrender {
 		DeallocateBuffers(m_speakerOutDiffuse, m_nOutputChannels);
 	}
 
-	bool CAdmRenderer::Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, const StreamInformation& channelInfo, std::string HRTFPath, std::vector<Screen> reproductionScreen)
+	bool CAdmRenderer::Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, const StreamInformation& channelInfo, std::string HRTFPath, Optional<Screen> reproductionScreen)
 	{
 		// Set the output layout
 		m_RenderLayout = outputTarget;
@@ -107,11 +107,9 @@ namespace admrender {
 
 		unsigned int nInternalCh = (unsigned int)m_outputLayout.channels.size();
 
-		if (reproductionScreen.size() > 0)
-		{
-			m_outputLayout.reproductionScreen = reproductionScreen;
-			m_objMetaDataTmp.referenceScreen = reproductionScreen;
-		}
+		m_outputLayout.reproductionScreen = reproductionScreen;
+		if (reproductionScreen.hasValue())
+			m_objMetaDataTmp.referenceScreen = reproductionScreen.value();
 
 		// Clear the vectors containing the HOA and panning objects so that if the renderer is
 		// reconfigured the mappings will be correct
@@ -142,8 +140,8 @@ namespace admrender {
 				m_gainInterpDirect.push_back(CGainInterp(nInternalCh));
 				m_gainInterpDiffuse.push_back(CGainInterp(nInternalCh));
 				m_objectMetadata.push_back(ObjectMetadata());
-				if (reproductionScreen.size() > 0)
-					m_objectMetadata.back().referenceScreen = reproductionScreen;
+				if (reproductionScreen.hasValue())
+					m_objectMetadata.back().referenceScreen = reproductionScreen.value();
 				m_channelToObjMap.insert(std::pair<int, int>(iCh, iObj++));
 				break;
 			case TypeDefinition::HOA:
@@ -281,10 +279,12 @@ namespace admrender {
 
 			// Get the interpolation time
 			unsigned int interpLength = 0;
-			if (m_objMetaDataTmp.jumpPosition.flag)
-				interpLength = m_objMetaDataTmp.jumpPosition.interpolationLength;
+			if (m_objMetaDataTmp.jumpPosition->flag && !m_objMetaDataTmp.jumpPosition.hasValue())
+				interpLength = m_objMetaDataTmp.jumpPosition->interpolationLength.value(); // = start_time + interpLen
+			else if (m_objMetaDataTmp.jumpPosition->flag && m_objMetaDataTmp.jumpPosition.hasValue())
+				interpLength = 0; // = start_time
 			else
-				interpLength = m_objMetaDataTmp.blockLength;
+				interpLength = m_objMetaDataTmp.blockLength; // = end_time
 
 			// Set the gains in the interpolators
 			m_gainInterpDirect[iObj].SetGainVector(m_directGains, interpLength);

@@ -28,14 +28,14 @@ namespace admrender {
 		ChannelLockHandler(Layout layout);
 		~ChannelLockHandler();
 
-		/** If the Object has a valid channelLock distance then determines the new direction of the object.
+		/** If the Object has a channelLock set then determines the new direction of the object within an optional distance.
 		 *  Otherwise the original position is returned.
 		 *
-		 * @param channelLock	The ChannelLock distance. position must be less than the specified distance of a channel to lock to it.
+		 * @param channelLock	Optional channel lock. If not set then original position returned. If its max distance is set then only speakers closer than this will be considered for locking.
 		 * @param position		The position to be processed.
 		 * @return				The processed position. If position is not within the specified distance of for ChannelLocking then the original position is returned.
 		 */
-		CartesianPosition handle(ChannelLock channelLock, CartesianPosition position);
+		CartesianPosition handle(const Optional<ChannelLock>& channelLock, CartesianPosition position);
 
 	private:
 		unsigned int m_nCh = 0;
@@ -124,5 +124,13 @@ namespace admrender {
 		std::vector<CartesianPosition> m_divergedPos;
 		std::vector<double> m_divergedGains;
 		std::vector<std::vector<double>> m_gains_for_each_pos;
+
+		/** Get the diverged source positions and directions. See Rec. ITU-R BS.2127-1 sec. 7.3.7 pg. 45.
+		* @param objectDivergence		Optional object divergence. If not set then returns original position with a single unity gain.
+		* @param position				The position of the source.
+		* @param divergedPos			Output of the diverged position(s) with size 1 or 3.
+		* @param divergedGains			Output of the diverged gain(s) with size 1 or 3.
+		*/
+		void divergedPositionsAndGains(const Optional<ObjectDivergence>& objectDivergence, CartesianPosition position, std::vector<CartesianPosition>& divergedPos, std::vector<double>& divergedGains);
 	};
 } // namespace admrenderer

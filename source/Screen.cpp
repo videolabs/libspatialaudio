@@ -13,14 +13,11 @@
 
 #include "Screen.h"
 
-CScreenScaleHandler::CScreenScaleHandler(std::vector<Screen> reproductionScreen, Layout layout) : m_layout(layout)
+CScreenScaleHandler::CScreenScaleHandler(const admrender::Optional<Screen>& reproductionScreen, const Layout& layout) : m_layout(layout)
 {
-	if (reproductionScreen.size() > 0)
-	{
-		m_repScreen = reproductionScreen[0];
-		m_repPolarEdges.fromScreen(m_repScreen);
-		m_repScreenSet = true;
-	}
+	m_repScreen = reproductionScreen;
+	if (m_repScreen.hasValue())
+		m_repPolarEdges.fromScreen(m_repScreen.value());
 }
 
 CScreenScaleHandler::~CScreenScaleHandler()
@@ -28,15 +25,11 @@ CScreenScaleHandler::~CScreenScaleHandler()
 
 }
 
-CartesianPosition CScreenScaleHandler::handle(CartesianPosition position, bool screenRef, const std::vector<Screen>& referenceScreen, bool cartesian)
+CartesianPosition CScreenScaleHandler::handle(CartesianPosition position, bool screenRef, const Screen& referenceScreen, bool cartesian)
 {
-	if (screenRef && m_repScreenSet)
+	if (screenRef && m_repScreen.hasValue())
 	{
-		if (referenceScreen.size() > 0)
-			m_refScreen = referenceScreen[0];
-		else
-			m_refScreen = Screen(); // default screen
-		m_refPolarEdges.fromScreen(m_refScreen);
+		m_refPolarEdges.fromScreen(referenceScreen);
 
 		if (cartesian)
 		{
@@ -71,14 +64,11 @@ std::pair<double, double> CScreenScaleHandler::ScaleAzEl(double az, double el)
 
 
 // CScreenEdgeLock ==========================================================================================================
-CScreenEdgeLock::CScreenEdgeLock(std::vector<Screen> reproductionScreen, Layout layout) : m_layout(layout)
+CScreenEdgeLock::CScreenEdgeLock(const admrender::Optional<Screen>& reproductionScreen, const Layout& layout) : m_layout(layout)
 {
-	if (reproductionScreen.size() > 0)
-	{
-		m_reproductionScreen = reproductionScreen[0];
-		m_repPolarEdges.fromScreen(m_reproductionScreen);
-		m_repScreenSet = true;
-	}
+	m_reproductionScreen = reproductionScreen;
+	if (m_reproductionScreen.hasValue())
+		m_repPolarEdges.fromScreen(m_reproductionScreen.value());
 }
 
 CScreenEdgeLock::~CScreenEdgeLock()
@@ -88,7 +78,7 @@ CScreenEdgeLock::~CScreenEdgeLock()
 
 CartesianPosition CScreenEdgeLock::HandleVector(CartesianPosition position, admrender::ScreenEdgeLock screenEdgeLock, bool cartesian)
 {
-	if (m_repScreenSet)
+	if (m_reproductionScreen.hasValue())
 	{
 		if (cartesian)
 		{
@@ -110,7 +100,7 @@ CartesianPosition CScreenEdgeLock::HandleVector(CartesianPosition position, admr
 
 std::pair<double, double> CScreenEdgeLock::HandleAzEl(double az, double el, admrender::ScreenEdgeLock screenEdgeLock)
 {
-	if (m_repScreenSet)
+	if (m_reproductionScreen.hasValue())
 	{
 		if (screenEdgeLock.horizontal == admrender::ScreenEdgeLock::LEFT)
 			az = m_repPolarEdges.leftAzimuth;

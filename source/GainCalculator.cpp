@@ -29,13 +29,13 @@ namespace admrender {
 	{
 	}
 
-	CartesianPosition ChannelLockHandler::handle(ChannelLock channelLock, CartesianPosition position)
+	CartesianPosition ChannelLockHandler::handle(const Optional<ChannelLock>& channelLock, CartesianPosition position)
 	{
-		// If distance is <0 then no channel locking is set so return the original direction
-		if (channelLock.maxDistance < 0.)
+		// If channelLock has not been set then just return the original value
+		if (!channelLock.hasValue())
 			return position;
 
-		double maxDistance = channelLock.maxDistance;
+		double maxDistance = channelLock->maxDistance.hasValue() ? channelLock->maxDistance.value() : std::numeric_limits<double>::max();
 		double tol = 1e-10;
 
 		// Calculate the l-2 norm between the normalised real speaker directions and the source position.
@@ -297,7 +297,7 @@ namespace admrender {
 		position = m_channelLockHandler.handle(metadata.channelLock, position);
 
 		// Apply divergence
-		divergedPositionsAndGains(metadata.objectDivergence.value, metadata.objectDivergence.azimuthRange, position, m_divergedPos, m_divergedGains);
+		divergedPositionsAndGains(metadata.objectDivergence, position, m_divergedPos, m_divergedGains);
 		auto& diverged_positions = m_divergedPos;
 		auto& diverged_gains = m_divergedGains;
 		unsigned int nDivergedGains = (unsigned int)diverged_gains.size();
@@ -351,6 +351,62 @@ namespace admrender {
 			g *= directCoefficient;
 		for (auto& g : diffuseGains)
 			g *= diffuseCoefficient;
+	}
+
+	void CGainCalculator::divergedPositionsAndGains(const admrender::Optional<admrender::ObjectDivergence>& objectDivergence, CartesianPosition position, std::vector<CartesianPosition>& divergedPos, std::vector<double>& divergedGains)
+	{
+		assert(divergedPos.capacity() == 3 && divergedGains.capacity() == 3); // Must be able to hold up to 3 positions/gains
+
+		PolarPosition polarDirection = CartesianToPolar(position);
+
+		double x = 0.;
+		if (objectDivergence.hasValue())
+			x = objectDivergence->value;
+		double d = polarDirection.distance;
+		// if the divergence value is zero or isn't set then return the original direction and a gain of 1
+		if (x == 0. || !objectDivergence.hasValue())
+		{
+			divergedPos.resize(1);
+			divergedGains.resize(1);
+			divergedPos[0] = position;
+			divergedGains[0] = 1.;
+			return;
+		}
+
+		// If there is any divergence then calculate the gains and directions
+		// Calculate gains using Rec. ITU-R BS.2127-0 sec. 7.3.7.1
+		assert(divergedGains.capacity() >= 3);
+		divergedGains.resize(3, 0.);
+		divergedGains[0] = (1. - x) / (x + 1.);
+		double glr = x / (x + 1.);
+		divergedGains[1] = glr;
+		divergedGains[2] = glr;
+
+		double cartPositions[3][3];
+		cartPositions[0][0] = d;
+		cartPositions[0][1] = 0.;
+		cartPositions[0][2] = 0.;
+		auto cartesianTmp = PolarToCartesian(PolarPosition{ x * objectDivergence->azimuthRange,0.,d });
+		cartPositions[1][0] = cartesianTmp.y;
+		cartPositions[1][1] = -cartesianTmp.x;
+		cartPositions[1][2] = cartesianTmp.z;
+		cartesianTmp = PolarToCartesian(PolarPosition{ -x * objectDivergence->azimuthRange,0.,d });
+		cartPositions[2][0] = cartesianTmp.y;
+		cartPositions[2][1] = -cartesianTmp.x;
+		cartPositions[2][2] = cartesianTmp.z;
+
+		// Rotate them so that the centre position is in specified input direction
+		double rotMat[9] = { 0. };
+		getRotationMatrix(polarDirection.azimuth, -polarDirection.elevation, 0., &rotMat[0]);
+		divergedPos.resize(3);
+		for (int iDiverge = 0; iDiverge < 3; ++iDiverge)
+		{
+			double directionRotated[3] = { 0. };
+			for (int i = 0; i < 3; ++i)
+				for (int j = 0; j < 3; ++j)
+					directionRotated[i] += rotMat[3 * i + j] * cartPositions[iDiverge][j];
+			divergedPos[iDiverge] = CartesianPosition{ -directionRotated[1],directionRotated[0],directionRotated[2] };
+		}
 	}
 
 }//namespace admrenderer

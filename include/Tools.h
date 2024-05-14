@@ -406,67 +406,6 @@ static inline std::vector<std::vector<double>> inverseMatrix(const std::vector<s
 	return inverseMat;
 }
 
-/** Get the diverged source positions and directions. See Rec. ITU-R BS.2127-1 sec. 7.3.7 pg. 45.
- * @param divergenceValue		Amount of divergence between 0 and 1.
- * @param divergenceAzRange		Range of the divergence.
- * @param position				The position of the source.
- * @param divergedPos			Output of the diverged position(s) with size 1 or 3.
- * @param divergedGains			Output of the diverged gain(s) with size 1 or 3.
- */
-static inline void divergedPositionsAndGains(double divergenceValue, double divergenceAzRange, CartesianPosition position, std::vector<CartesianPosition>& divergedPos, std::vector<double>& divergedGains)
-{
-	assert(divergedPos.capacity() == 3 && divergedGains.capacity() == 3); // Must be able to hold up to 3 positions/gains
-
-	PolarPosition polarDirection = CartesianToPolar(position);
-
-	double x = divergenceValue;
-	double d = polarDirection.distance;
-	// if the divergence value is zero then return the original direction and a gain of 1
-	if (x == 0.)
-	{
-		divergedPos.resize(1);
-		divergedGains.resize(1);
-		divergedPos[0] = position;
-		divergedGains[0] = 1.;
-		return;
-	}
-
-	// If there is any divergence then calculate the gains and directions
-	// Calculate gains using Rec. ITU-R BS.2127-0 sec. 7.3.7.1
-	assert(divergedGains.capacity() >= 3);
-	divergedGains.resize(3, 0.);
-	divergedGains[0] = (1. - x) / (x + 1.);
-	double glr = x / (x + 1.);
-	divergedGains[1] = glr;
-	divergedGains[2] = glr;
-
-	double cartPositions[3][3];
-	cartPositions[0][0] = d;
-	cartPositions[0][1] = 0.;
-	cartPositions[0][2] = 0.;
-	auto cartesianTmp = PolarToCartesian(PolarPosition{ x * divergenceAzRange,0.,d });
-	cartPositions[1][0] = cartesianTmp.y;
-	cartPositions[1][1] = -cartesianTmp.x;
-	cartPositions[1][2] = cartesianTmp.z;
-	cartesianTmp = PolarToCartesian(PolarPosition{ -x * divergenceAzRange,0.,d });
-	cartPositions[2][0] = cartesianTmp.y;
-	cartPositions[2][1] = -cartesianTmp.x;
-	cartPositions[2][2] = cartesianTmp.z;
-
-	// Rotate them so that the centre position is in specified input direction
-	double rotMat[9] = { 0. };
-	getRotationMatrix(polarDirection.azimuth, -polarDirection.elevation, 0., &rotMat[0]);
-	divergedPos.resize(3);
-	for (int iDiverge = 0; iDiverge < 3; ++iDiverge)
-	{
-		double directionRotated[3] = { 0. };
-		for (int i = 0; i < 3; ++i)
-			for (int j = 0; j < 3; ++j)
-				directionRotated[i] += rotMat[3 * i + j] * cartPositions[iDiverge][j];
-		divergedPos[iDiverge] = CartesianPosition{ -directionRotated[1],directionRotated[0],directionRotated[2] };
-	}
-}
-
 /** Get the rotation matrix required to convert a point from one coordinate system to another. See Rec. ITU-R BS.2127-0 sec. 6.8.
  * @param azInDegrees	The azimuth of the desired coordiante system.
  * @param elInDegrees	The elevation of the desired coordinate system.
