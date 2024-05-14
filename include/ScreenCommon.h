@@ -27,21 +27,21 @@ struct Screen {
 
 	// Polar screen properties
 	PolarPosition centrePolarPosition = PolarPosition{ 0.,0.,1. };
-	double widthAzimuth = 58.;
+	double widthAzimuth = 58.0;
 
 	// Cartesian screen properties
 	CartesianPosition centreCartesianPosition;
-	double widthX;
+	double widthX = 0.0;
 };
 
 /** PolarEdges structure that holds the representation of the screen for
  *  use in the screen edge lock and screen scaling prcocessing classes.
  */
 struct PolarEdges {
-	double leftAzimuth;
-	double rightAzimuth;
-	double bottomElevation;
-	double topElevation;
+	double leftAzimuth = 0.0;
+	double rightAzimuth = 0.0;
+	double bottomElevation = 0.0;
+	double topElevation = 0.0;
 
 
 	/** Convert from Screen to Polar Edges. See Rec. ITU-R BS.2127-0 Sec. 7.3.3.1 pg. 40.

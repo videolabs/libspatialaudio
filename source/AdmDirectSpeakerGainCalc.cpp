@@ -34,8 +34,8 @@ namespace admrender {
 	bool CAdmDirectSpeakersGainCalc::isLFE(const DirectSpeakerMetadata& metadata)
 	{
 		// See Rec. ITU-R BS.2127-0 sec. 8.2
-		if (metadata.channelFrequency.lowPass.size() > 0)
-			if (metadata.channelFrequency.lowPass[0] <= 200.)
+		if (metadata.channelFrequency.lowPass.hasValue())
+			if (metadata.channelFrequency.lowPass.value() <= 200.)
 				return true;
 
 		const std::string& nominalLabel = GetNominalSpeakerLabel(metadata.speakerLabel);

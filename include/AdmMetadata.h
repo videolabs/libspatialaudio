@@ -31,12 +31,77 @@ namespace admrender {
 		Binaural
 	};
 
+	/** A simple class similar to c++ 17's std::optional indicate that the metadata is optional. */
+	template<typename T>
+	class Optional
+	{
+	public:
+		Optional() : m_data(), m_hasValue(false)
+		{
+		};
+		Optional(const T& value) : m_hasValue(true)
+		{
+			m_data = value;
+		}
+		Optional(const Optional<T>& optional) : m_data(), m_hasValue(optional.m_hasValue)
+		{
+			if (optional.m_hasValue)
+				m_data = optional.m_data;
+		}
+		~Optional() {};
+
+		bool hasValue() const { return m_hasValue; };
+
+		T& value() { assert(m_hasValue); return m_data; };
+		const T& value() const { assert(m_hasValue); return m_data; };
+
+		T* operator->() { assert(m_hasValue); return &m_data; };
+		const T* operator->() const { assert(m_hasValue); return reinterpret_cast<const T*>(&m_data); };
+
+		void reset()
+		{
+			if (m_hasValue)
+			{
+				m_data = T();
+				m_hasValue = false;
+			}
+		};
+
+		Optional& operator=(const Optional& other)
+		{
+			if (other.m_hasValue)
+			{
+				m_data = other.m_data;
+				m_hasValue = true;
+			}
+			else
+			{
+				reset();
+			}
+
+			return *this;
+		};
+
+		bool operator==(const Optional& other) const
+		{
+			if (m_hasValue != other.hasValue())
+				return false;
+			if (!m_hasValue)
+				return true;
+			return value() == other.value();
+		};
+
+	private:
+		T m_data;
+		bool m_hasValue;
+	};
+
 	// Shared structures (Rec.ITU - R BS.2127-0 section 11.1.1) ============================================================
 
 	/** Frequency data for the channel. */
 	struct Frequency {
-		std::vector<double> lowPass;
-		std::vector<double> highPass;
+		Optional<double> lowPass;
+		Optional<double> highPass;
 	};
 	inline bool operator==(const Frequency& lhs, const Frequency& rhs)
 	{
@@ -46,7 +111,7 @@ namespace admrender {
 	struct ChannelLock
 	{
 		// If the distance is set <0 then no channel locking is applied
-		double maxDistance = -1.;
+		Optional<double> maxDistance;
 	};
 	inline bool operator==(const ChannelLock& lhs, const ChannelLock& rhs)
 	{
@@ -54,13 +119,12 @@ namespace admrender {
 	}
 	struct ObjectDivergence
 	{
-		double value = 0.;
-		double azimuthRange = 180.;
-		double positionRange = 1.;
+		double value = 0.0;
+		double azimuthRange = 45.0;
 	};
 	inline bool operator==(const ObjectDivergence& lhs, const ObjectDivergence& rhs)
 	{
-		return lhs.value == rhs.value && lhs.azimuthRange == rhs.azimuthRange && lhs.positionRange == rhs.positionRange;
+		return lhs.value == rhs.value && lhs.azimuthRange == rhs.azimuthRange;
 	}
 
 	struct ScreenEdgeLock {
@@ -110,7 +174,7 @@ namespace admrender {
 	{
 		bool flag = false;
 		// This is the duration of the interpolation in samples
-		int interpolationLength = 0;
+		Optional<int> interpolationLength = 0;
 	};
 	inline bool operator==(const JumpPosition& lhs, const JumpPosition& rhs)
 	{
@@ -185,9 +249,9 @@ namespace admrender {
 		// Diffuseness parameter
 		double diffuse = 0.0;
 		// Channel lock distance. values < 0 mean no processing is applied
-		ChannelLock channelLock;
+		Optional<ChannelLock> channelLock;
 		// Object divergence parameters
-		ObjectDivergence objectDivergence;
+		Optional<ObjectDivergence> objectDivergence;
 		// Flag if cartesian position coordinates
 		bool cartesian = false;
 		// Extent parameters
@@ -195,7 +259,7 @@ namespace admrender {
 		double height = 0.0;
 		double depth = 0.0;
 		// Jump position to determine how the gains are interpolated
-		JumpPosition jumpPosition;
+		Optional<JumpPosition> jumpPosition;
 		// The track index (starting from 0)
 		unsigned int trackInd = 0;
 		std::vector<PolarExclusionZone> zoneExclusionPolar;
@@ -206,7 +270,7 @@ namespace admrender {
 		// The length of the block in samples
 		unsigned int blockLength = 0;
 		// The reference screen
-		std::vector<Screen> referenceScreen;
+		Screen referenceScreen;
 	};
 	inline bool operator==(const ObjectMetadata& lhs, const ObjectMetadata& rhs)
 	{

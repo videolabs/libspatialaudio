@@ -19,6 +19,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include "AdmMetadata.h"
 #include "Coordinates.h"
 #include "ScreenCommon.h"
 
@@ -44,7 +45,7 @@ public:
 	bool isHoa = false;
 	unsigned int hoaOrder = 0;
 
-	std::vector<Screen> reproductionScreen = {};
+	admrender::Optional<Screen> reproductionScreen = admrender::Optional<Screen>();
 
 	/** If the channel name matches one of the channels in the Layout then return
 	 *  its index. If not, return -1.
