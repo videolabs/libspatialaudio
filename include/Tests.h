@@ -559,7 +559,7 @@ void testRotation()
 	srcPos.fElevation = 0.25f * 3.14159f;
 	srcPos.fDistance = 1.f;
 	CAmbisonicEncoder ambiEnc;
-	ambiEnc.Configure(order, b3D, 0);
+	ambiEnc.Configure(order, b3D, sampleRate, 0);
 	ambiEnc.SetPosition(srcPos);
 	ambiEnc.Refresh();
 	ambiEnc.Process(ones.data(), nSamples, &inputSignal);
@@ -595,6 +595,45 @@ void testRotation()
 
 }
 
+/** Test the gain interpolation of AmbisonicEncoder
+*/
+void testHoaEncoding()
+{
+	unsigned nSamples = 128;
+	unsigned order = 1;
+	bool b3D = true;
+	unsigned sampleRate = 48000;
+
+	CAmbisonicEncoder ambiEnc;
+	bool success = ambiEnc.Configure(order, b3D, sampleRate, (float)nSamples / (float)sampleRate * 1000.f);
+	assert(success);
+	ambiEnc.SetPosition({ 0.f,0.f,1.f });
+	ambiEnc.Reset();
+
+	CBFormat outputSignal;
+	outputSignal.Configure(order, b3D, nSamples);
+	outputSignal.Reset();
+	std::vector<float> ones(nSamples, 1.f);
+
+	std::vector<std::vector<float>> outStream(outputSignal.GetChannelCount(), std::vector<float>(nSamples, 0.f));
+
+	ambiEnc.SetPosition({ DegreesToRadians(90.f),0.f,1. });
+	ambiEnc.Process(ones.data(), nSamples, &outputSignal);
+
+	for (unsigned iCh = 0; iCh < outputSignal.GetChannelCount(); ++iCh)
+		outputSignal.ExtractStream(outStream[iCh].data(), iCh, nSamples);
+
+	for (unsigned iSamp = 0; iSamp < nSamples; ++iSamp)
+	{
+		std::cout << iSamp << ": ";
+		for (unsigned iCh = 0; iCh < outputSignal.GetChannelCount(); ++iCh)
+		{
+			std::cout << outStream[iCh][iSamp] << ", ";
+		}
+		std::cout << std::endl;
+	}
+}
+
 /** Test the loudspeaker decoder presets
 */
 void testDecoderPresets()
@@ -606,7 +645,7 @@ void testDecoderPresets()
 	auto layout = Amblib_SpeakerSetUps::kAmblib_71;
 
 	CAmbisonicEncoder ambiEnc;
-	bool success = ambiEnc.Configure(order, b3D, 0);
+	bool success = ambiEnc.Configure(order, b3D, sampleRate, 0.f);
 	assert(success);
 
 	CAmbisonicDecoder ambiDec;
@@ -620,7 +659,6 @@ void testDecoderPresets()
 	inputSignal.Reset();
 	std::vector<float> impulse(nSamples, 0.f);
 	impulse[0] = 1.f;
-	std::vector<std::vector<float>> output(inputSignal.GetChannelCount(), std::vector<float>(nSamples, 0.f));
 
 	float** ldspkOut = new float* [nLdspk];
 	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
@@ -628,7 +666,7 @@ void testDecoderPresets()
 
 	for (float az = 0.f; az < 360.f; az += 1.f)
 	{
-		ambiEnc.SetPosition({ DegreesToRadians(az),0.f,1. }, 0.f);
+		ambiEnc.SetPosition({ DegreesToRadians(az),0.f,1. });
 		ambiEnc.Refresh();
 		ambiEnc.Process(impulse.data(), nSamples, &inputSignal);
 
@@ -679,7 +717,7 @@ void testAdmHoaDecodingRouting()
 	assert(admSuccess);
 
 	CAmbisonicEncoder ambiEnc;
-	bool success = ambiEnc.Configure(order, true, 0);
+	bool success = ambiEnc.Configure(order, true, sampleRate, 0.f);
 	assert(success);
 
 	CBFormat inputSignal;
@@ -698,7 +736,7 @@ void testAdmHoaDecodingRouting()
 
 	for (float az = 0.f; az < 360.f; az += 1.f)
 	{
-		ambiEnc.SetPosition({ DegreesToRadians(az),0.f,1. }, 0.f);
+		ambiEnc.SetPosition({ DegreesToRadians(az),0.f,1. });
 		ambiEnc.Refresh();
 		ambiEnc.Process(impulse.data(), nSamples, &inputSignal);
 
@@ -735,7 +773,7 @@ void test2dHoaDecoding()
 	auto layout = Amblib_SpeakerSetUps::kAmblib_HexagonWithCentre;
 
 	CAmbisonicEncoder ambiEnc;
-	bool success = ambiEnc.Configure(order, b3D, 0);
+	bool success = ambiEnc.Configure(order, b3D, sampleRate, 0.f);
 	assert(success);
 
 	CAmbisonicDecoder ambiDec;
@@ -755,7 +793,7 @@ void test2dHoaDecoding()
 	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
 		ldspkOut[iLdspk] = new float[nSamples];
 
-	ambiEnc.SetPosition({ DegreesToRadians(30.f),0.f,1. }, 0.f);
+	ambiEnc.SetPosition({ DegreesToRadians(30.f),0.f,1. });
 	ambiEnc.Refresh();
 	ambiEnc.Process(impulse.data(), nSamples, &inputSignal);
 

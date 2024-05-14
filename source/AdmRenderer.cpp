@@ -130,15 +130,15 @@ namespace admrender {
 				if (m_RenderLayout == OutputLayout::Binaural)
 				{
 					m_hoaEncoders.push_back(std::vector<CAmbisonicEncoder>(1, CAmbisonicEncoder()));
-					m_hoaEncoders[nObject++][0].Configure(hoaOrder, true, 0);
+					m_hoaEncoders[nObject++][0].Configure(hoaOrder, true, nSampleRate, 0);
 				}
 				break;
 			case TypeDefinition::Matrix:
 				break;
 			case TypeDefinition::Objects:
 				m_pannerTrackInd.push_back({ iCh,TypeDefinition::Objects });
-				m_gainInterpDirect.push_back(CGainInterp(nInternalCh));
-				m_gainInterpDiffuse.push_back(CGainInterp(nInternalCh));
+				m_gainInterpDirect.push_back(CGainInterp<double>(nInternalCh));
+				m_gainInterpDiffuse.push_back(CGainInterp<double>(nInternalCh));
 				m_objectMetadata.push_back(ObjectMetadata());
 				if (reproductionScreen.hasValue())
 					m_objectMetadata.back().referenceScreen = reproductionScreen.value();

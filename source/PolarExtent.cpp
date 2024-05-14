@@ -154,13 +154,14 @@ void CSpreadPanner::CalculateGains(CartesianPosition position, double width, dou
 CAmbisonicSpreadPanner::CAmbisonicSpreadPanner(unsigned int ambiOrder)
 {
 	m_ambiSource.Configure(ambiOrder, true, 0);
+	std::vector<float> hoaGains(m_ambiSource.GetChannelCount(), 0.f);
 	// Calculate the panning gain vector for this grid point
 	for (int i = 0; i < m_nVirtualSources; ++i)
 	{
 		auto polarPos = CartesianToPolar(m_virtualSourcePositions[i]);
 		m_ambiSource.SetPosition(PolarPoint{ DegreesToRadians((float)polarPos.azimuth), DegreesToRadians((float)polarPos.elevation), (float)polarPos.distance });
 		m_ambiSource.Refresh();
-		auto hoaGains = m_ambiSource.GetCoefficients();
+		m_ambiSource.GetCoefficients(hoaGains);
 		m_virtualSourcePanningVectors.push_back(std::vector<double>(hoaGains.begin(), hoaGains.end()));
 	}
 	m_nCh = m_ambiSource.GetChannelCount();

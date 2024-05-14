@@ -18,6 +18,7 @@
 
 #include "AmbisonicSource.h"
 #include "BFormat.h"
+#include "GainInterp.h"
 
 #include <algorithm> // for std::max
 
@@ -37,28 +38,29 @@ public:
      *  lost. Returns true if successful.
      * @param nOrder    Ambisonic order.
      * @param b3D       Flag true if encoding is to be 3D.
-     * @param nMisc     Unused.
+     * @param nMisc     Sample rate of signal to process.
      * @return          Returns true if encoder is correctly configured.
      */
-    virtual bool Configure(unsigned nOrder, bool b3D, unsigned nMisc);
+    virtual bool Configure(unsigned nOrder, bool b3D, unsigned sampleRate, float fadeTimeMilliSec);
 
     /** Recalculate coefficients, and apply normalisation factors. */
     void Refresh();
 
-    /** Set the position of the source with the option to interpolate over a duration
-     *  of the frame to the new position.
-     *  The duration is in the range 0.f to 1.f where 1.f interpolates over a full frame.
+    /** Reset the state of the encoder. */
+    void Reset();
+
+    /** Set the position of the source.
      * @param polPosition   New polar position to encode.
-     * @param interpDur     Proportion (from 0 to 1) of the next audio frame over which encoding interpolation is to take place.
      */
-    void SetPosition(PolarPoint polPosition, float interpDur = 0.f);
+    void SetPosition(PolarPoint polPosition);
 
     /** Encode mono stream to B-Format.
      * @param pfSrc     Pointer to the signal to encode.
      * @param nSamples  The number of samples to encode.
      * @param pBFDst    The BFormat encoded output.
+     * @param nOffset   Optional offset position when writing to the output.
      */
-    void Process(float* pfSrc, unsigned nSamples, CBFormat* pBFDst);
+    void Process(float* pfSrc, unsigned nSamples, CBFormat* pBFDst, unsigned int nOffset = 0);
 
     /** Encode mono stream to B-Format and *adds* it to the pBFDst buffer.
      *  Allows an optional offset for the position in samples at which the output is to be written.
@@ -71,10 +73,15 @@ public:
     void ProcessAccumul(float* pfSrc, unsigned nSamples, CBFormat* pBFDst, unsigned int nOffset = 0, float fGain = 1.f);
 
 private:
-    // The last set HOA coefficients
-    std::vector<float> m_pfCoeffOld;
-    // The duration [0,1] of the interpolation from the old to the new HOA coefficients
-    float m_fInterpDur = 0.f;
+    // The current HOA coefficients
+    std::vector<float> m_pfCoeffCurrent;
+
+    // The time to fade from the previous encoding gains to the target ones
+    float m_fadingTimeMilliSec = 0.f;
+    unsigned int m_fadingSamples = 0;
+    unsigned int m_fadingCounter = 0;
+
+    CGainInterp<float> m_coeffInterp;
 };
 
 #endif // _AMBISONIC_ENCODER_H

@@ -90,11 +90,10 @@ public:
      */
     virtual float GetCoefficient(unsigned nChannel);
 
-    /** Get a vector of all coefficients.
-     *  Note that this will allocate so should not be called during real-time audio processing.
-     * @return  Vector containing all coefficients.
+    /** Fill a vector with all the current HOA coefficients.
+     * @param hoaCoeffs Vector containing all coefficients.
      */
-    virtual std::vector<float> GetCoefficients();
+    virtual void GetCoefficients(std::vector<float>& hoaCoeffs);
 
     /** Sets the source's gain.
      * @param fGain   Gain to apply to the source.
