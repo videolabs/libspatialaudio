@@ -77,7 +77,7 @@ namespace admrender {
 		 * @param reproductionScreen	Screen details used for screen scaling/locking.
 		 * @return						Returns true if the class is correctly configured and ready to use.
 		 */
-		bool Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, const StreamInformation& channelInfo, std::string HRTFPath = "", std::vector<Screen> reproductionScreen = std::vector<Screen>{});
+		bool Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, const StreamInformation& channelInfo, std::string HRTFPath = "", Optional<Screen> reproductionScreen = Optional<Screen>());
 
 		/** Add an audio Object to be rendered.
 		 *

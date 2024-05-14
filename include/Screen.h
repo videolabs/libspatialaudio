@@ -45,7 +45,7 @@ static inline std::pair<double, double> CompensatePosition(double az, double el,
 */
 class CScreenScaleHandler {
 public:
-	CScreenScaleHandler(std::vector<Screen> reproductionScreen, Layout layout);
+	CScreenScaleHandler(const admrender::Optional<Screen>& reproductionScreen, const Layout& layout);
 	~CScreenScaleHandler();
 
 	/** Scales a position depending on the reproduction screen and the reference screen. See Rec. ITU-R BS.2127-0 sec. 7.3.3 pg 40 for more details
@@ -55,16 +55,14 @@ public:
 	 * @param cartesian			Flag if the Cartesian rendering path is to be used.
 	 * @return					Returns the modified position.
 	 */
-	CartesianPosition handle(CartesianPosition position, bool screenRef, const std::vector<Screen>& referenceScreen, bool cartesian);
+	CartesianPosition handle(CartesianPosition position, bool screenRef, const Screen& referenceScreen, bool cartesian);
 
 private:
 	Layout m_layout;
 	// The reproduction screen
-	Screen m_repScreen, m_refScreen;
+	admrender::Optional<Screen> m_repScreen;
 	// The internal representation of the screens
 	PolarEdges m_repPolarEdges, m_refPolarEdges;
-
-	bool m_repScreenSet = false;
 
 	/** Scale the position for the polar/egocentric path.
 	 * @param position	The position to scale.
@@ -84,7 +82,7 @@ private:
 class CScreenEdgeLock
 {
 public:
-	CScreenEdgeLock(std::vector<Screen> reproductionScreen, Layout layout);
+	CScreenEdgeLock(const admrender::Optional<Screen>& reproductionScreen, const Layout& layout);
 	~CScreenEdgeLock();
 
 	/** Apply screen edge locking to a position. See Rec. ITU-R BS.2127-1 sec. 7.3.4 pg. 43.
@@ -104,8 +102,7 @@ public:
 	std::pair<double, double> HandleAzEl(double azimuth, double elevation, admrender::ScreenEdgeLock screenEdgeLock);
 
 private:
-	bool m_repScreenSet = false;
 	Layout m_layout;
-	Screen m_reproductionScreen;
+	admrender::Optional<Screen> m_reproductionScreen;
 	PolarEdges m_repPolarEdges;
 };
