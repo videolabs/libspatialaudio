@@ -14,73 +14,104 @@
 
 #include <assert.h>
 
-CGainInterp::CGainInterp(unsigned int nCh) : m_gainVec(nCh), m_targetGainVec(nCh)
+template<typename T>
+CGainInterp<T>::CGainInterp(unsigned int nCh) : m_currentGainVec(nCh), m_targetGainVec(nCh), m_deltaGainVec(nCh)
 {
 
 }
 
-CGainInterp::~CGainInterp()
+template<typename T>
+CGainInterp<T>::~CGainInterp()
 {
 }
 
-void CGainInterp::SetGainVector(const std::vector<double>& newGainVec, unsigned int interpTimeInSamples)
+template<typename T>
+void CGainInterp<T>::SetGainVector(const std::vector<T>& newGainVec, unsigned int interpTimeInSamples)
 {
 	assert(newGainVec.size() == m_targetGainVec.size()); //Number of channels must match!
 
 	if (m_targetGainVec != newGainVec)
 	{
-		if (!m_isFirstCall)
+		if (interpTimeInSamples > 0)
 		{
-			m_gainVec = m_targetGainVec;
 			m_targetGainVec = newGainVec;
+
+			for (size_t i = 0; i < m_targetGainVec.size(); ++i)
+				m_deltaGainVec[i] = (m_targetGainVec[i] - m_currentGainVec[i]) / static_cast<T>(interpTimeInSamples);
+
 			m_interpDurInSamples = interpTimeInSamples;
 			// Reset the interpolation counter to start interpolation
 			m_iInterpCount = 0;
 		}
-		else if (m_isFirstCall)
+		else
 		{
-			m_gainVec = newGainVec;
+			// If smoothing time is zero samples then set current and target vectors to the current value and do not interpolate
 			m_targetGainVec = newGainVec;
-			m_interpDurInSamples = 0;
-			m_iInterpCount = 0;
+			m_currentGainVec = newGainVec;
+			for (auto& g : m_deltaGainVec)
+				g = static_cast<T>(0.);
+			m_interpDurInSamples = interpTimeInSamples;
+			m_iInterpCount = m_interpDurInSamples;
 		}
 	}
 }
 
-void CGainInterp::ProcessAccumul(const float* pIn, float** ppOut, unsigned int nSamples, unsigned int nOffset)
+template<typename T>
+void CGainInterp<T>::Process(const float* pIn, float** ppOut, unsigned int nSamples, unsigned int nOffset)
 {
 	unsigned int nCh = (unsigned int)m_targetGainVec.size();
 	// The number of samples to interpolate over in this block
-	unsigned int nInterpSamples = std::max(std::min(m_interpDurInSamples - m_iInterpCount, nSamples), (unsigned int)0);
+	unsigned int nInterpSamples = std::min(nSamples, m_interpDurInSamples - m_iInterpCount);
 
-	float deltaCoeff = 1.f / m_interpDurInSamples;
-
-	if (nInterpSamples > 0)
+	if (m_iInterpCount < m_interpDurInSamples)
 	{
-		for (unsigned int i = 0; i < nInterpSamples; ++i)
-		{
-			float fInterp = (float)(i + m_iInterpCount) * deltaCoeff;
-			float fOneMinusInterp = 1.f - fInterp;
-			for (unsigned int iCh = 0; iCh < nCh; ++iCh)
-				ppOut[iCh][i + nOffset] += pIn[i] * (fOneMinusInterp * (float)m_gainVec[iCh] + fInterp * (float)m_targetGainVec[iCh]);
-		}
+		for (unsigned int iCh = 0; iCh < nCh; ++iCh)
+			for (unsigned int i = 0; i < nInterpSamples; ++i)
+			{
+				ppOut[iCh][i + nOffset] = pIn[i] * static_cast<float>(m_currentGainVec[iCh]);
+				m_currentGainVec[iCh] += m_deltaGainVec[iCh];
+			}
 
 		m_iInterpCount += nInterpSamples;
-		// If interpolation ends then set the m_gainVec to equal the target
-		if (m_iInterpCount >= m_interpDurInSamples)
-			m_gainVec = m_targetGainVec;
 	}
 
 	for (unsigned int iCh = 0; iCh < nCh; ++iCh)
-		for (unsigned int i = nInterpSamples; i < nSamples; ++i)
-			ppOut[iCh][i + nOffset] += pIn[i] * (float)m_gainVec[iCh];
-
-	m_isFirstCall = false;
+		if (std::abs(m_targetGainVec[iCh]) > static_cast<T>(1e-6))
+			for (unsigned int i = nInterpSamples; i < nSamples; ++i)
+				ppOut[iCh][i + nOffset] = pIn[i] * static_cast<float>(m_targetGainVec[iCh]);
 }
 
-void CGainInterp::Reset()
+template<typename T>
+void CGainInterp<T>::ProcessAccumul(const float* pIn, float** ppOut, unsigned int nSamples, unsigned int nOffset, T gain)
+{
+	unsigned int nCh = (unsigned int)m_targetGainVec.size();
+	// The number of samples to interpolate over in this block
+	unsigned int nInterpSamples = std::min(nSamples, m_interpDurInSamples - m_iInterpCount);
+
+	if (m_iInterpCount < m_interpDurInSamples)
+	{
+		for (unsigned int iCh = 0; iCh < nCh; ++iCh)
+			for (unsigned int i = 0; i < nInterpSamples; ++i)
+			{
+				ppOut[iCh][i + nOffset] += pIn[i] * static_cast<float>(m_currentGainVec[iCh] * gain);
+				m_currentGainVec[iCh] += m_deltaGainVec[iCh];
+			}
+
+		m_iInterpCount += nInterpSamples;
+	}
+
+	for (unsigned int iCh = 0; iCh < nCh; ++iCh)
+		if (std::abs(m_targetGainVec[iCh]) > static_cast<T>(1e-6))
+			for (unsigned int i = nInterpSamples; i < nSamples; ++i)
+				ppOut[iCh][i + nOffset] += pIn[i] * static_cast<float>(m_targetGainVec[iCh]);
+}
+
+template<typename T>
+void CGainInterp<T>::Reset()
 {
 	m_iInterpCount = m_interpDurInSamples;
-	m_gainVec = m_targetGainVec;
-	m_isFirstCall = true;
+	m_currentGainVec = m_targetGainVec;
 }
+
+template CGainInterp<float>;
+template CGainInterp<double>;

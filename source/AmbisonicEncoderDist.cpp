@@ -40,7 +40,7 @@ CAmbisonicEncoderDist::~CAmbisonicEncoderDist()
 
 bool CAmbisonicEncoderDist::Configure(unsigned nOrder, bool b3D, unsigned nSampleRate)
 {
-    bool success = CAmbisonicEncoder::Configure(nOrder, b3D, 0);
+    bool success = CAmbisonicEncoder::Configure(nOrder, b3D, nSampleRate, 0);
     if(!success)
         return false;
     m_nSampleRate = nSampleRate;

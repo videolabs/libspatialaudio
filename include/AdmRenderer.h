@@ -152,8 +152,8 @@ namespace admrender {
 		// The channel indices of the tracks that can use a point source panner
 		std::vector<std::pair<unsigned int, TypeDefinition>> m_pannerTrackInd;
 		// Gain interpolators
-		std::vector<CGainInterp> m_gainInterpDirect;
-		std::vector<CGainInterp> m_gainInterpDiffuse;
+		std::vector<CGainInterp<double>> m_gainInterpDirect;
+		std::vector<CGainInterp<double>> m_gainInterpDiffuse;
 		// The gain calculator for Object type channels
 		std::unique_ptr<CGainCalculator> m_objectGainCalc;
 		// HOA encoders to use instead of the pointSourcePanner when output is binaural

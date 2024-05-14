@@ -15,6 +15,7 @@
 
 
 #include "AmbisonicSource.h"
+#include <assert.h>
 
 #define fSqrt32 sqrtf(3.f)/2.f
 #define fSqrt58 sqrtf(5.f/8.f)
@@ -154,9 +155,12 @@ float CAmbisonicSource::GetCoefficient(unsigned nChannel)
     return m_pfCoeff[nChannel];
 }
 
-std::vector<float> CAmbisonicSource::GetCoefficients()
+void CAmbisonicSource::GetCoefficients(std::vector<float>& hoaCoeffs)
 {
-    return m_pfCoeff;
+    assert(hoaCoeffs.capacity() >= m_pfCoeff.size());
+    hoaCoeffs.resize(m_pfCoeff.size());
+    for (size_t i = 0; i < m_pfCoeff.size(); ++i)
+        hoaCoeffs[i] = m_pfCoeff[i];
 }
 
 void CAmbisonicSource::SetGain(float fGain)
