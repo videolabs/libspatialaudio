@@ -131,7 +131,7 @@ bool CAmbisonicBinauralizer::Configure(unsigned nOrder,
 
     // encode a source at azimuth 90deg and elevation 0
     CAmbisonicEncoder myEncoder;
-    myEncoder.Configure(m_nOrder, true, 0);
+    myEncoder.Configure(m_nOrder, true, nSampleRate, 0);
 
     PolarPoint position90;
     position90.fAzimuth = DegreesToRadians(90.f);

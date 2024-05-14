@@ -15,21 +15,25 @@
 
 #include "AmbisonicEncoder.h"
 #include <assert.h>
+#include <cmath>
 
-CAmbisonicEncoder::CAmbisonicEncoder()
+CAmbisonicEncoder::CAmbisonicEncoder() : m_coeffInterp(0)
 { }
 
 CAmbisonicEncoder::~CAmbisonicEncoder()
 { }
 
-bool CAmbisonicEncoder::Configure(unsigned nOrder, bool b3D, unsigned nMisc)
+bool CAmbisonicEncoder::Configure(unsigned nOrder, bool b3D, unsigned sampleRate, float fadeTimeMilliSec)
 {
-    bool success = CAmbisonicSource::Configure(nOrder, b3D, nMisc);
-    if(!success)
+    bool success = CAmbisonicSource::Configure(nOrder, b3D, sampleRate);
+    if(!success || fadeTimeMilliSec < 0.f)
         return false;
-    //SetOrderWeight(0, 1.f / sqrtf(2.f)); // Removed as seems to break SN3D normalisation
-    
-    m_pfCoeffOld.resize(GetChannelCount(), 0.f);
+
+    m_pfCoeffCurrent.resize(m_nChannelCount);
+    m_coeffInterp = CGainInterp<float>(m_nChannelCount);
+
+    m_fadingTimeMilliSec = fadeTimeMilliSec;
+    m_fadingSamples = (unsigned)std::round(0.001f * m_fadingTimeMilliSec * (float)sampleRate);
 
     return true;
 }
@@ -39,91 +43,31 @@ void CAmbisonicEncoder::Refresh()
     CAmbisonicSource::Refresh();
 }
 
-void CAmbisonicEncoder::SetPosition(PolarPoint polPosition, float interpDur)
+void CAmbisonicEncoder::Reset()
 {
-    // Set the interpolation duration
-    m_fInterpDur = interpDur;
-    // Store the last set coefficients
-    m_pfCoeffOld = m_pfCoeff;
-    // Update the coefficients
-    CAmbisonicSource::SetPosition(polPosition);
-    Refresh();
+    CAmbisonicSource::Reset();
+    m_coeffInterp.Reset();
 }
 
-void CAmbisonicEncoder::Process(float* pfSrc, unsigned nSamples, CBFormat* pfDst)
+void CAmbisonicEncoder::SetPosition(PolarPoint polPosition)
+{
+    // Update the coefficients
+    CAmbisonicSource::SetPosition(polPosition);
+    CAmbisonicSource::Refresh();
+    CAmbisonicSource::GetCoefficients(m_pfCoeffCurrent);
+    m_coeffInterp.SetGainVector(m_pfCoeffCurrent, m_fadingSamples);
+}
+
+void CAmbisonicEncoder::Process(float* pfSrc, unsigned nSamples, CBFormat* pfDst, unsigned int nOffset)
 {
     assert(nSamples <= pfDst->GetSampleCount());
 
-    unsigned niChannel = 0;
-    unsigned niSample = 0;
-    if (m_fInterpDur > 0.f)
-    {
-        // Number of samples expected per frame
-        for (niChannel = 0; niChannel < m_nChannelCount; niChannel++)
-        {
-            unsigned int nInterpSamples = (unsigned int)roundf(m_fInterpDur * nSamples);
-            float deltaCoeff = (m_pfCoeff[niChannel] - m_pfCoeffOld[niChannel]) / ((float)nInterpSamples);
-            for (niSample = 0; niSample < nInterpSamples; niSample++)
-            {
-                float fInterp = niSample * deltaCoeff;
-                pfDst->m_ppfChannels[niChannel][niSample] = pfSrc[niSample] * (fInterp*m_pfCoeff[niChannel] + (1.f-fInterp)*m_pfCoeffOld[niChannel]);
-            }
-            // once interpolation has finished
-            for (niSample = nInterpSamples; niSample < nSamples; niSample++)
-            {
-                pfDst->m_ppfChannels[niChannel][niSample] = pfSrc[niSample] * m_pfCoeff[niChannel];
-            }
-        }
-        // Set interpolation duration to zero so none is applied on next call
-        m_fInterpDur = 0.f;
-    }
-    else
-    {
-        for (niChannel = 0; niChannel < m_nChannelCount; niChannel++)
-        {
-            for (niSample = 0; niSample < nSamples; niSample++)
-            {
-                pfDst->m_ppfChannels[niChannel][niSample] = pfSrc[niSample] * m_pfCoeff[niChannel];
-            }
-        }
-    }
+    m_coeffInterp.Process(pfSrc, pfDst->m_ppfChannels.get(), nSamples, nOffset);
 }
 
 void CAmbisonicEncoder::ProcessAccumul(float* pfSrc, unsigned nSamples, CBFormat* pfDst, unsigned int nOffset, float fGain)
 {
     assert(nSamples + nOffset < pfDst->GetSampleCount()); // Cannot write beyond the of the destination buffers!
 
-    unsigned niChannel = 0;
-    unsigned niSample = 0;
-    if (m_fInterpDur > 0.f)
-    {
-        // Number of samples expected per frame
-        for (niChannel = 0; niChannel < m_nChannelCount; niChannel++)
-        {
-            unsigned int nInterpSamples = (int)roundf(m_fInterpDur * nSamples);
-            float deltaCoeff = 1.f / (float)nInterpSamples;
-            for (niSample = 0; niSample < nInterpSamples; niSample++)
-            {
-                float fInterp = niSample * deltaCoeff;
-                pfDst->m_ppfChannels[niChannel][niSample + nOffset] += pfSrc[niSample] * (fInterp * m_pfCoeff[niChannel] + (1.f - fInterp) * m_pfCoeffOld[niChannel]) * fGain;
-            }
-            // once interpolation has finished
-            for (niSample = nInterpSamples; niSample < nSamples; niSample++)
-            {
-                pfDst->m_ppfChannels[niChannel][niSample + nOffset] += pfSrc[niSample] * m_pfCoeff[niChannel] * fGain;
-            }
-        }
-        // Set interpolation duration to zero so none is applied on next call
-        m_fInterpDur = 0.f;
-    }
-    else
-    {
-        for (niChannel = 0; niChannel < m_nChannelCount; niChannel++)
-        {
-            for (niSample = 0; niSample < nSamples; niSample++)
-            {
-                pfDst->m_ppfChannels[niChannel][niSample + nOffset] += pfSrc[niSample] * m_pfCoeff[niChannel] * fGain;
-            }
-        }
-    }
+    m_coeffInterp.ProcessAccumul(pfSrc, pfDst->m_ppfChannels.get(), nSamples, nOffset, fGain);
 }
