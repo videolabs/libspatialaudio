@@ -292,9 +292,6 @@ static inline bool insideAngleRange(double x, double startAngle, double endAngle
 
 	return false;
 }
-/**
-	Multiply two matrices
-*/
 
 /** Matrix multiplication of two matrices C = A*B.
  *  This function allocated memory so should not be used during real-time processing. Instead, see its overload.
@@ -302,12 +299,13 @@ static inline bool insideAngleRange(double x, double startAngle, double endAngle
  * @param B		Second matrix to multiply.
  * @return		Matrix product of A and B.
  */
-static inline std::vector<std::vector<double>> multiplyMat(const std::vector<std::vector<double>>& A, const std::vector<std::vector<double>>& B)
+template<typename T>
+static inline std::vector<std::vector<T>> multiplyMat(const std::vector<std::vector<T>>& A, const std::vector<std::vector<T>>& B)
 {
 	size_t rowsA = A.size();
 	size_t colsA = A[0].size();
 	size_t colsB = B[0].size();
-	std::vector<std::vector<double>> ret(rowsA, std::vector<double>(colsB, 0.));
+	std::vector<std::vector<T>> ret(rowsA, std::vector<T>(colsB, 0.));
 
 	for (size_t i = 0; i < rowsA; ++i)
 		for (size_t j = 0; j < colsB; ++j)

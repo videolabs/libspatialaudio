@@ -76,7 +76,6 @@ void CGainInterp<T>::Process(const float* pIn, float** ppOut, unsigned int nSamp
 	}
 
 	for (unsigned int iCh = 0; iCh < nCh; ++iCh)
-		if (std::abs(m_targetGainVec[iCh]) > static_cast<T>(1e-6))
 			for (unsigned int i = nInterpSamples; i < nSamples; ++i)
 				ppOut[iCh][i + nOffset] = pIn[i] * static_cast<float>(m_targetGainVec[iCh]);
 }

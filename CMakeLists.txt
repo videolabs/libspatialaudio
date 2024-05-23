@@ -23,6 +23,7 @@ list(APPEND headers
     include/AdmMappingRules.h
     include/AdmMetadata.h
     include/AdmRenderer.h
+    include/AmbisonicAllRAD.h
     include/AmbisonicBase.h
     include/AmbisonicBinauralizer.h
     include/AmbisonicCommons.h
@@ -63,6 +64,7 @@ list(APPEND headers
     include/ScreenCommon.h
     include/SpeakersBinauralizer.h
     include/Tools.h
+    include/t_design_5200.h
     source/kiss_fft/kiss_fft.h
     source/kiss_fft/kiss_fftr.h
     include/dsp/IIRFilter.h
@@ -87,6 +89,7 @@ list(APPEND sources
     source/SpeakersBinauralizer.cpp
     source/kiss_fft/kiss_fftr.c
     source/kiss_fft/kiss_fft.c
+    source/AmbisonicAllRAD.cpp
     source/AmbisonicBase.cpp
     source/AmbisonicSpeaker.cpp
     source/AmbisonicEncoderDist.cpp
