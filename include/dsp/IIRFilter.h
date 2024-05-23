@@ -49,6 +49,14 @@ public:
      */
     void Process(float** pIn, float** pOut, unsigned int nSamples);
 
+    /** Filter a single input channel.
+     * @param pIn       Buffer containing the input signal.
+     * @param pOut      Buffer containing the filtered signal.
+     * @param nSamples  The number of samples to process.
+     * @param iCh       The index of the channel to filter.
+     */
+    void Process(float* pIn, float* pOut, unsigned int nSamples, unsigned int iCh);
+
 private:
     // The filter coefficients
     std::vector<float> m_b, m_a;

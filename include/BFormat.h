@@ -121,6 +121,7 @@ protected:
     friend class CAmbisonicZoomer;
     friend class CAmbisonicShelfFilters;
     friend class CAmbisonicOptimFilters;
+    friend class CAmbisonicAllRAD;
 };
 
 #endif //_BFORMAT_H

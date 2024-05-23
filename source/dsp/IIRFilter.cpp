@@ -80,28 +80,31 @@ void CIIRFilter::Reset()
 
 void CIIRFilter::Process(float** pIn, float** pOut, unsigned int nSamples)
 {
+    for (int iCh = 0; iCh < m_nCh; ++iCh)
+        Process(pIn[iCh], pOut[iCh], nSamples, iCh);
+}
+
+void CIIRFilter::Process(float* pIn, float* pOut, unsigned int nSamples, unsigned int iCh)
+{
     auto b0 = m_b[0];
     auto b1 = m_b[1];
     auto b2 = m_b[2];
     auto a1 = m_a[0];
     auto a2 = m_a[1];
 
-    for (int iCh = 0; iCh < m_nCh; ++iCh)
+    auto& state1 = m_state1[iCh];
+    auto& state2 = m_state2[iCh];
+    for (unsigned int iSamp = 0; iSamp < nSamples; ++iSamp)
     {
-        auto& state1 = m_state1[iCh];
-        auto& state2 = m_state2[iCh];
-        for (unsigned int iSamp = 0; iSamp < nSamples; ++iSamp)
-        {
-            float w = pIn[iCh][iSamp] - a1 * state1 - a2 * state2;
-            pOut[iCh][iSamp] = b0 * w + b1 * state1 + b2 * state2;
+        float w = pIn[iSamp] - a1 * state1 - a2 * state2;
+        pOut[iSamp] = b0 * w + b1 * state1 + b2 * state2;
 
-            state2 = state1;
-            state1 = w;
-        }
-        // If state is very small then snap to zero to avoid denormals
-        if (std::abs(state1) < 1e-8f)
-            state1 = 0.f;
-        if (std::abs(state2) < 1e-8f)
-            state2 = 0.f;
+        state2 = state1;
+        state1 = w;
     }
+    // If state is very small then snap to zero to avoid denormals
+    if (std::abs(state1) < 1e-8f)
+        state1 = 0.f;
+    if (std::abs(state2) < 1e-8f)
+        state2 = 0.f;
 }
