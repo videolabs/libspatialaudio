@@ -108,6 +108,8 @@ namespace admrender {
 		Layout m_outputLayout;
 		// number of output channels
 		unsigned int m_nCh;
+		// number of output channels excluding LFE channels
+		unsigned int m_nChNoLFE;
 
 		CPointSourcePannerGainCalc m_pspGainCalculator;
 		CPolarExtentHandler m_extentPanner;
@@ -132,5 +134,12 @@ namespace admrender {
 		* @param divergedGains			Output of the diverged gain(s) with size 1 or 3.
 		*/
 		void divergedPositionsAndGains(const Optional<ObjectDivergence>& objectDivergence, CartesianPosition position, std::vector<CartesianPosition>& divergedPos, std::vector<double>& divergedGains);
+
+		/** Insert LFE entry with 0 gain in to a set of gains based on the supplied layout.
+		 * @param layout		Output layout.
+		 * @param gainsNoLFE	Vector of gains without LFE.
+		 * @param gainsWithLFE	Return vector of gains with LFE inserted.
+		 */
+		void insertLFE(const Layout& layout, const std::vector<double>& gainsNoLFE, std::vector<double>& gainsWithLFE);
 	};
 } // namespace admrenderer

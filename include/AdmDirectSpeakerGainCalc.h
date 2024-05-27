@@ -47,15 +47,6 @@ namespace admrender {
 
 		CScreenEdgeLock m_screenEdgeLock;
 
-		// Labels for LFE channels to use in isLFE and avoid allocations to the heap by using temp strings
-		std::vector<std::string> m_lfeLabels = { "LFE1", "LFE2" };
-
-		/** Check if the input metadata is for an LFE channel
-		 * @param metadata	Metadata to check
-		 * @return			Returns true if the input metadata refers to an LFE channel
-		 */
-		bool isLFE(const DirectSpeakerMetadata& metadata);
-
 		/** Find the closest speaker in the layout within the tolerance bounds set.
 		 *
 		 * @param direction	Polar position of the DirectSpeaker
