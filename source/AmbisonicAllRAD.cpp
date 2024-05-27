@@ -53,7 +53,8 @@ bool ::CAmbisonicAllRAD::Configure(unsigned nOrder, unsigned nBlockSize, unsigne
     for (auto& c : m_layout.channels)
         if (c.isLFE)
             nLFE++;
-    m_lowPassIIR.Configure(nLFE, sampleRate, 200.f, std::sqrt(0.5), CIIRFilter::FilterType::LowPass);
+    // Low-pass of 120 Hz as specified in Rec. ITU-R BS.2127-1 Sec. 6.3
+    m_lowPassIIR.Configure(nLFE, sampleRate, 120.f, std::sqrt(0.5), CIIRFilter::FilterType::LowPass);
 
     m_pBFSrcTmp.Configure(nOrder, m_b3D, nBlockSize);
 

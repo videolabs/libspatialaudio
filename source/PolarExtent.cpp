@@ -250,7 +250,8 @@ void CPolarExtentHandler::handle(CartesianPosition position, double width, doubl
 	// Get the distance of the source
 	double sourceDistance = norm(position);
 
-	assert(gains.size() == m_nCh); // Length must match the number of channels
+	assert(gains.capacity() >= m_nCh); // Length must match the number of channels
+	gains.resize(m_nCh, 0.);
 
 	// See Rec. ITU-R BS.2127-0 7.3.8.2 pg 48
 	if (depth != 0.)
@@ -283,7 +284,8 @@ void CPolarExtentHandler::CalculatePolarExtentGains(CartesianPosition position, 
 {
 	double p = clamp(std::max(width, height) / m_minExtent, 0., 1.);
 
-	assert(gains.size() == m_nCh); // gain output vector must match the number of channels
+	assert(gains.capacity() >= m_nCh); // gain output vector must match the number of channels
+	gains.resize(m_nCh, 0.);
 
 	// If width is low or zero then calculate the point source panning gains
 	if (p < 1.)
