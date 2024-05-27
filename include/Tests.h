@@ -14,6 +14,7 @@
 
 #include <assert.h>
 #include <iostream>
+#include <iomanip>
 #include "LoudspeakerLayouts.h"
 #include "LinkwitzRileyIIR.h"
 #include "AdmRenderer.h"
@@ -234,7 +235,7 @@ static inline bool testPointSourcePanner()
 			velVec.z /= velVecNorm;
 
 			// Check the direction matches with the input position
-			if (layout.name != "0+2+0")
+			if ((layout.name != "0+2+0" && layout.name != "2+3+0") || std::abs(az) <= 30. || az >= 330.)
 				assert(norm(position - velVec) < 1e-5);
 		}
 	}
@@ -855,6 +856,97 @@ void testAllRAD()
 				std::cout << ldspkOut[iLdspk][iSamp] << ", ";
 			std::cout << std::endl;
 		}
+	}
+
+	for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+		delete ldspkOut[iLdspk];
+	delete[] ldspkOut;
+}
+
+/** Test the AdmRenderer
+*/
+void testAdmRenderer()
+{
+	unsigned nSamples = 1;
+	unsigned order = 1;
+	unsigned sampleRate = 48000;
+	auto layout = admrender::OutputLayout::ITU_4_5_0;
+	admrender::StreamInformation streamInfo;
+	streamInfo.nChannels = 1;
+	streamInfo.typeDefinition = { admrender::TypeDefinition::Objects };
+
+	admrender::CAdmRenderer admRender;
+	admRender.Configure(layout, order, sampleRate, nSamples, streamInfo);
+	auto nLdspk = admRender.GetSpeakerCount();
+
+	std::vector<float> impulse(nSamples, 0.f);
+	impulse[0] = 1.f;
+
+	float** ldspkOut = new float* [nLdspk];
+	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+		ldspkOut[iLdspk] = new float[nSamples];
+
+	admrender::ObjectMetadata objMetadata;
+	objMetadata.blockLength = nSamples;
+	objMetadata.trackInd = 0;
+	objMetadata.jumpPosition.flag = true;
+
+	for (float az = 0.f; az < 360.f; az += 1.f)
+	{
+		objMetadata.polarPosition = { az, 0.f, 1.f };
+		admRender.AddObject(impulse.data(), nSamples, objMetadata);
+		admRender.GetRenderedAudio(ldspkOut, nSamples);
+
+		for (unsigned iSamp = 0; iSamp < nSamples; ++iSamp)
+		{
+			for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+				std::cout << std::setprecision(12) << ldspkOut[iLdspk][iSamp] << ", ";
+			std::cout << std::endl;
+		}
+	}
+
+	for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+		delete ldspkOut[iLdspk];
+	delete[] ldspkOut;
+}
+
+/** Test the AdmRenderer binaural output
+*/
+void testAdmRendererBinaural()
+{
+	unsigned nSamples = 1024;
+	unsigned order = 1;
+	unsigned sampleRate = 48000;
+	auto layout = admrender::OutputLayout::Binaural;
+	admrender::StreamInformation streamInfo;
+	streamInfo.nChannels = 1;
+	streamInfo.typeDefinition = { admrender::TypeDefinition::Objects };
+
+	admrender::CAdmRenderer admRender;
+	admRender.Configure(layout, order, sampleRate, nSamples, streamInfo);
+	auto nLdspk = 2;
+
+	std::vector<float> impulse(nSamples, 0.f);
+	impulse[0] = 1.f;
+
+	float** ldspkOut = new float* [nLdspk];
+	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+		ldspkOut[iLdspk] = new float[nSamples];
+
+	admrender::ObjectMetadata objMetadata;
+	objMetadata.blockLength = nSamples;
+	objMetadata.trackInd = 0;
+	objMetadata.polarPosition = { 90., 0.f, 1.f };
+	objMetadata.jumpPosition.flag = true;
+
+	admRender.AddObject(impulse.data(), nSamples, objMetadata);
+	admRender.GetRenderedAudio(ldspkOut, nSamples);
+
+	for (unsigned iSamp = 0; iSamp < nSamples; ++iSamp)
+	{
+		for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+			std::cout << std::setprecision(12) << ldspkOut[iLdspk][iSamp] << ", ";
+		std::cout << std::endl;
 	}
 
 	for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)

@@ -21,32 +21,79 @@ CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(const Layout& layout)
 {
 	// Store the output layout
 	m_outputLayout = getLayoutWithoutLFE(layout);
-	std::string layoutName = m_outputLayout.name;
+	// Internal layout that is used for processing then (if requried) downmixing to the output
+	m_internalLayout = m_outputLayout;
+	std::string layoutName = m_internalLayout.name;
 
 	// Check that the loudspeaker layout is supported
 	assert(layoutName.compare("0+2+0") == 0 || layoutName.compare("0+4+0") == 0
 		|| layoutName.compare("0+5+0") == 0 || layoutName.compare("2+5+0") == 0
-		|| layoutName.compare("0+7+0") == 0);
+		|| layoutName.compare("4+5+0") == 0 || layoutName.compare("4+5+1") == 0
+		|| layoutName.compare("3+7+0") == 0 || layoutName.compare("4+9+0") == 0
+		|| layoutName.compare("9+10+3") == 0 || layoutName.compare("0+7+0") == 0
+		|| layoutName.compare("4+7+0") == 0 || layoutName.compare("2+7+0") == 0
+		|| layoutName.compare("2+3+0") == 0 || layoutName.compare("9+10+5") == 0);
 
 	std::vector<std::vector<unsigned int>> hull;
 	if (layoutName == "0+2+0")
 	{
 		hull = HULL_0_5_0;
-		m_isStereo = true;
-		m_outputLayout = getLayoutWithoutLFE(GetMatchingLayout("0+5+0"));
+		m_downmixOutput = DownmixOutput::Downmix_0_2_0;
+		m_internalLayout = getLayoutWithoutLFE(GetMatchingLayout("0+5+0"));
 	}
+	else if (layoutName == "0+4+0")
+		hull = HULL_0_4_0;
 	else if (layoutName == "0+5+0")
 		hull = HULL_0_5_0;
 	else if (layoutName == "2+5+0")
 		hull = HULL_2_5_0;
-	else if (layoutName == "0+4+0")
-		hull = HULL_0_4_0;
+	else if (layoutName == "4+5+0")
+		hull = HULL_4_5_0;
+	else if (layoutName == "4+5+1")
+		hull = HULL_4_5_1;
+	else if (layoutName == "3+7+0")
+		hull = HULL_3_7_0;
+	else if (layoutName == "4+9+0")
+	{
+		bool wideRight, wideLeft;
+		bool validScreenSpk = CheckScreenSpeakerWidths(layout, wideLeft, wideRight);
+		assert(validScreenSpk); // M+SC and/or M-SC are not correctly configured!
+		// Select the correct convex hull based on the azimuth of the screen speakers.
+		if (!wideLeft && !wideRight)
+			hull = HULL_4_9_0;
+		else if (wideLeft && !wideRight)
+			hull = HULL_4_9_0_wideL;
+		else if (!wideLeft && wideRight)
+			hull = HULL_4_9_0_wideR;
+		else if (wideLeft && wideRight)
+			hull = HULL_4_9_0_wide;
+
+		// Set nominal azimuth values depending on what azimuth range they fall in
+		m_internalLayout.channels[11].polarPositionNominal.azimuth = wideLeft ? 15 : 45;
+		m_internalLayout.channels[12].polarPositionNominal.azimuth = wideLeft ? 15 : 45;
+	}
+	else if (layoutName == "9+10+3")
+		hull = HULL_9_10_3;
 	else if (layoutName == "0+7+0")
 		hull = HULL_0_7_0;
-	unsigned int nOutputCh = (unsigned int)m_outputLayout.channels.size();
+	else if (layoutName == "4+7+0")
+		hull = HULL_4_7_0;
+	else if (layoutName == "2+7+0")
+		hull = HULL_2_7_0;
+	else if (layoutName == "9+10+5")
+		hull = HULL_9_10_5;
+	else if (layoutName == "2+3+0")
+	{
+		hull = HULL_4_7_0;
+		m_downmixOutput = DownmixOutput::Downmix_2_3_0;
+		m_internalLayout = getLayoutWithoutLFE(GetMatchingLayout("4+7+0"));
+	}
+	else
+		assert(false);
+	unsigned int nOutputCh = (unsigned int)m_internalLayout.channels.size();
 
 	// Allocate temp gains based on the size of the internal layout used (0+5+0 when outputting stereo)
-	m_gainsTmp.resize(m_outputLayout.channels.size(), 0.);
+	m_gainsTmp.resize(m_internalLayout.channels.size(), 0.);
 	m_directionUnitVec.resize(3, 0.);
 
 	// if the layout is HOA then don't go any further because this panner is intended for loudspeaker arrays
@@ -55,14 +102,14 @@ CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(const Layout& layout)
 
 	// Get the positions of all of the loudspeakers
 	std::vector<PolarPosition> positions;
-	for (size_t i = 0; i < m_outputLayout.channels.size(); ++i)
+	for (size_t i = 0; i < m_internalLayout.channels.size(); ++i)
 	{
 		m_downmixMapping.push_back(i); // one-to-one downmix mapping
-		positions.push_back(m_outputLayout.channels[i].polarPosition);
+		positions.push_back(m_internalLayout.channels[i].polarPosition);
 	}
 
 	// get the extra speakers
-	m_extraSpeakersLayout = CalculateExtraSpeakersLayout(m_outputLayout);
+	m_extraSpeakersLayout = CalculateExtraSpeakersLayout(m_internalLayout);
 	// Get the indices of the virtual speakers at the top and bottom
 	// Just check the last 2. Some layouts may not have a virtual speaker at
 	// the top so do not assume that the last 2 entries are definitely virtual
@@ -160,7 +207,7 @@ void CPointSourcePannerGainCalc::CalculateGains(PolarPosition direction, std::ve
 
 void CPointSourcePannerGainCalc::CalculateGains(CartesianPosition position, std::vector<double>& gains)
 {
-	if (m_isStereo) // then downmix from 0+5+0 to 0+2+0
+	if (m_downmixOutput == DownmixOutput::Downmix_0_2_0) // then downmix from 0+5+0 to 0+2+0
 	{
 		assert(gains.size() == 2);
 		CalculateGainsFromRegions(position, m_gainsTmp);
@@ -185,6 +232,38 @@ void CPointSourcePannerGainCalc::CalculateGains(CartesianPosition position, std:
 		gains[0] *= gainNormalisation;
 		gains[1] *= gainNormalisation;
 	}
+	else if (m_downmixOutput == DownmixOutput::Downmix_2_3_0)
+	{
+		assert(gains.size() == 5);
+		CalculateGainsFromRegions(position, m_gainsTmp);
+
+		for (auto& g : gains)
+			g = 0.;
+
+		// See IAMF v1.0.0 sec. 7.6.2 for downmix matrix
+		double p = std::sqrt(0.5);
+		double gainNormalisation = 2. / (1. + 2. * p);
+		double downmixMatrix[5][11] = { 0. };
+		downmixMatrix[0][0] = 1.;
+		downmixMatrix[0][3] = p;
+		downmixMatrix[0][5] = p;
+		downmixMatrix[1][1] = 1.;
+		downmixMatrix[2][2] = 1.;
+		downmixMatrix[2][4] = p;
+		downmixMatrix[2][6] = p;
+		downmixMatrix[3][7] = 1.;
+		downmixMatrix[3][9] = p;
+		downmixMatrix[4][8] = 1.;
+		downmixMatrix[4][10] = p;
+
+		for (int i = 0; i < 5; ++i)
+			for (int j = 0; j < 11; ++j)
+				if (downmixMatrix[i][j] != 0.)
+					gains[i] += downmixMatrix[i][j] * m_gainsTmp[j];
+
+		for (auto& g : gains)
+			g *= gainNormalisation;
+	}
 	else
 	{
 		CalculateGainsFromRegions(position, gains);
@@ -193,14 +272,14 @@ void CPointSourcePannerGainCalc::CalculateGains(CartesianPosition position, std:
 
 unsigned int CPointSourcePannerGainCalc::getNumChannels()
 {
-	return m_isStereo ? 2 : (unsigned int)m_outputLayout.channels.size();
+	return (unsigned int)m_outputLayout.channels.size();
 }
 
 void CPointSourcePannerGainCalc::CalculateGainsFromRegions(CartesianPosition position, std::vector<double>& gains)
 {
 	double tol = 1e-6;
 
-	assert(gains.size() == m_outputLayout.channels.size()); // Gains vector length must match the number of channels
+	assert(gains.size() == m_internalLayout.channels.size()); // Gains vector length must match the number of channels
 	for (size_t i = 0; i < gains.size(); ++i)
 		gains[i] = 0.;
 
@@ -263,12 +342,17 @@ Layout CPointSourcePannerGainCalc::CalculateExtraSpeakersLayout(const Layout& la
 	Layout extraSpeakers;
 	unsigned int nSpeakers = (unsigned int)layout.channels.size();
 
+	std::cout << nSpeakers << std::endl;
+
 	// Find if speakers are present in each layer
 	std::vector<unsigned int> upperLayerSet;
 	std::vector<unsigned int> midLayerSet;
 	std::vector<unsigned int> lowerLayerSet;
 	double maxUpperAz = 0.f;
 	double maxLowerAz = 0.f;
+	double meanUpperEl = 0.;
+	double meanMidEl = 0.;
+	double meanLowerEl = 0.;
 	for (unsigned int iSpk = 0; iSpk < nSpeakers; ++iSpk)
 	{
 		double el = layout.channels[iSpk].polarPositionNominal.elevation;
@@ -277,46 +361,56 @@ Layout CPointSourcePannerGainCalc::CalculateExtraSpeakersLayout(const Layout& la
 			upperLayerSet.push_back(iSpk);
 			// TODO: consider remapping azimuth to range -180 to 180
 			maxUpperAz = std::max(maxUpperAz, abs(layout.channels[iSpk].polarPositionNominal.azimuth));
+			meanUpperEl += layout.channels[iSpk].polarPosition.elevation;
 		}
 		else if (el >= -10 && el <= 10)
 		{
 			midLayerSet.push_back(iSpk);
+			meanMidEl += layout.channels[iSpk].polarPosition.elevation;
 		}
 		else if (el >= -70 && el <= -30)
 		{
 			lowerLayerSet.push_back(iSpk);
 			// TODO: consider remapping azimuth to range -180 to 180
 			maxLowerAz = std::max(maxLowerAz, abs(layout.channels[iSpk].polarPositionNominal.azimuth));
+			meanLowerEl += layout.channels[iSpk].polarPosition.elevation;
 		}
 	}
+	meanUpperEl = upperLayerSet.size() > 0 ? meanUpperEl / (double)upperLayerSet.size() : 30.;
+	meanMidEl = meanMidEl / (double)midLayerSet.size();
+	meanLowerEl = lowerLayerSet.size() > 0 ? meanLowerEl / (double)lowerLayerSet.size() : -30.;
 
-	PolarPosition position;
+	PolarPosition position, positionNominal;
 	for (size_t iMid = 0; iMid < midLayerSet.size(); ++iMid)
 	{
 		auto name = layout.channels[midLayerSet[iMid]].name;
-		double azimuth = layout.channels[midLayerSet[iMid]].polarPositionNominal.azimuth;
+		double azimuth = layout.channels[midLayerSet[iMid]].polarPosition.azimuth;
 		// Lower layer
 		if ((lowerLayerSet.size() > 0 && abs(azimuth) > maxLowerAz + 40.) || lowerLayerSet.size() == 0)
 		{
 			m_downmixMapping.push_back(iMid);
 			name.at(0) = 'B';
 			position.azimuth = azimuth;
-			position.elevation = -30.;
-			extraSpeakers.channels.push_back({ name,position,position,false });
+			position.elevation = meanLowerEl;
+			positionNominal.azimuth = layout.channels[midLayerSet[iMid]].polarPositionNominal.azimuth;
+			positionNominal.elevation = -30.;
+			extraSpeakers.channels.push_back({ name,position,positionNominal,false });
 		}
 	}
 	for (size_t iMid = 0; iMid < midLayerSet.size(); ++iMid)
 	{
 		auto name = layout.channels[midLayerSet[iMid]].name;
-		double azimuth = layout.channels[midLayerSet[iMid]].polarPositionNominal.azimuth;
+		double azimuth = layout.channels[midLayerSet[iMid]].polarPosition.azimuth;
 		// Upper layer
 		if ((upperLayerSet.size() > 0 && abs(azimuth) > maxUpperAz + 40.) || upperLayerSet.size() == 0)
 		{
 			m_downmixMapping.push_back(iMid);
 			name.at(0) = 'U';
 			position.azimuth = azimuth;
-			position.elevation = 30.;
-			extraSpeakers.channels.push_back({ name,position,position,false });
+			position.elevation = meanUpperEl;
+			positionNominal.azimuth = layout.channels[midLayerSet[iMid]].polarPositionNominal.azimuth;
+			positionNominal.elevation = 30.;
+			extraSpeakers.channels.push_back({ name,position,positionNominal,false });
 		}
 	}
 
@@ -324,8 +418,39 @@ Layout CPointSourcePannerGainCalc::CalculateExtraSpeakersLayout(const Layout& la
 	position.azimuth = 0.;
 	position.elevation = -90.;
 	extraSpeakers.channels.push_back({ "BOTTOM",position,position,false });
-	position.elevation = 90.;
-	extraSpeakers.channels.push_back({ "TOP",position,position,false });
+	if (!layout.containsChannel("T+000") && !layout.containsChannel("UH+180"))
+	{
+		position.elevation = 90.;
+		extraSpeakers.channels.push_back({ "TOP",position,position,false });
+	}
 
 	return extraSpeakers;
+}
+
+bool CPointSourcePannerGainCalc::CheckScreenSpeakerWidths(const Layout& layout, bool& wideLeft, bool& wideRight)
+{
+	int chCount = 0;
+	for (auto& channel : layout.channels)
+		if (channel.name == "M+SC")
+		{
+			if (channel.polarPosition.azimuth >= 5. && channel.polarPosition.azimuth <= 25.)
+				wideLeft = false;
+			else if (channel.polarPosition.azimuth >= 35. && channel.polarPosition.azimuth <= 60.)
+				wideLeft = false;
+			else
+				return false; // M+SC is not in the valid range.
+			chCount++;
+		}
+		else if (channel.name == "M-SC")
+		{
+			if (channel.polarPosition.azimuth <= -5. && channel.polarPosition.azimuth >= -25.)
+				wideRight = false;
+			else if (channel.polarPosition.azimuth <= -35. && channel.polarPosition.azimuth >= -60.)
+				wideRight = false;
+			else
+				return false; // M-SC is not in the valid range.
+			chCount++;
+		}
+
+	return chCount == 2;
 }

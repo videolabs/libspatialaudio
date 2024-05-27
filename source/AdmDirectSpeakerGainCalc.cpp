@@ -31,22 +31,6 @@ namespace admrender {
 	{
 	}
 
-	bool CAdmDirectSpeakersGainCalc::isLFE(const DirectSpeakerMetadata& metadata)
-	{
-		// See Rec. ITU-R BS.2127-0 sec. 8.2
-		if (metadata.channelFrequency.lowPass.hasValue())
-			if (metadata.channelFrequency.lowPass.value() <= 200.)
-				return true;
-
-		const std::string& nominalLabel = GetNominalSpeakerLabel(metadata.speakerLabel);
-		if (stringContains(nominalLabel, m_lfeLabels[0]) ||
-			stringContains(nominalLabel, m_lfeLabels[1]))
-		{
-			return true;
-		}
-		return false;
-	}
-
 	int CAdmDirectSpeakersGainCalc::findClosestWithinBounds(const DirectSpeakerPolarPosition& direction, double tol)
 	{
 		// See Rec. ITU-R BS.2127-0 sec 8.5
@@ -172,10 +156,10 @@ namespace admrender {
 		direction.elevation = polarPosition.elevation;
 		direction.distance = polarPosition.distance;
 
-		// If the channel is LFE then send to the appropriate LFE (if any exist)
+		// If the channel is LFE based on frequency metadata then send to the appropriate LFE (if any exist)
 		if (isLfeChannel)
 		{
-			idx = m_layout.getMatchingChannelIndex(m_lfeLabels[0]);
+			idx = m_layout.getMatchingChannelIndex("LFE1");
 			if (idx >= 0)
 				gains[idx] = 1.;
 		}

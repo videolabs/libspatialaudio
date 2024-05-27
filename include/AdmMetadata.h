@@ -259,7 +259,7 @@ namespace admrender {
 		double height = 0.0;
 		double depth = 0.0;
 		// Jump position to determine how the gains are interpolated
-		Optional<JumpPosition> jumpPosition;
+		JumpPosition jumpPosition;
 		// The track index (starting from 0)
 		unsigned int trackInd = 0;
 		std::vector<PolarExclusionZone> zoneExclusionPolar;

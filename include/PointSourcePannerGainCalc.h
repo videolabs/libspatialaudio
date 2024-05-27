@@ -40,13 +40,22 @@ public:
 	unsigned int getNumChannels();
 
 private:
-	// The loudspeaker layout 
+	enum class DownmixOutput
+	{
+		None = 0, // No downmixing
+		Downmix_0_2_0, // Downmix 0+5+0 to 0+2+0 as specified in Rec. ITU-R BS.2127-1 sec. 6.1.2.4
+		Downmix_2_3_0, // Downmix 4+7+0 to 2+3+0 using downmixing in IAMF v1.0.0 sec. 7.6.2
+	};
+
+	// The output layout
 	Layout m_outputLayout;
+	// The loudspeaker layout used internally for the processing
+	Layout m_internalLayout;
 	// The layout of the extra loudspeakers used to fill in any gaps in the array
 	Layout m_extraSpeakersLayout;
 
-	// Flag if the output is stereo (0+2+0) and treat as a special case
-	bool m_isStereo = false;
+	// Flag if the output is a special case that uses a larger layout internally and downmixes to the target (e.g. 0+2+0 and 2+3+0)
+	DownmixOutput m_downmixOutput = DownmixOutput::None;
 
 	std::vector<unsigned int> m_downmixMapping;
 
@@ -78,4 +87,15 @@ private:
 	 * @param gainsOut			Output vector of the panning gains.
 	 */
 	void CalculateGainsFromRegions(CartesianPosition directionUnitVec, std::vector<double>& gainsOut);
+
+	/** Check the layout for M+SC and M-SC speakers and checks if they are in the narrow (5 < az < 25)
+	 *  or wide (35 < az < 60) for each of the two speakers.
+	 *  This function assumes that the layout includes M+SC and M-SC. If it does not then wideLeft and
+	 *  wideRight will be returned unchanged.
+	 * @param layout Loudspeaker layout containing M+SC and M-SC speakers.
+	 * @param wideLeft Returns true if M+SC is in the wide range.
+	 * @param wideRight Returns true if M-SC is in the wide range.
+	 * @return Returns true if layout contains bother M+SC and M-SC speakers and they are both in the valid ranges.
+	 */
+	bool CheckScreenSpeakerWidths(const Layout& layout, bool& wideLeft, bool& wideRight);
 };

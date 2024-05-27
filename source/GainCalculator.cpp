@@ -255,24 +255,25 @@ namespace admrender {
 	}
 
 	//===================================================================================================================================
-	CGainCalculator::CGainCalculator(Layout outputLayoutNoLFE)
-		: m_outputLayout(getLayoutWithoutLFE(outputLayoutNoLFE))
+	CGainCalculator::CGainCalculator(Layout outputLayout)
+		: m_outputLayout(outputLayout)
 		, m_nCh((unsigned int)m_outputLayout.channels.size())
-		, m_pspGainCalculator(getLayoutWithoutLFE(outputLayoutNoLFE))
+		, m_nChNoLFE((unsigned int)getLayoutWithoutLFE(outputLayout).channels.size())
+		, m_pspGainCalculator(getLayoutWithoutLFE(outputLayout))
 		, m_extentPanner(m_pspGainCalculator)
-		, m_ambiExtentPanner(outputLayoutNoLFE.hoaOrder)
-		, m_screenScale(outputLayoutNoLFE.reproductionScreen, getLayoutWithoutLFE(outputLayoutNoLFE))
-		, m_screenEdgeLock(outputLayoutNoLFE.reproductionScreen, getLayoutWithoutLFE(outputLayoutNoLFE))
-		, m_channelLockHandler(getLayoutWithoutLFE(outputLayoutNoLFE))
-		, m_zoneExclusionHandler(getLayoutWithoutLFE(outputLayoutNoLFE))
-		, m_gains(m_nCh, 0.)
+		, m_ambiExtentPanner(outputLayout.hoaOrder)
+		, m_screenScale(outputLayout.reproductionScreen, getLayoutWithoutLFE(outputLayout))
+		, m_screenEdgeLock(outputLayout.reproductionScreen, getLayoutWithoutLFE(outputLayout))
+		, m_channelLockHandler(getLayoutWithoutLFE(outputLayout))
+		, m_zoneExclusionHandler(getLayoutWithoutLFE(outputLayout))
+		, m_gains(m_nChNoLFE, 0.)
 	{
 		// There can be up to 3 diverged positions/gains
 		m_divergedPos.reserve(3);
 		m_divergedGains.reserve(3);
 		m_gains_for_each_pos.resize(3);
 		for (int i = 0; i < 3; ++i)
-			m_gains_for_each_pos[i].resize(m_nCh);
+			m_gains_for_each_pos[i].resize(m_nChNoLFE);
 	}
 
 	CGainCalculator::~CGainCalculator()
@@ -323,7 +324,7 @@ namespace admrender {
 				m_extentPanner.handle(diverged_positions[iGain], metadata.width, metadata.height, metadata.depth, m_gains_for_each_pos[iGain]);
 
 			// Power summation of the gains when playback is to loudspeakers,
-			for (unsigned int i = 0; i < m_nCh; ++i)
+			for (unsigned int i = 0; i < m_nChNoLFE; ++i)
 			{
 				double g_tmp = 0.;
 				for (unsigned int j = 0; j < nDivergedGains; ++j)
@@ -340,13 +341,15 @@ namespace admrender {
 		for (auto& g : m_gains)
 			g *= metadata.gain;
 
+		// "gains is extended by adding LFE channel gains with value 0 to produce gains_full"
+		insertLFE(m_outputLayout, m_gains, directGains);
+
 		// Calculate the direct and diffuse gains
 		// See Rec. ITU-R BS.2127-0 sec.7.3.1 page 39
 		double directCoefficient = std::sqrt(1. - metadata.diffuse);
 		double diffuseCoefficient = std::sqrt(metadata.diffuse);
 
-		directGains = m_gains;
-		diffuseGains = m_gains;
+		diffuseGains = directGains;
 		for (auto& g : directGains)
 			g *= directCoefficient;
 		for (auto& g : diffuseGains)
@@ -407,6 +410,25 @@ namespace admrender {
 					directionRotated[i] += rotMat[3 * i + j] * cartPositions[iDiverge][j];
 			divergedPos[iDiverge] = CartesianPosition{ -directionRotated[1],directionRotated[0],directionRotated[2] };
 		}
+	}
+
+	void CGainCalculator::insertLFE(const Layout& layout, const std::vector<double>& gainsNoLFE, std::vector<double>& gainsWithLFE)
+	{
+		assert(gainsWithLFE.capacity() >= layout.channels.size());
+		gainsWithLFE.resize(layout.channels.size());
+
+		if (!layout.hasLFE) // No LFE to insert so just copy the gain vector
+		{
+			gainsWithLFE = gainsNoLFE;
+			return;
+		}
+
+		int iCount = 0;
+		for (int i = 0; i < layout.channels.size(); ++i)
+			if (!layout.channels[i].isLFE)
+				gainsWithLFE[i] = gainsNoLFE[iCount++];
+			else
+				gainsWithLFE[i] = 0.;
 	}
 
 }//namespace admrenderer
