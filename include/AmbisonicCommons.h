@@ -18,6 +18,7 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <cmath>
 #include <memory.h>
 
 #define DEFAULT_ORDER    1
@@ -123,5 +124,27 @@ unsigned OrderAndDegreeToComponent(int order, int degree, bool b3D);
  * @return          AmbiX component index.
  */
 void ComponentToOrderAndDegree(int nComponent, bool b3D, int& order, int& degree);
+
+/** Returns the gain to convert an N3D signal to an SN3D one.
+ * @param order     Order of the signal such that order <= maxOrder.
+ * @return          Conversion gain 1/sqrt(2*order + 1)
+ */
+template<typename T>
+T N3dToSn3dFactor(int order);
+
+/** Returns the gain to convert an SN3D signal to an N3D one.
+ * @param order     Order of the signal such that order <= maxOrder.
+ * @return          Conversion gain sqrt(2*order + 1)
+ */
+template<typename T>
+T Sn3dToN3dFactor(int order);
+
+/** Returs the gain to convert a FuMa normalised signal to an SN3D one.
+ * @param order     Order of the signal such that order <= 3.
+ * @param degree    Degree of the signal such that -order <= degree <= order.
+ * @return          Conversion gain
+ */
+template<typename T>
+T FuMaToSn3dFactor(int order, int degree);
 
 #endif //_AMBISONICCOMMONS_H
