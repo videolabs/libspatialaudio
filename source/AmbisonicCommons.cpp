@@ -139,3 +139,46 @@ void ComponentToOrderAndDegree(int nComponent, bool b3D, int& order, int& degree
     else
         degree = nComponent % 2 == 0 ? order : -order;
 }
+
+template<typename T>
+T N3dToSn3dFactor(int order)
+{
+    return static_cast<T>(1.) / (T)std::sqrt(static_cast<T>(2 * order) + 1.);
+}
+template float N3dToSn3dFactor(int order);
+template double N3dToSn3dFactor(int order);
+
+template<typename T>
+T Sn3dToN3dFactor(int order)
+{
+    return (T)std::sqrt(static_cast<T>(2 * order) + 1.);
+}
+template float Sn3dToN3dFactor(int order);
+template double Sn3dToN3dFactor(int order);
+
+template<typename T>
+T FuMaToSn3dFactor(int order, int degree)
+{
+    auto iComponent = OrderAndDegreeToComponent(order, degree, true);
+
+    if (iComponent == 0)
+        return std::sqrt(static_cast<T>(2));
+    else if (iComponent < 4)
+        return std::sqrt(static_cast<T>(2));
+    else if (iComponent == 4 || iComponent == 5 || iComponent == 7 || iComponent == 8)
+        return static_cast<T>(std::sqrt(3.) / 2.);
+    else if (iComponent == 6)
+        return static_cast<T>(1.);
+    else if (iComponent == 9 || iComponent == 15)
+        return static_cast<T>(std::sqrt(5. / 8.));
+    else if (iComponent == 10 || iComponent == 14)
+        return static_cast<T>(std::sqrt(5.) / 3.);
+    else if (iComponent == 11 || iComponent == 13)
+        return static_cast<T>(std::sqrt(32. / 45.));
+    else if (iComponent == 12)
+        return static_cast<T>(1.);
+
+    return static_cast<T>(0);
+}
+template float FuMaToSn3dFactor(int order, int degree);
+template double FuMaToSn3dFactor(int order, int degree);

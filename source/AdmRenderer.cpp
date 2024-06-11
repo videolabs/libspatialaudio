@@ -292,20 +292,19 @@ namespace admrender {
 
 	void CAdmRenderer::AddHoa(float** pHoaIn, unsigned int nSamples, const HoaMetadata& metadata, unsigned int nOffset)
 	{
-		if (metadata.normalization != "SN3D")
-		{
-			std::cerr << "AdmRender Warning: Only SN3D normalisation supported. HOA signal not added to rendering." << std::endl;
-			return;
-		}
-
 		unsigned int nHoaCh = (unsigned int)metadata.orders.size();
 		for (unsigned int iHoaCh = 0; iHoaCh < nHoaCh; ++iHoaCh)
 		{
 			int order = metadata.orders[iHoaCh];
 			int degree = metadata.degrees[iHoaCh];
 			// which HOA channel to write to based on the order and degree
-			unsigned int iHoaChWrite = OrderAndDegreeToComponent(order, degree);
-			m_hoaAudioOut.AddStream(pHoaIn[iHoaCh], iHoaChWrite, nSamples, nOffset);
+			unsigned int iHoaChWrite = OrderAndDegreeToComponent(order, degree, true);
+			float normConversionGain = 1.;
+			if (compareCaseInsensitive(metadata.normalization, "N3D"))
+				normConversionGain = N3dToSn3dFactor<float>(order);
+			else if (compareCaseInsensitive(metadata.normalization, "FuMa"))
+				normConversionGain = FuMaToSn3dFactor<float>(order, degree);
+			m_hoaAudioOut.AddStream(pHoaIn[iHoaCh], iHoaChWrite, nSamples, nOffset, normConversionGain);
 		}
 	}
 
