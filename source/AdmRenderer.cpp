@@ -266,7 +266,7 @@ namespace admrender {
 				// The channelLock flag is cleared
 				m_objMetaDataTmp.channelLock.reset();
 				// Any zone entries are removed.
-				m_objMetaDataTmp.zoneExclusionPolar.resize(0);
+				m_objMetaDataTmp.zoneExclusion.resize(0);
 			}
 
 			// Calculate a new gain vector with this metadata
