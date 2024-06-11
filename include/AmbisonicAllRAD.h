@@ -20,7 +20,7 @@
 #include "AmbisonicBase.h"
 #include "BFormat.h"
 #include "AmbisonicOptimFilters.h"
-#include "LoudspeakerLayouts.h";
+#include "LoudspeakerLayouts.h"
 
 /// Ambisonic AllRAD decoder
 

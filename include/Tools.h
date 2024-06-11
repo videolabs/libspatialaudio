@@ -447,7 +447,7 @@ static inline void LocalCoordinateSystem(double azInDegrees, double elInDegrees,
 			rotMat[i][j] = rotMatTmp[i][j];
 }
 
-/** lamp a value between a minimum and a maximum.
+/** Clamp a value between a minimum and a maximum.
  * @param val		The value to clamp.
  * @param minVal	The minimum value of the clamp.
  * @param maxVal	The maximum value of the clamp.
@@ -469,6 +469,11 @@ static inline double clamp(double val, double minVal, double maxVal)
 static inline double interp(double val, const std::vector<double>& fromVals, const std::vector<double>& toVals)
 {
 	int nPieces = (int)fromVals.size();
+
+	// Catch the case where val is below the input range
+	if (val < fromVals[0])
+		return val;
+
 	for(int iPiece = 0; iPiece < nPieces-1; ++iPiece)
 		if (val >= fromVals[iPiece] && val < fromVals[iPiece + 1])
 		{
@@ -477,7 +482,8 @@ static inline double interp(double val, const std::vector<double>& fromVals, con
 			return (val - fromVals[iPiece]) / rangeFrom * rangeTo + toVals[iPiece];
 		}
 
-	return val;
+	// Catch cases where val >= the upper limit
+	return toVals.back();
 }
 
 /** Returns true if string1 contains string2. This check is case sensitive
@@ -488,4 +494,12 @@ static inline double interp(double val, const std::vector<double>& fromVals, con
 static inline bool stringContains(const std::string& string1, const std::string& string2)
 {
 	return string1.find(string2) != std::string::npos;
+}
+
+static inline bool compareCaseInsensitive(const std::string& string1, const std::string& string2)
+{
+	return std::equal(string1.begin(), string1.end(), string2.begin(), string2.end(),
+		[](unsigned char c1, unsigned char c2) {
+			return std::tolower(c1) == std::tolower(c2);
+		});
 }

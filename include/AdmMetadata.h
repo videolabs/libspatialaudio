@@ -120,7 +120,8 @@ namespace admrender {
 	struct ObjectDivergence
 	{
 		double value = 0.0;
-		double azimuthRange = 45.0;
+		Optional<double> azimuthRange;
+		Optional<double> positionRange;
 	};
 	inline bool operator==(const ObjectDivergence& lhs, const ObjectDivergence& rhs)
 	{
@@ -208,9 +209,7 @@ namespace admrender {
 			&& lhs.z == rhs.z && lhs.bounds == rhs.bounds;
 	}
 
-	struct ExclusionZone { };
-
-	struct CartesianExclusionZone : ExclusionZone {
+	struct CartesianExclusionZone {
 		float minX;
 		float minY;
 		float minZ;
@@ -225,7 +224,7 @@ namespace admrender {
 			&& lhs.minZ == rhs.minZ && lhs.maxZ == rhs.maxZ;
 	}
 
-	struct PolarExclusionZone : ExclusionZone {
+	struct PolarExclusionZone {
 		float minElevation;
 		float maxElevation;
 		float minAzimuth;
@@ -237,13 +236,150 @@ namespace admrender {
 			&& lhs.minElevation == rhs.minElevation && lhs.maxElevation == rhs.maxElevation;
 	}
 
+	class ExclusionZone
+	{
+	public:
+		ExclusionZone() = default;
+
+		ExclusionZone(const PolarExclusionZone& polarExZone)
+			: m_polarZone(polarExZone), m_cartesianZone()
+		{
+		}
+
+		ExclusionZone(const CartesianExclusionZone& cartesianExZone)
+			: m_polarZone(), m_cartesianZone(cartesianExZone)
+		{
+		}
+
+		PolarExclusionZone& polarZone()
+		{
+			// On accessing make sure that there is a PolarExclusionZone to modify
+			if (!m_polarZone.hasValue())
+				m_polarZone = PolarExclusionZone();
+			// Reset the CartesianPolarZone since only one can be set at a time
+			m_cartesianZone.reset();
+			return m_polarZone.value();
+		}
+
+		const PolarExclusionZone& polarZone() const { return m_polarZone.value(); }
+
+		CartesianExclusionZone& cartesianZone()
+		{
+			// On accessing make sure that there is a CartesianPolarZone to modify
+			if (!m_cartesianZone.hasValue())
+				m_cartesianZone = CartesianExclusionZone();
+			// Reset the PolarExclusionZone since only one can be set at a time
+			m_polarZone.reset();
+			return m_cartesianZone.value();
+		}
+
+		const CartesianExclusionZone& cartesianZone() const { return m_cartesianZone.value(); }
+
+		bool isPolarZone() const
+		{
+			assert(!(m_polarZone.hasValue() && m_cartesianZone.hasValue())); // These should never both have values
+			return m_polarZone.hasValue();
+		}
+
+		ExclusionZone& operator=(const PolarExclusionZone& polarExZone)
+		{
+			m_polarZone = polarExZone;
+			m_cartesianZone.reset();
+			return *this;
+		}
+
+		ExclusionZone& operator=(const CartesianExclusionZone& cartesianExZone)
+		{
+			m_cartesianZone = cartesianExZone;
+			m_polarZone.reset();
+			return *this;
+		}
+
+		inline bool operator== (const ExclusionZone& rhs) const
+		{
+			return m_polarZone == rhs.m_polarZone && m_cartesianZone == rhs.m_cartesianZone;
+		}
+
+	private:
+		Optional<PolarExclusionZone> m_polarZone;
+		Optional<CartesianExclusionZone> m_cartesianZone;
+	};
+
+	class ObjectPosition
+	{
+	public:
+		ObjectPosition() = default;
+
+		ObjectPosition(const PolarPosition& polarPos)
+			: m_polarPosition(polarPos), m_cartesianPosition()
+		{
+		}
+
+		ObjectPosition(const CartesianPosition& cartesianPos)
+			: m_polarPosition(), m_cartesianPosition(cartesianPos)
+		{
+		}
+
+		PolarPosition& polarPosition()
+		{
+			// On accessing make sure that there is a PolarPosition to modify
+			if (!m_polarPosition.hasValue())
+				m_polarPosition = PolarPosition();
+			// Reset the CartesianPosition since only one can be set at a time
+			m_cartesianPosition.reset();
+			return m_polarPosition.value();
+		}
+
+		const PolarPosition& polarPosition() const { return m_polarPosition.value(); }
+
+		CartesianPosition& cartesianPosition()
+		{
+			// On accessing make sure that there is a CartesianPosition to modify
+			if (!m_cartesianPosition.hasValue())
+				m_cartesianPosition = CartesianPosition();
+			// Reset the PolarPosition since only one can be set at a time
+			m_polarPosition.reset();
+			return m_cartesianPosition.value();
+		}
+
+		const CartesianPosition& cartesianPosition() const { return m_cartesianPosition.value(); }
+
+		bool isPolar() const
+		{
+			assert(!(m_polarPosition.hasValue() && m_cartesianPosition.hasValue())); // These should never both have values
+			return m_polarPosition.hasValue();
+		}
+
+		ObjectPosition& operator=(const PolarPosition& polarPos)
+		{
+			m_polarPosition = polarPos;
+			m_cartesianPosition.reset();
+			return *this;
+		}
+
+		ObjectPosition& operator=(const CartesianPosition& cartesianPos)
+		{
+			m_cartesianPosition = cartesianPos;
+			m_polarPosition.reset();
+			return *this;
+		}
+
+		inline bool operator==(const ObjectPosition& rhs) const
+		{
+			return m_polarPosition == rhs.m_polarPosition && m_cartesianPosition == rhs.m_cartesianPosition;
+		}
+
+	private:
+		Optional<PolarPosition> m_polarPosition;
+		Optional<CartesianPosition> m_cartesianPosition;
+	};
+
 	// Metadata for different objects. See Rec. ITU-R BS.2127-0 page 86.
 
 	/** The metadata for ObjectType */
 	struct ObjectMetadata
 	{
-		PolarPosition polarPosition;
-		CartesianPosition cartesianPosition;
+		ObjectPosition position;
 		// Gain of the Object metadata
 		double gain = 1.0;
 		// Diffuseness parameter
@@ -262,7 +398,7 @@ namespace admrender {
 		JumpPosition jumpPosition;
 		// The track index (starting from 0)
 		unsigned int trackInd = 0;
-		std::vector<PolarExclusionZone> zoneExclusionPolar;
+		std::vector<ExclusionZone> zoneExclusion;
 		// Screen reference for screen scaling
 		bool screenRef = false;
 		// Screen lock
@@ -274,12 +410,12 @@ namespace admrender {
 	};
 	inline bool operator==(const ObjectMetadata& lhs, const ObjectMetadata& rhs)
 	{
-		return lhs.polarPosition == rhs.polarPosition && lhs.cartesianPosition == rhs.cartesianPosition
+		return lhs.position == rhs.position
 			&& lhs.gain == rhs.gain && lhs.diffuse == rhs.diffuse
 			&& lhs.channelLock == rhs.channelLock && lhs.objectDivergence == rhs.objectDivergence
 			&& lhs.width == rhs.width && lhs.height == rhs.height && lhs.depth == rhs.depth
 			&& lhs.cartesian == rhs.cartesian && lhs.jumpPosition == rhs.jumpPosition
-			&& lhs.trackInd == rhs.trackInd && lhs.zoneExclusionPolar == rhs.zoneExclusionPolar
+			&& lhs.trackInd == rhs.trackInd && lhs.zoneExclusion == rhs.zoneExclusion
 			&& lhs.screenEdgeLock == rhs.screenEdgeLock && lhs.screenRef == rhs.screenRef
 			&& lhs.blockLength == rhs.blockLength;
 	}

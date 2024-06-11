@@ -279,9 +279,10 @@ void CPointSourcePannerGainCalc::CalculateGainsFromRegions(CartesianPosition pos
 {
 	double tol = 1e-6;
 
-	assert(gains.size() == m_internalLayout.channels.size()); // Gains vector length must match the number of channels
-	for (size_t i = 0; i < gains.size(); ++i)
-		gains[i] = 0.;
+	assert(gains.capacity() >= m_internalLayout.channels.size()); // Gains vector length must match the number of channels
+	gains.resize(m_internalLayout.channels.size());
+	for (auto& g : gains)
+		g = 0.;
 
 	// get the unit vector in the target direction
 	double vecNorm = norm(position);
@@ -341,8 +342,6 @@ Layout CPointSourcePannerGainCalc::CalculateExtraSpeakersLayout(const Layout& la
 {
 	Layout extraSpeakers;
 	unsigned int nSpeakers = (unsigned int)layout.channels.size();
-
-	std::cout << nSpeakers << std::endl;
 
 	// Find if speakers are present in each layer
 	std::vector<unsigned int> upperLayerSet;
