@@ -63,8 +63,9 @@ public:
      * @param nChannel  Channel to copy the input to.
      * @param nSamples  Number of samples to copy. Must be less than specified in Configure().
      * @param nOffset   Start position in the internal buffers that the data should be copied to.
+     * @param gain      Optional gain to apply to the signal before adding it to the stream
      */
-    void AddStream(float* pfData, unsigned nChannel, unsigned nSamples, unsigned nOffset = 0);
+    void AddStream(float* pfData, unsigned nChannel, unsigned nSamples, unsigned nOffset = 0, float gain = 1.f);
     /**
         Copy a number of samples from a specific channel of the BFormat.
     */
