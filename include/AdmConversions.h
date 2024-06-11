@@ -371,6 +371,37 @@ namespace admrender {
 		xyz2whd(s_xf, s_yf, s_zf, whd[0], whd[1], whd[2]);
 	}
 
+	/** Convert a polar source position and extent to cartesian position and cartesian extent.
+	 *  See Rec. ITU-R BS.2127-1 sec. 10.2.2 pg 72.
+	 *
+	 * @param x					Cartesian source x-coordinate.
+	 * @param y					Cartesian source y-coordinate.
+	 * @param z					Cartesian source z-coordiante.
+	 * @param s_x				Extent size in the x-dimension.
+	 * @param s_y				Extent size in the y-dimension.
+	 * @param s_z				Extent size in the z-dimension.
+	 * @param polarPosition		Return of the polar position.
+	 * @param whd				Return of the width, height and depth of the cartesian extent.
+	 */
+	static inline void ExtentPolarToCart(double az, double el, double d, double s_x, double s_y, double s_z,
+		CartesianPosition& cartPosition, double(&whd)[3])
+	{
+		cartPosition = PointPolarToCart(PolarPosition{ az,el,d });
+		double sf[3] = { 0. };
+		whd2xyz(s_x, s_y, s_z, sf[0], sf[1], sf[2]);
+		double localCoordSystem[3][3];
+		LocalCoordinateSystem(az, el, localCoordSystem);
+		// Multiply diag([s_xf,s_yf,s_xf])*localCoordSystem
+		double M[3][3];
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < 3; ++j)
+				M[i][j] = sf[i] * localCoordSystem[i][j];
+
+		whd[0] = std::sqrt(M[0][0] * M[0][0] + M[1][0] * M[1][0] + M[2][0] * M[2][0]);
+		whd[1] = std::sqrt(M[0][1] * M[0][1] + M[1][1] * M[1][1] + M[2][1] * M[2][1]);
+		whd[2] = std::sqrt(M[0][2] * M[0][2] + M[1][2] * M[1][2] + M[2][2] * M[2][2]);
+	}
+
 	/** Convert a metadata block from Cartesian to polar.
 	 *	See Rec. ITU-R BS.2127-1 sec. 10 pg 68.
 	 *
@@ -380,12 +411,13 @@ namespace admrender {
 	static inline void toPolar(const ObjectMetadata& inMetadataBlock, ObjectMetadata& outMetadataBlock)
 	{
 		outMetadataBlock = inMetadataBlock;
-		if (inMetadataBlock.cartesian)
+		if (inMetadataBlock.cartesian && !inMetadataBlock.position.isPolar())
 		{
 			// Update the position and the extent
 			double whd[3];
-			ExtentCartToPolar(inMetadataBlock.cartesianPosition.x, inMetadataBlock.cartesianPosition.y, inMetadataBlock.cartesianPosition.z,
-				inMetadataBlock.width, inMetadataBlock.height, inMetadataBlock.depth, outMetadataBlock.polarPosition, whd);
+			const auto& cartPos = inMetadataBlock.position.cartesianPosition();
+			ExtentCartToPolar(cartPos.x, cartPos.y, cartPos.z,
+				inMetadataBlock.width, inMetadataBlock.height, inMetadataBlock.depth, outMetadataBlock.position.polarPosition(), whd);
 			outMetadataBlock.width = whd[0];
 			outMetadataBlock.height = whd[1];
 			outMetadataBlock.depth = whd[2];
@@ -396,6 +428,35 @@ namespace admrender {
 
 			// Unflag as cartesian
 			outMetadataBlock.cartesian = false;
+		}
+	}
+
+	/** Convert a metadata block from Cartesian to polar.
+	 *	See Rec. ITU-R BS.2127-1 sec. 10 pg 68.
+	 *
+	 * @param inMetadataBlock	Input metadata block. If this is already polar (i.e. cartesian = false) then it is returned unchanged
+	 * @param outMetadataBlock	Output metadata block converted to polar convention
+	 */
+	static inline void toCartesian(const ObjectMetadata& inMetadataBlock, ObjectMetadata& outMetadataBlock)
+	{
+		outMetadataBlock = inMetadataBlock;
+		if (!inMetadataBlock.cartesian && inMetadataBlock.position.isPolar())
+		{
+			// Update the position and the extent
+			double whd[3];
+			const auto& polarPos = inMetadataBlock.position.polarPosition();
+			ExtentPolarToCart(polarPos.azimuth, polarPos.elevation, polarPos.distance,
+				inMetadataBlock.width, inMetadataBlock.height, inMetadataBlock.depth, outMetadataBlock.position.cartesianPosition(), whd);
+			outMetadataBlock.width = whd[0];
+			outMetadataBlock.height = whd[1];
+			outMetadataBlock.depth = whd[2];
+
+			// Convert the divergence according to Rec. ITU-R BS.2127-0 sec. 10.3 pg.73
+			// TODO: The equation given in this section gives strange results. Need to double check it
+			// does not have a mistake.
+
+			// Flag as cartesian
+			outMetadataBlock.cartesian = true;
 		}
 	}
 }

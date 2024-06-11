@@ -23,6 +23,8 @@ list(APPEND headers
     include/AdmMappingRules.h
     include/AdmMetadata.h
     include/AdmRenderer.h
+    include/AllocentricPannerGainCalc.h
+    include/AllocentricExtent.h
     include/AmbisonicAllRAD.h
     include/AmbisonicBase.h
     include/AmbisonicBinauralizer.h
@@ -97,6 +99,8 @@ list(APPEND sources
     source/Decorrelate.cpp
     source/AdmDirectSpeakerGainCalc.cpp
     source/AdmRenderer.cpp
+    source/AllocentricPannerGainCalc.cpp
+    source/AllocentricExtent.cpp
     source/Decorrelate.cpp
     source/GainCalculator.cpp
     source/GainInterp.cpp
