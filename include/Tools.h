@@ -204,6 +204,22 @@ static inline double relativeAngle(double x, double y)
 	return y;
 }
 
+/** Find an equivalent angle to y which is anti-clockwise from x. If x and y are equal then y is unchanged.
+ * @param x		Angle that the output must be greater than
+ * @param y		Angle to be processed
+ * @return		Angle equivalent to y such that it is >= x
+ */
+static inline double relativeAntiClockwiseAngle(double x, double y)
+{
+	while (y - 360. > x)
+		y -= 360.;
+
+	while (y < x)
+		y += 360.;
+
+	return y;
+}
+
 /** Returns the element-wise sum of two vectors of the same length.
  * @param a		First vector to add
  * @param b		Second vector to add
@@ -267,13 +283,8 @@ static inline int Sgn(double x)
 		return -1;
 	return 0;
 }
-/**
-	Returns true if x is in side the specified range
 
-	See Rec. ITU-R BS.2127-0 sec. 6.2
-*/
-
-/** Check if the input x is inside a specified range. See Rec. ITU-R BS.2127-0 sec. 6.2.
+/** Check if the input x is inside a specified range. Assumes that endAngle is anti-clockwise from startAngle. See Rec. ITU-R BS.2127-0 sec. 6.2.
  * @param x				The angle to check.
  * @param startAngle	The start angle of the range.
  * @param endAngle		The end angle of the range.
@@ -282,16 +293,12 @@ static inline int Sgn(double x)
  */
 static inline bool insideAngleRange(double x, double startAngle, double endAngle, double tol = 0.)
 {
-	x = convertToRangeMinus180To180(x);
-	startAngle = convertToRangeMinus180To180(startAngle);
-	endAngle = convertToRangeMinus180To180(endAngle);
-		
-	if (startAngle <= endAngle)
-		return x >= startAngle - tol && x <= endAngle + tol;
-	else if (startAngle > endAngle)
-		return  x >= startAngle - tol || x <= endAngle + tol;
+	// Find equivalent to endAngle that is anti-clockwise of startAngle
+	endAngle = relativeAntiClockwiseAngle(startAngle, endAngle);
+	// Find equivalent to x that is anticlockwise or equal to startAngle
+	x = relativeAngle(startAngle - tol, x);
 
-	return false;
+	return x <= endAngle + tol;
 }
 
 /** Matrix multiplication of two matrices C = A*B.
@@ -494,7 +501,7 @@ static inline double interp(double val, const std::vector<double>& fromVals, con
  */
 static inline bool stringContains(const std::string& string1, const std::string& string2)
 {
-	return string1.find(string2) != std::string::npos;
+	return string2.empty() ? false : string1.find(string2) != std::string::npos;
 }
 
 static inline bool compareCaseInsensitive(const std::string& string1, const std::string& string2)

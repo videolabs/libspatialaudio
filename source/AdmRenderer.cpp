@@ -33,7 +33,7 @@ namespace admrender {
 		DeallocateBuffers(m_binauralOut, 2);
 	}
 
-	bool CAdmRenderer::Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, const StreamInformation& channelInfo, std::string HRTFPath, Optional<Screen> reproductionScreen)
+	bool CAdmRenderer::Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, const StreamInformation& channelInfo, std::string HRTFPath, Optional<Screen> reproductionScreen, const std::vector<PolarPosition>& layoutPositions)
 	{
 		// Set the output layout
 		m_RenderLayout = outputTarget;
@@ -112,6 +112,19 @@ namespace admrender {
 		default:
 			break;
 		}
+
+		// If specified, set the layout positions
+		if (layoutPositions.size() > 0 && layoutPositions.size() != m_outputLayout.channels.size())
+			return false; // If setting custom loudspeaker positions the sizes must match.
+		else if (layoutPositions.size() > 0)
+		{
+			for (size_t iLdspk = 0; iLdspk < m_outputLayout.channels.size(); ++iLdspk)
+				m_outputLayout.channels[iLdspk].polarPosition = layoutPositions[iLdspk];
+		}
+
+		// Check the layout coordinates are within range for the specified layout
+		if (!checkLayoutAngles(m_outputLayout))
+			return false; // At least one loudspeaker is out of range!
 
 		m_nChannelsToRender = (unsigned int)m_outputLayout.channels.size();
 
