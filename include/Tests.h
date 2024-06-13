@@ -991,3 +991,68 @@ void testAlloExtent()
 
 	alloExtent.handle(position, 0., 0., 0., excluded, gains);
 }
+
+void testInsideAngleRange()
+{
+	assert(insideAngleRange(45., -180., 180., 1e-6));
+	assert(insideAngleRange(-30., -90., 90., 1e-6));
+	assert(insideAngleRange(-110., -120., -100.));
+	assert(insideAngleRange(0., -90., 90., 0.));
+	assert(!insideAngleRange(91., -90., 90., 0.));
+	assert(insideAngleRange(95., -90., 90., 5.));
+	assert(insideAngleRange(95., 90., -90., 0.));
+	assert(!insideAngleRange(85., 90., -90., 0.));
+	assert(insideAngleRange(85., 90., -90., 5.));
+	assert(insideAngleRange(0., 0., 0., 0.));
+	assert(!insideAngleRange(1., 0., 0., 0.));
+	assert(insideAngleRange(180., 180., 180., 0.));
+	assert(insideAngleRange(180., -180., -180., 0.));
+	assert(!insideAngleRange(179., -180., -180., 0.));
+	assert(insideAngleRange(175., 180., 180., 5.));
+	assert(!insideAngleRange(170., 180., 180., 5.));
+	assert(insideAngleRange(180., -180., 180., 0.));
+	assert(insideAngleRange(270., -180., 180., 0.));
+	assert(insideAngleRange(-90., -180., 180., 0.));
+	assert(insideAngleRange(0., -180., 180., 0.));
+}
+
+void testLayoutRangeCheck()
+{
+	for (auto& layout : speakerLayouts)
+	{
+		if (layout.name != "1OA" && layout.name != "2OA" && layout.name != "3OA")
+		{
+			bool isValid = checkLayoutAngles(layout);
+			assert(isValid);
+		}
+	}
+
+	Layout layout = GetMatchingLayout("9+10+3");
+	layout.channels[0].polarPosition.azimuth += 90.;
+	bool isValid = checkLayoutAngles(layout);
+	assert(!isValid);
+}
+
+void testAdmRenderCustomPositions()
+{
+	unsigned int hoaOrder = 1;
+	unsigned int sampleRate = 48000;
+	unsigned int nSamples = 128;
+	admrender::StreamInformation streamInfo;
+	admrender::Optional<Screen> screen;
+
+	admrender::CAdmRenderer admRenderer;
+	std::vector<PolarPosition> customPositions;
+	admrender::OutputLayout outputTarget = admrender::OutputLayout::ITU_0_5_0;
+	auto layout = GetMatchingLayout("0+5+0");
+	customPositions.resize(layout.channels.size());
+	for (size_t i = 0; i < layout.channels.size(); ++i)
+		customPositions[i] = layout.channels[i].polarPosition;
+
+	auto success = admRenderer.Configure(outputTarget, hoaOrder, sampleRate, nSamples, streamInfo, "", screen, customPositions);
+	assert(success);
+
+	customPositions[0].azimuth *= -1.;
+	auto failure = !admRenderer.Configure(outputTarget, hoaOrder, sampleRate, nSamples, streamInfo, "", screen, customPositions);
+	assert(failure);
+}

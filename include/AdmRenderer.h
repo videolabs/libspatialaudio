@@ -50,11 +50,10 @@ namespace admrender {
 	 *	libspatialaudio.
 	 *
 	 *	CURRENT FUNCTIONALITY:
-	 *	- Spatialise Objects with HOA panner when using binaural output
 	 *	- Spatialise Objects with a VBAP-type panner when output to speakers
 	 *	- Add HOA signal to the render to be decoded
 	 *	- Add DirectSpeaker tracks to be rendered
-	 *	- Set the output format to stereo, binaural, quad, 5.x and 7.x
+	 *	- Set the output format to stereo, binaural, quad, and ITU layouts
 	 *	- Apply decorrelation to Objects and apply compensation delay to the direct signal
 	 *	- Handles exclusion zones, divergence, channel lock
 	 *	- Handles extent panning for both loudspeaker and binaural output
@@ -62,7 +61,6 @@ namespace admrender {
 	 *
 	 *	Required to meet full compliance with Rec. ITU-R BS.2127-0:
 	 *	- Handle Matrix types (need samples to be able to test)
-	 *	- Add Cartesian processing path. Currently convert positions of objects to polar and uses polar processing.
 	 */
 	class CAdmRenderer
 	{
@@ -79,9 +77,11 @@ namespace admrender {
 		 * @param channelInfo			Information about the expected stream formats.
 		 * @param HRTFPath				Path to an HRTF to be used when the output layout is binaural.
 		 * @param reproductionScreen	Screen details used for screen scaling/locking.
+		 * @param layoutPositions		(Optional) Real polar positions for each of the loudspeaker in the layout.
 		 * @return						Returns true if the class is correctly configured and ready to use.
 		 */
-		bool Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples, const StreamInformation& channelInfo, std::string HRTFPath = "", Optional<Screen> reproductionScreen = Optional<Screen>());
+		bool Configure(OutputLayout outputTarget, unsigned int hoaOrder, unsigned int nSampleRate, unsigned int nSamples,const StreamInformation& channelInfo,
+			std::string HRTFPath = "", Optional<Screen> reproductionScreen = Optional<Screen>(), const std::vector<PolarPosition>& layoutPositions = std::vector<PolarPosition>());
 
 		/** Add an audio Object to be rendered.
 		 *
