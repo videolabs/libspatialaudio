@@ -13,6 +13,9 @@
 #include "GainInterp.h"
 
 #include <assert.h>
+#include <cstddef>
+#include <cmath>
+#include <limits>
 
 template<typename T>
 CGainInterp<T>::CGainInterp(unsigned int nCh) : m_currentGainVec(nCh), m_targetGainVec(nCh), m_deltaGainVec(nCh)
@@ -112,5 +115,5 @@ void CGainInterp<T>::Reset()
 	m_currentGainVec = m_targetGainVec;
 }
 
-template CGainInterp<float>;
-template CGainInterp<double>;
+template class CGainInterp<float>;
+template class CGainInterp<double>;

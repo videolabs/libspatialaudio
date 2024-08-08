@@ -12,6 +12,8 @@
 
 #include "GainCalculator.h"
 
+#include <limits>
+
 namespace admrender {
 
 	ChannelLockHandler::ChannelLockHandler(const Layout& layout)

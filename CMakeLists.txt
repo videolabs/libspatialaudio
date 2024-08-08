@@ -117,7 +117,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 find_package(MySofa QUIET)
 set(HAVE_MYSOFA ${MYSOFA_FOUND})
 
-include_directories(include include/hrtf source source/kiss_fft ${PROJECT_BINARY_DIR})
+include_directories(include include/dsp include/hrtf source source/kiss_fft ${PROJECT_BINARY_DIR})
 
 if(MYSOFA_FOUND)
     include_directories(${MYSOFA_INCLUDE_DIRS})
