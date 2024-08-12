@@ -46,7 +46,7 @@ public:
 	bool isHoa = false;
 	unsigned int hoaOrder = 0;
 
-	admrender::Optional<Screen> reproductionScreen;
+	admrender::Optional<Screen> reproductionScreen = admrender::Optional<Screen>();
 
 	/** If the channel name matches one of the channels in the Layout then return
 	 *  its index. If not, return -1.
