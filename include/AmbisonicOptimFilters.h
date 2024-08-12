@@ -18,7 +18,7 @@
 
 #include "AmbisonicBase.h"
 #include "BFormat.h"
-#include "dsp/LinkwitzRileyIIR.h"
+#include "LinkwitzRileyIIR.h"
 
 /** This class takes an ambisonic signal and applies shelf filtering that psychoacoustically
  *  optimise the high frequency band.
