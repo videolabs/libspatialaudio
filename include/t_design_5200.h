@@ -2,7 +2,7 @@
 
 #pragma once
 
-struct tDesign5200 {
+namespace tDesign5200 {
 static constexpr float points[5200][2] = {{1.579237f, 0.540299f},
 {4.138147f, 0.711581f},
 {2.006503f, 0.697477f},
