@@ -19,7 +19,7 @@ fID = fopen('../../include/t_design_5200.h','w');
 fwrite(fID,['// 5200-point Chebyshev-type Quadrature sampling on the sphere from: https://www-user.tu-chemnitz.de/~potts/workgroup/graef/quadrature/index.php.en' char(10) char(10)]);
 
 fwrite(fID,['#pragma once' char(10) char(10)])
-fwrite(fID,['struct tDesign5200 {' char(10)]);
+fwrite(fID,['namespace tDesign5200 {' char(10)]);
 
 % Build array string.
 arrayStr = '{';
