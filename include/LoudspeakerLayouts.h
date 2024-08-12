@@ -648,7 +648,7 @@ const std::map<std::string, std::map<std::string, ChannelRanges>> speakerRanges 
  * @param layout Loudspeaker layout to check.
  * @return Returns true if all loudspeakers are in the valid range.
  */
-static bool checkLayoutAngles(const Layout& layout)
+static inline bool checkLayoutAngles(const Layout& layout)
 {
 	auto it = speakerRanges.find(layout.name);
 	double tol = 1e-6;
@@ -1020,7 +1020,7 @@ namespace admrender {
 	 * @return Positions of the speakers in cartesian/allocentric format. If the layout is not supported by (i.e. not defined
 	 * in the tables in section 11.2 then an empty vector is returned.
 	 */
-	static std::vector<CartesianPosition> positionsForLayout(const Layout& layout)
+	static inline std::vector<CartesianPosition> positionsForLayout(const Layout& layout)
 	{
 		std::vector<CartesianPosition> layoutPositions;
 
