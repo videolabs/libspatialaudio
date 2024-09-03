@@ -2,4 +2,4 @@ build/
 install/
 
 # Doxygen output
-**/docs/html/
+**/docs/doxygen/html/
