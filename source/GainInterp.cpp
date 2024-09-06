@@ -62,6 +62,12 @@ void CGainInterp<T>::SetGainVector(const std::vector<T>& newGainVec, unsigned in
 template<typename T>
 void CGainInterp<T>::Process(const float* pIn, float** ppOut, unsigned int nSamples, unsigned int nOffset)
 {
+	if (m_isFirstCall)
+	{
+		Reset();
+		m_isFirstCall = false;
+	}
+
 	unsigned int nCh = (unsigned int)m_targetGainVec.size();
 	// The number of samples to interpolate over in this block
 	unsigned int nInterpSamples = std::min(nSamples, m_interpDurInSamples - m_iInterpCount);
@@ -86,6 +92,12 @@ void CGainInterp<T>::Process(const float* pIn, float** ppOut, unsigned int nSamp
 template<typename T>
 void CGainInterp<T>::ProcessAccumul(const float* pIn, float** ppOut, unsigned int nSamples, unsigned int nOffset, T gain)
 {
+	if (m_isFirstCall)
+	{
+		Reset();
+		m_isFirstCall = false;
+	}
+
 	unsigned int nCh = (unsigned int)m_targetGainVec.size();
 	// The number of samples to interpolate over in this block
 	unsigned int nInterpSamples = std::min(nSamples, m_interpDurInSamples - m_iInterpCount);
