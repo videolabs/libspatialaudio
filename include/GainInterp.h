@@ -65,4 +65,7 @@ private:
 	unsigned int m_interpDurInSamples = 0;
 	// The number of samples interpolated over
 	unsigned int m_iInterpCount = 0;
+
+	// Flag if it is the first call of Process or ProcessAccumul to avoid fade in from zero
+	bool m_isFirstCall = true;
 };
