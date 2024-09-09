@@ -665,7 +665,7 @@ void testDecoderPresets()
 	impulse[0] = 1.f;
 
 	float** ldspkOut = new float* [nLdspk];
-	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+	for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
 		ldspkOut[iLdspk] = new float[nSamples];
 
 	for (float az = 0.f; az < 360.f; az += 1.f)
@@ -709,7 +709,7 @@ void testAdmHoaDecodingRouting()
 	for (unsigned i = 0; i < channelInfo.nChannels; ++i)
 		metadata.trackInds[i] = i;
 
-	for(int iOrder = 0; iOrder < order + 1; ++iOrder)
+	for(int iOrder = 0; iOrder < (int)order + 1; ++iOrder)
 		for (int iDegree = -iOrder; iDegree < iOrder + 1; ++iDegree)
 		{
 			metadata.orders.push_back(iOrder);
@@ -731,11 +731,11 @@ void testAdmHoaDecodingRouting()
 	impulse[0] = 1.f;
 
 	float** hoaIn = new float* [channelInfo.nChannels];
-	for (int iCh = 0; iCh < channelInfo.nChannels; ++iCh)
+	for (unsigned iCh = 0; iCh < channelInfo.nChannels; ++iCh)
 		hoaIn[iCh] = new float[nSamples];
 
 	float** ldspkOut = new float* [nLdspk];
-	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+	for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
 		ldspkOut[iLdspk] = new float[nSamples];
 
 	for (float az = 0.f; az < 360.f; az += 1.f)
@@ -744,7 +744,7 @@ void testAdmHoaDecodingRouting()
 		ambiEnc.Refresh();
 		ambiEnc.Process(impulse.data(), nSamples, &inputSignal);
 
-		for (int i = 0; i < channelInfo.nChannels; ++i)
+		for (unsigned i = 0; i < channelInfo.nChannels; ++i)
 			inputSignal.ExtractStream(hoaIn[i], i, nSamples);
 
 		admRenderer.AddHoa(hoaIn, nSamples, metadata);
@@ -794,7 +794,7 @@ void test2dHoaDecoding()
 	std::vector<std::vector<float>> output(inputSignal.GetChannelCount(), std::vector<float>(nSamples, 0.f));
 
 	float** ldspkOut = new float* [nLdspk];
-	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+	for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
 		ldspkOut[iLdspk] = new float[nSamples];
 
 	ambiEnc.SetPosition({ DegreesToRadians(30.f),0.f,1. });
@@ -842,7 +842,7 @@ void testAllRAD()
 	impulse[0] = 1.f;
 
 	float** ldspkOut = new float* [nLdspk];
-	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+	for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
 		ldspkOut[iLdspk] = new float[nSamples];
 
 	for (float az = 0.f; az < 360.f; az += 1.f)
@@ -886,7 +886,7 @@ void testAdmRenderer()
 	impulse[0] = 1.f;
 
 	float** ldspkOut = new float* [nLdspk];
-	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+	for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
 		ldspkOut[iLdspk] = new float[nSamples];
 
 	admrender::ObjectMetadata objMetadata;
@@ -947,12 +947,12 @@ void testAdmRendererBinaural()
 
 	for (unsigned iSamp = 0; iSamp < nSamples; ++iSamp)
 	{
-		for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+		for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
 			std::cout << std::setprecision(12) << ldspkOut[iLdspk][iSamp] << ", ";
 		std::cout << std::endl;
 	}
 
-	for (unsigned iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
 		delete ldspkOut[iLdspk];
 	delete[] ldspkOut;
 }

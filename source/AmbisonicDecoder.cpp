@@ -731,12 +731,12 @@ void CAmbisonicDecoder::ConfigureDecoderMatrix()
             }
 
             // Refresh so that the weights are applied to the coefficients
-            for (int iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
+            for (unsigned iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
                 m_pAmbSpeakers[iSpk].Refresh();
 
             // Set all non-horizontal components to zero
-            for (int iSpk = 0; iSpk < m_nSpeakers; ++iSpk)
-                for (int iOrder = 0; iOrder < processingOrder + 1; ++iOrder)
+            for (int iSpk = 0; iSpk < (int)m_nSpeakers; ++iSpk)
+                for (int iOrder = 0; iOrder < (int)processingOrder + 1; ++iOrder)
                     for (int iDegree = -iOrder + 1; iDegree < iOrder; ++iDegree)
                         m_pAmbSpeakers[iSpk].SetCoefficient(OrderAndDegreeToComponent(iOrder, iDegree, true), 0.f);
         }

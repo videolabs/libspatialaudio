@@ -102,7 +102,7 @@ CPointSourcePannerGainCalc::CPointSourcePannerGainCalc(const Layout& layout)
 
 	// Get the positions of all of the loudspeakers
 	std::vector<PolarPosition> positions;
-	for (size_t i = 0; i < m_internalLayout.channels.size(); ++i)
+	for (unsigned i = 0; i < (unsigned)m_internalLayout.channels.size(); ++i)
 	{
 		m_downmixMapping.push_back(i); // one-to-one downmix mapping
 		positions.push_back(m_internalLayout.channels[i].polarPosition);
@@ -380,7 +380,7 @@ Layout CPointSourcePannerGainCalc::CalculateExtraSpeakersLayout(const Layout& la
 	meanLowerEl = lowerLayerSet.size() > 0 ? meanLowerEl / (double)lowerLayerSet.size() : -30.;
 
 	PolarPosition position, positionNominal;
-	for (size_t iMid = 0; iMid < midLayerSet.size(); ++iMid)
+	for (unsigned iMid = 0; iMid < (unsigned)midLayerSet.size(); ++iMid)
 	{
 		auto name = layout.channels[midLayerSet[iMid]].name;
 		double azimuth = layout.channels[midLayerSet[iMid]].polarPosition.azimuth;
@@ -396,7 +396,7 @@ Layout CPointSourcePannerGainCalc::CalculateExtraSpeakersLayout(const Layout& la
 			extraSpeakers.channels.push_back({ name,position,positionNominal,false });
 		}
 	}
-	for (size_t iMid = 0; iMid < midLayerSet.size(); ++iMid)
+	for (unsigned iMid = 0; iMid < (unsigned)midLayerSet.size(); ++iMid)
 	{
 		auto name = layout.channels[midLayerSet[iMid]].name;
 		double azimuth = layout.channels[midLayerSet[iMid]].polarPosition.azimuth;

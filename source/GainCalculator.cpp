@@ -211,7 +211,7 @@ namespace admrender {
 		//  Mark the speaker as already processed
 		std::vector<bool> processed(cartPositions.size(), false);
 
-		for (size_t i = 0; i < cartPositions.size(); ++i) {
+		for (unsigned i = 0; i < (unsigned)cartPositions.size(); ++i) {
 			if (processed[i]) continue;
 
 			std::vector<unsigned int> curRow;
@@ -220,7 +220,7 @@ namespace admrender {
 			processed[i] = true;
 
 			// Find all points with the same y and z that are in the same row
-			for (size_t j = i + 1; j < cartPositions.size(); ++j) {
+			for (unsigned j = i + 1; j < (unsigned)cartPositions.size(); ++j) {
 				if (!processed[j] && cartPositions[j].y == curPoint.y && cartPositions[j].z == curPoint.z)
 				{
 					curRow.push_back(j);
