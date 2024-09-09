@@ -47,9 +47,9 @@ CAllocentricExtent::CAllocentricExtent(const Layout& layout)
         if (m_cartesianPositions[i].z < 0.)
             m_hasBottomRow = true;
 
-    int Nx = m_nMaxGridPoints;
-    int Ny = m_nMaxGridPoints;
-    int Nz = m_hasBottomRow ? m_nMaxGridPoints : m_nMaxGridPoints / 2;
+    unsigned int Nx = m_nMaxGridPoints;
+    unsigned int Ny = m_nMaxGridPoints;
+    unsigned int Nz = m_hasBottomRow ? m_nMaxGridPoints : m_nMaxGridPoints / 2;
     m_zs.resize(Nz);
 
     for (unsigned int i = 0; i < m_nMaxGridPoints; ++i)
@@ -273,7 +273,7 @@ int CAllocentricExtent::countDimensions(const Layout& layout, const std::vector<
 
     // Calculate the unique number of z-coordinates
     std::sort(m_elLdspk.begin(), m_elLdspk.end());
-    int nLayers = std::unique(m_elLdspk.begin(), m_elLdspk.end()) - m_elLdspk.begin();
+    auto nLayers = std::unique(m_elLdspk.begin(), m_elLdspk.end()) - m_elLdspk.begin();
 
     if (nLayers == 1) // One layer, so check if it is a plane or a row
     {    // Find the first non-exlcuded speaker
@@ -310,7 +310,7 @@ int CAllocentricExtent::countDimensions(const Layout& layout, const std::vector<
 
     // Calculate the unique number of z-coordinates above the horizontal
     std::sort(m_elLdspk.begin(), m_elLdspk.end());
-    int nHeightLayers = std::unique(m_elLdspk.begin(), m_elLdspk.end()) - m_elLdspk.begin();
+    auto nHeightLayers = std::unique(m_elLdspk.begin(), m_elLdspk.end()) - m_elLdspk.begin();
 
     if (nHeightLayers >= 2)
         return 4;

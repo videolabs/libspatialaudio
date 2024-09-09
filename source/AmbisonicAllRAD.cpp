@@ -54,7 +54,7 @@ bool ::CAmbisonicAllRAD::Configure(unsigned nOrder, unsigned nBlockSize, unsigne
         if (c.isLFE)
             nLFE++;
     // Low-pass of 120 Hz as specified in Rec. ITU-R BS.2127-1 Sec. 6.3
-    m_lowPassIIR.Configure(nLFE, sampleRate, 120.f, std::sqrt(0.5), CIIRFilter::FilterType::LowPass);
+    m_lowPassIIR.Configure(nLFE, sampleRate, 120.f, std::sqrt(0.5f), CIIRFilter::FilterType::LowPass);
 
     m_pBFSrcTmp.Configure(nOrder, m_b3D, nBlockSize);
 
@@ -150,7 +150,7 @@ void CAmbisonicAllRAD::ConfigureAllRADMatrix()
         ambiSrc.GetCoefficients(YT[i]);
 
         // Convert to N3D
-        for (size_t iCoeff = 0; iCoeff < YT[i].size(); ++iCoeff)
+        for (unsigned iCoeff = 0; iCoeff < (unsigned)YT[i].size(); ++iCoeff)
         {
             float n2sn = (float)std::sqrt(2 * ComponentPositionToOrder(iCoeff, m_b3D) + 1);
             YT[i][iCoeff] *= n2sn;
@@ -169,7 +169,7 @@ void CAmbisonicAllRAD::ConfigureAllRADMatrix()
 
         // Store the gain matrix
         for (size_t j = 0; j < nLdspk; ++j)
-            G[j][i] = pspGainsTmp[j];
+            G[j][i] = (float)pspGainsTmp[j];
     }
 
     // Multiply G * Y^T to get the decoder
@@ -186,7 +186,7 @@ void CAmbisonicAllRAD::ConfigureAllRADMatrix()
 
     // Normalise the decoder and convert to a decoder for SN3D normalised signals
     float normFactor = std::sqrt((float)nGrid) / froNorm;
-    for (size_t iCoeff = 0; iCoeff < m_decMat[0].size(); ++iCoeff)
+    for (unsigned iCoeff = 0; iCoeff < (unsigned)m_decMat[0].size(); ++iCoeff)
     {
         float n2snDec = (float)std::sqrt(2 * ComponentPositionToOrder(iCoeff, m_b3D) + 1);
         for (size_t iLdspk = 0; iLdspk < m_decMat.size(); ++iLdspk)
