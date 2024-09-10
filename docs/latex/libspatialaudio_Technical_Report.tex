@@ -1164,7 +1164,7 @@ delete[] earOut;
 
 \chapter{Speaker Binauralization}\label{Binauralization}
 
-\subsection{Theory and Implementation Details}
+\section{Theory and Implementation Details}
 Binauralization of a loudspeaker array uses a simple method.
 First, a pair of head-related impulse responses (HRIRs) for each of the loudspeaker directions is convolved with the signal of that loudspeaker.
 The convolved signals are summed to give a final 2-channel binaural signal for listening over headphones.
@@ -1179,9 +1179,9 @@ The convolution is implemented in the frequency domain using an overlap-add algo
 If \code{libmysofa} is activated at compile time then the HRTF can be loaded from a .SOFA file, allowing for the use of custom HRTFs.
 Custom HRTFs allow for users to potentially load their own HRTF, giving highly personalised rendering.
 
-\subsection{\code{CSpeakersBinauralizer}}
+\section{\code{CSpeakersBinauralizer}}
 
-\subsubsection{Configuration}
+\subsection{Configuration}
 
 Before calling any other functions the object must first be configured by calling \code{Configure()} with the appropriate values. If the values are supported then it will return \code{true} and the object can now be used.
 
@@ -1195,7 +1195,7 @@ The configuration parameters are:
     \item \textbf{HRTFPath}: An optional path to the .SOFA file containing the HRTF. If no path is supplied and the \code{HAVE\_MIT\_HRTF} compiler flag is used, then the MIT HRTF will be used.
 \end{itemize}
 
-\subsubsection{Binauralizing a Signal}
+\subsection{Binauralizing a Signal}
 
 A set of loudspeaker signals can be decoded to the binaural signals using the \code{Process()} function. The processing is non-replacing, so the original loudspeaker signals are unchanged, and the decoded signal is contained in the output array.
 
@@ -1737,7 +1737,7 @@ It supports decoding up to a maximum of order 3.
 Decoding is performed using the AllRAD method, using the \code{CAmbisonicAllRAD} class internally. See \cref{AmbiDecoding} for more details about the AllRAD method.
 
 The HOA stream has the "order" and "degree" of each channel defined in its metadata which is used to sort the channels of the stream.
-\cite{CAdmRenderer} uses the ACN channel sorting internally.
+\code{CAdmRenderer} uses the ACN channel sorting internally.
 
 The normalisation of the orders can be SN3D, N3D or FuMa.
 The signals are converted to SN3D, if they are not already.
@@ -1927,7 +1927,7 @@ These loudspeaker signals are then converted to Ambisonics by encoding them base
 This encoded signal is then summed with any HOA streams that have been added.
 The composite stream is then rotated using `CAmbisonicRotator` to apply the listener head rotation.
 Finally, any direct binaural signal are added to the output.
-The signal flow is shown in the \cite{fig:adm_binaral}.
+The signal flow is shown in the \cref{fig:adm_binaural}.
 
 \begin{figure}
     \centering
