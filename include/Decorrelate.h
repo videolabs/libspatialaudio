@@ -62,8 +62,8 @@ private:
 	kiss_fftr_cfg m_pFFT_decor_cfg;
 	kiss_fftr_cfg m_pIFFT_decor_cfg;
 
-	float* m_pfScratchBufferA;
-	float** m_pfOverlap;
+	float* m_pfScratchBufferA = nullptr;
+	float** m_pfOverlap = nullptr;
 	unsigned m_nFFTSize;
 	unsigned m_nBlockSize;
 	unsigned m_nTaps;
@@ -75,7 +75,7 @@ private:
 	kiss_fft_cpx* m_pcpScratch;
 
 	// Buffers to hold the delayed direct signals
-	float** m_ppfDirectDelay;
+	float** m_ppfDirectDelay = nullptr;
 	unsigned int m_nDelayLineLength;
 	int m_nDelay = (m_nDecorrelationFilterSamples - 1) / 2;
 	int m_nReadPos = 0;
