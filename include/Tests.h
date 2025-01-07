@@ -957,6 +957,59 @@ void testAdmRendererBinaural()
 	delete[] ldspkOut;
 }
 
+/** Test the AdmRenderer binaural output of DirectSpeakers
+*/
+void testAdmRendererDirectSpeakerBinaural()
+{
+	unsigned nSamples = 256;
+	unsigned order = 1;
+	unsigned sampleRate = 48000;
+	auto layout = admrender::OutputLayout::Binaural;
+	admrender::StreamInformation streamInfo;
+	streamInfo.nChannels = 2;
+	streamInfo.typeDefinition = std::vector<admrender::TypeDefinition>(streamInfo.nChannels, admrender::TypeDefinition::DirectSpeakers);
+
+	admrender::CAdmRenderer admRender;
+	admRender.Configure(layout, order, sampleRate, nSamples, streamInfo);
+	auto nLdspk = 2;
+
+	std::vector<float> impulse(nSamples, 0.f);
+	impulse[0] = 1.f;
+
+	float** ldspkOut = new float* [nLdspk];
+	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+		ldspkOut[iLdspk] = new float[nSamples];
+
+	admrender::DirectSpeakerMetadata speakerMetadata;
+	speakerMetadata.trackInd = 0;
+	speakerMetadata.polarPosition = admrender::DirectSpeakerPolarPosition{ -90., 0.f, 1.f };
+	speakerMetadata.speakerLabel = "M-090";
+
+	admRender.AddDirectSpeaker(impulse.data(), nSamples, speakerMetadata);
+
+	impulse[0] = 0.f;
+	impulse[64] = 1.f;
+
+	speakerMetadata.trackInd = 1;
+	speakerMetadata.polarPosition = admrender::DirectSpeakerPolarPosition{ 90., 0.f, 1.f };
+	speakerMetadata.speakerLabel = "M+090";
+
+	admRender.AddDirectSpeaker(impulse.data(), nSamples, speakerMetadata);
+
+	admRender.GetRenderedAudio(ldspkOut, nSamples);
+
+	for (unsigned iSamp = 0; iSamp < nSamples; ++iSamp)
+	{
+		for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+			std::cout << std::setprecision(12) << ldspkOut[iLdspk][iSamp] << ", ";
+		std::cout << std::endl;
+	}
+
+	for (int iLdspk = 0; iLdspk < nLdspk; ++iLdspk)
+		delete ldspkOut[iLdspk];
+	delete[] ldspkOut;
+}
+
 void testAlloPSP()
 {
 	Layout layout = getLayoutWithoutLFE(GetMatchingLayout("4+5+0"));

@@ -114,6 +114,9 @@ namespace admrender {
 
 		const std::string& nominalSpeakerLabel = GetNominalSpeakerLabel(metadata.speakerLabel);
 
+		for (auto& g : gains)
+			g = 0.f;
+
 		if (metadata.audioPackFormatID.size() > 0)
 		{
 			auto ituPack = ituPackNames.find(metadata.audioPackFormatID[0]);
