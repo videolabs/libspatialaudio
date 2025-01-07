@@ -186,15 +186,15 @@ namespace admrender {
 		// Buffers to hold the HOA audio
 		CBFormat m_hoaAudioOut;
 		// Buffers holding the output signal
-		float** m_speakerOut;
+		float** m_speakerOut = nullptr;
 		// Buffers to hold the direct object audio
-		float** m_speakerOutDirect;
+		float** m_speakerOutDirect = nullptr;
 		// Buffers to hold the diffuse object audio
-		float** m_speakerOutDiffuse;
+		float** m_speakerOutDiffuse = nullptr;
 		// Buffers to the hold the virtual speaker layout signals when rendering to binaural
-		float** m_virtualSpeakerOut;
+		float** m_virtualSpeakerOut = nullptr;
 		// Buffers to hold binaural signals added via AddBinaural() when rendering to binaural
-		float** m_binauralOut;
+		float** m_binauralOut = nullptr;
 		void ClearOutputBuffer();
 		void ClearObjectDirectBuffer();
 		void ClearObjectDiffuseBuffer();
