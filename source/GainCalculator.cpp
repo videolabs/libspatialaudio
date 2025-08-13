@@ -192,7 +192,7 @@ namespace admrender {
 			std::vector<std::set<unsigned int>>::iterator ip;
 
 			ip = std::unique(tupleOrder.begin(), tupleOrder.end());
-			// Resizing the vector so as to remove the undefined terms 
+			// Resizing the vector so as to remove the undefined terms
 			tupleOrder.resize(std::distance(tupleOrder.begin(), ip));
 
 			m_downmixMapping.push_back(tupleOrder);
